@@ -1453,6 +1453,49 @@
   var FIELD = 'border:1px solid var(--line);border-radius:12px;padding:11px 12px;min-height:46px;'
     + 'background:#fff;font-family:inherit;font-size:14px;color:var(--ink);width:100%';
 
+  /* What sits under the name field. Three ways this goes, and Design drew all
+   * of them: the title is on its way, it could not be had, or it arrived and
+   * is offered back for shortening or clearing. Nothing is ever guessed into
+   * the field - an empty box the owner can type into beats a wrong name. */
+  function titleState(edit) {
+    if (edit.looking) {
+      return h('div', { style: 'display:flex;align-items:center;gap:8px;margin-top:-10px;'
+        + 'font-size:13px;color:var(--sub)' }, [
+        h('div', { style: 'width:14px;height:14px;border:2px solid var(--line);'
+          + 'border-top-color:var(--sub);border-radius:8px;flex:none' }),
+        h('div', { text: '題名を取っています' })
+      ]);
+    }
+    if (edit.lookFailed && !edit.name.trim()) {
+      return h('div', { style: 'font-size:11px;color:var(--faint);line-height:1.6;margin-top:-10px',
+        text: '題名は取れませんでした。欄は空のままです（誤った名前は入れません）。URL はそのまま使えます。' });
+    }
+    if (!edit.fromVideo || !edit.name.trim()) return null;
+
+    var link = function (label, onTap) {
+      return h('button', { style: 'border:0;background:none;padding:0;font-size:12px;font-weight:700;'
+        + 'color:var(--deep);text-decoration:underline;font-family:inherit;cursor:pointer;'
+        + 'min-height:44px;display:flex;align-items:center;margin:-11px 0', onclick: onTap }, [label]);
+    };
+    return h('div', { style: 'display:flex;flex-direction:column;gap:6px;margin-top:-10px' }, [
+      h('div', { style: 'display:flex;align-items:center;gap:8px;flex-wrap:wrap' }, [
+        h('div', { style: 'display:inline-flex;align-items:center;gap:5px;border:1px dashed var(--sub);'
+          + 'border-radius:8px;padding:3px 8px;font-size:11px;font-weight:700;color:var(--sub)',
+          text: '動画から入れた題名' }),
+        link('短くする', function () {
+          /* The part before the first separator is almost always the title
+           * proper; what follows is the channel's own advertising. */
+          var cut = edit.name.split(/[|｜【(（\[]/)[0].trim();
+          edit.name = (cut || edit.name).slice(0, 100);
+          draw();
+        }),
+        link('空にする', function () { edit.name = ''; edit.fromVideo = false; draw(); })
+      ]),
+      h('div', { style: 'font-size:11px;color:var(--faint);line-height:1.6',
+        text: '直すと破線の札は消えます。自分で書いた名前として扱います。' })
+    ]);
+  }
+
   /* Design replaced the two little arrows with one handle you hold and drag:
    * 44 to the finger, a 15px mark to the eye, pulled back 13px so the row
    * still starts where it did. The arrows were 26x20 - too small to hit, and
@@ -1565,11 +1608,11 @@
           onclick: function () { openMenuEdit(edit.menu_id); } }, ['再読込']) : null
       ]) : null,
       h('div', { style: 'padding:16px 18px 22px;display:flex;flex-direction:column;gap:16px' }, [
-        labelled('メニュー名', '（必須）', edit.name.length + ' / 100',
-          h('input', { type: 'text', value: edit.name, maxlength: '100', style: FIELD,
-            'data-field': 'menu-name',
-            oninput: function () { edit.name = this.value; } })),
-        labelled('YouTube の URL', '（任意）', edit.looking ? '見に行っています…' : null,
+        /* Design put the URL first and numbered the three: paste a link and the
+         * name below it fills itself in, so the screen should be read in that
+         * order rather than opening on a required field you were about to be
+         * given for free. */
+        labelled('1. 動画の URL', '（任意）', null,
           h('input', { type: 'url', value: edit.video_url || '', placeholder: 'https://', style: FIELD,
             'data-field': 'menu-url',
             oninput: function () { edit.video_url = this.value; },
@@ -1578,8 +1621,22 @@
               var field = this;
               setTimeout(function () { edit.video_url = field.value; fetchTitle(edit); }, 0);
             } })),
-        labelled('メモ', '（任意）', null,
-          h('textarea', { style: FIELD + ';min-height:60px;line-height:1.6;resize:vertical',
+        h('div', { style: 'font-size:11px;color:var(--faint);line-height:1.6;margin-top:-10px',
+          text: '貼ると、下のメニュー名に動画の題名が入ります。動画を使わないメニューは、空のままで先へ進めます。' }),
+
+        labelled('2. メニュー名', '（必須）', edit.name.length + ' / 100',
+          h('input', { type: 'text', value: edit.name, maxlength: '100', style: FIELD,
+            'data-field': 'menu-name',
+            oninput: function () {
+              edit.name = this.value;
+              /* Touched by hand, so it is the owner's name now, not the
+               * video's - the dashed tag goes and does not come back. */
+              if (edit.fromVideo) { edit.fromVideo = false; draw(); }
+            } })),
+        titleState(edit),
+
+        labelled('3. メモ', '（任意）', null,
+          h('textarea', { style: FIELD + ';min-height:66px;line-height:1.6;resize:vertical',
             oninput: function () { edit.note = this.value; } }, [edit.note || ''])),
         h('div', { style: 'display:flex;flex-direction:column;gap:2px' }, [
           h('div', { style: 'display:flex;align-items:baseline;justify-content:space-between;padding-bottom:6px' }, [
@@ -1660,16 +1717,23 @@
     if (!id || edit.name.trim() || edit.looked === id) return;
     edit.looked = id;
     edit.looking = true;
+    edit.lookFailed = false;
     draw();
     try {
       var response = await fetch('https://www.youtube.com/oembed?format=json&url='
         + encodeURIComponent('https://www.youtube.com/watch?v=' + id));
       if (response.ok) {
         var info = await response.json();
-        if (info && info.title && !edit.name.trim()) edit.name = String(info.title).slice(0, 100);
+        if (info && info.title && !edit.name.trim()) {
+          edit.name = String(info.title).slice(0, 100);
+          edit.fromVideo = true;
+        }
+      } else {
+        edit.lookFailed = true;
       }
     } catch (offline) {
       /* No name is better than a wrong one; the owner can type it. */
+      edit.lookFailed = true;
     }
     edit.looking = false;
     draw();

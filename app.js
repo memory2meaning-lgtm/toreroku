@@ -202,7 +202,7 @@
   var TWO_LINES = 'display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;'
     + 'overflow:hidden;word-break:break-word';
 
-  function amountCard(today, facts, settings) {
+  function amountCard(today, facts, settings, noMenusYet, onMakeMenu) {
     var companion = settings.companion;
     var sessions = today.sessions || [];
     var items = sessions.reduce(function (n, s) { return n + s.items.length; }, 0);
@@ -245,7 +245,16 @@
           has ? h('div', { style: 'display:flex;align-items:baseline;gap:8px;flex-wrap:wrap' }, figures) : null,
           h('div', { style: 'font-family:var(--mono);font-size:11px;color:var(--faint)',
             text: has ? sessions.length + '件' + (span ? ' ／ ' + span : '') : '' }),
-          has ? null : h('div', { style: 'font-size:12px;color:var(--sub)', text: '下のボタンから記録できます。' })
+          has ? null : h('div', { style: 'font-size:12px;color:var(--sub);line-height:1.7',
+            text: noMenusYet
+              ? 'まだメニューがありません。YouTube の動画の URL から、ひとつ作ってみませんか。'
+              : '下のボタンから記録できます。' }),
+          has || !noMenusYet ? null : h('button', {
+            style: 'align-self:flex-start;margin-top:4px;border:1px solid var(--line);background:#fff;'
+              + 'color:var(--body);font-family:inherit;font-size:13px;font-weight:700;border-radius:12px;'
+              + 'min-height:44px;padding:0 14px;cursor:pointer',
+            onclick: onMakeMenu
+          }, ['メニューを作る'])
         ])
       ])
     ]);
@@ -1145,7 +1154,8 @@
                 + 'display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;'
                 + 'color:var(--ink);flex:none', text: '!' }),
               h('div', { style: 'font-size:12px;color:var(--ink);line-height:1.55;font-weight:700',
-                text: 'いまこの端末にある記録は、読み込んだ内容に置き換わります。' })
+                text: 'いまの記録は消えます。取り違えると戻せません。'
+                  + '読み込む前に、いまの分を書き出しておいてください。' })
             ]),
             h('label', { style: 'border:1px solid var(--line);background:#fff;color:var(--body);'
               + 'font-family:inherit;font-size:14px;font-weight:800;border-radius:14px;min-height:48px;'
@@ -1214,7 +1224,8 @@
 
   async function importFile(file) {
     if (!file) return;
-    if (!window.confirm('いまこの端末にある記録は、読み込んだ内容に置き換わります。続けますか。')) return;
+    if (!window.confirm('いまの記録は消えます。取り違えると戻せません。'
+      + '読み込む前に、いまの分を書き出しておいてください。続けますか。')) return;
     problem = null;
     try {
       var text = await file.text();
@@ -1432,7 +1443,29 @@
 
   /* ---- 1c: the add-to-home sheet ---- */
 
+  /* Which phone this is, because the steps are not the same on both and the
+   * reason for taking them is not either. iPad reports itself as a Mac, so it
+   * is recognised by having a touchscreen rather than by its name. */
+  function whichPhone() {
+    var ua = navigator.userAgent || '';
+    if (/iPhone|iPod/.test(ua)) return 'ios';
+    if (/iPad/.test(ua)) return 'ios';
+    if (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1) return 'ios';
+    if (/Android/.test(ua)) return 'android';
+    return 'other';
+  }
+
+  /* Chrome offers to install the app itself, and will hand us the offer to
+   * make at a moment of our choosing. Caught here so the button can be a real
+   * one rather than a set of directions. */
+  var installOffer = null;
+  window.addEventListener('beforeinstallprompt', function (event) {
+    event.preventDefault();
+    installOffer = event;
+  });
+
   function a2hsScreen(onClose) {
+    var phone = whichPhone();
     var step = function (n, text, mark) {
       return h('div', { style: 'display:flex;align-items:center;gap:12px;border:1px solid var(--line);'
         + 'border-radius:12px;padding:12px;background:#fff' }, [
@@ -1453,13 +1486,29 @@
       ]),
       h('div', { style: 'padding:10px 20px 0' }, [
         h('div', { style: 'font-size:13px;color:var(--body);line-height:1.75',
-          text: 'iPhone の Safari は、7日間使わないとブラウザに保存した記録を消します。ホーム画面に追加したものは消えません。記録はこの端末の中だけにあります。' })
+          text: phone === 'ios'
+            ? 'iPhone の Safari は、7日間使わないとブラウザに保存した記録を消します。ホーム画面に追加したものは消えません。記録はこの端末の中だけにあります。'
+            : phone === 'android'
+              ? 'ホーム画面に追加すると、アプリのように開けます。ブラウザの保存領域は端末の空きが足りないときに整理されることがありますが、追加したものは残ります。記録はこの端末の中だけにあります。'
+              : 'ブラウザから入れておくと、アプリのように開けます。記録はこの端末の中だけにあります。' })
       ]),
-      h('div', { style: 'padding:16px 20px;display:flex;flex-direction:column;gap:8px' }, [
-        step(1, '画面下の 共有 ボタンを押す', '↑'),
-        step(2, 'ホーム画面に追加 を選ぶ', '＋'),
-        step(3, '右上の 追加 を押す', '')
-      ]),
+      h('div', { style: 'padding:16px 20px;display:flex;flex-direction:column;gap:8px' },
+        phone === 'ios'
+          ? [
+            step(1, '画面下の 共有 ボタンを押す', '↑'),
+            step(2, 'ホーム画面に追加 を選ぶ', '＋'),
+            step(3, '右上の 追加 を押す', '')
+          ]
+          : phone === 'android'
+            ? [
+              step(1, '右上の ⋮ を押す', '⋮'),
+              step(2, 'アプリをインストール（またはホーム画面に追加）を選ぶ', '＋'),
+              step(3, 'インストール を押す', '')
+            ]
+            : [
+              step(1, 'アドレスバーの右にある インストール を押す', '＋'),
+              step(2, 'ブラウザのメニューからでも入れられます', '⋮')
+            ]),
       h('div', { style: 'padding:0 20px' }, [
         h('div', { style: 'display:flex;align-items:flex-start;gap:10px;border:1px solid var(--line);'
           + 'border-radius:12px;padding:12px;background:#fafbfd' }, [
@@ -1469,8 +1518,23 @@
       ]),
       h('div', { style: 'flex:1' }),
       h('div', { style: 'padding:12px 20px 26px;display:flex;flex-direction:column;gap:8px' }, [
-        h('button', { style: 'border:0;background:var(--deep);color:#fff;font-family:inherit;font-size:15px;'
-          + 'font-weight:800;border-radius:16px;min-height:50px;box-shadow:var(--shadow-action);cursor:pointer',
+        installOffer ? h('button', { style: 'border:0;background:var(--deep);color:#fff;font-family:inherit;'
+          + 'font-size:15px;font-weight:800;border-radius:16px;min-height:50px;'
+          + 'box-shadow:var(--shadow-action);cursor:pointer',
+          onclick: async function () {
+            var offer = installOffer;
+            installOffer = null;
+            try {
+              offer.prompt();
+              await offer.userChoice;
+            } catch (e) { /* the browser withdrew the offer */ }
+            onClose();
+          } }, ['このまま追加する']) : null,
+        h('button', { style: installOffer
+          ? 'border:1px solid var(--line);background:#fff;color:var(--body);font-family:inherit;font-size:14px;'
+            + 'font-weight:700;border-radius:16px;min-height:48px;cursor:pointer'
+          : 'border:0;background:var(--deep);color:#fff;font-family:inherit;font-size:15px;'
+            + 'font-weight:800;border-radius:16px;min-height:50px;box-shadow:var(--shadow-action);cursor:pointer',
           onclick: onClose }, ['追加しました']),
         h('button', { style: 'border:0;background:none;color:var(--sub);font-family:inherit;font-size:13px;'
           + 'font-weight:700;min-height:44px;cursor:pointer', onclick: onClose },
@@ -1994,7 +2058,7 @@
           ]);
         }) : [
           h('div', { style: 'padding:22px 0;font-size:13px;color:var(--sub);line-height:1.7',
-            text: 'メニューがありません。メニューは、動画のURLと種目をまとめたものです。1つ作ると、やった日に1タップで記録できます。' })
+            text: 'メニューがありません。メニューは、動画のURLと種目をまとめたものです。1つ作ると、やった日に丸を押すだけで残ります。' })
         ]).concat([
           h('button', {
             style: 'margin-top:12px;border:1px dashed var(--faint);background:transparent;color:var(--body);'
@@ -2268,7 +2332,10 @@
           state.screen = { name: 'history' };
           draw();
         }),
-      amountCard(view.today, view.facts, view.settings),
+      amountCard(view.today, view.facts, view.settings, view.menus.length === 0, function () {
+        problem = null;
+        newMenu();
+      }),
       h('div', {
         style: 'flex:1;padding:14px 18px 18px;border-top:1px solid var(--line);'
           + 'display:flex;flex-direction:column;gap:18px'

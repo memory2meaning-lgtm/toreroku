@@ -462,6 +462,35 @@ async function main() {
     equal({}.polluted, undefined, 'and nothing was changed on the way');
   });
 
+  await check('a file whose counters have fallen behind is refused', async () => {
+    const api = fresh();
+    const doc = store.emptyState();
+    doc.exercises.push({ ex_id: 1, name: 'すでにある', sets: 1, reps: 1, seconds: null,
+      unit: 'reps', use_count: 0, last_used: null, created: '2026-01-01T00:00:00Z' });
+    doc.seq.ex = 0;                              // behind the row it counts
+    await rejects(400, () => api.importDocument(doc));
+    /* Why it matters: the next thing saved would be handed ex_id 1 as well,
+     * and then editing one changes the other and deleting takes both. */
+    const saved = await api.post('/api/library/save', { name: '新しい', sets: 1, reps: 1, unit: 'reps' });
+    equal(saved.ex_id, 1, 'the refused file left nothing behind');
+  });
+
+  await check('a file with a record missing under its exercises is refused', async () => {
+    const orphanItem = fresh();
+    const a = store.emptyState();
+    a.seq.item = 1;
+    a.items.push({ item_id: 1, session_id: 999, ex_id: 1, name: '幽霊', sets: 1, reps: 1,
+      seconds: null, unit: 'reps', ord: 1 });
+    await rejects(400, () => orphanItem.importDocument(a), 'item with no session');
+
+    const orphanMenuItem = fresh();
+    const b = store.emptyState();
+    b.seq.menu_item = 1;
+    b.menu_items.push({ menu_item_id: 1, menu_id: 7, ex_id: 7, sets: 1, reps: 1,
+      seconds: null, unit: 'reps', ord: 1 });
+    await rejects(400, () => orphanMenuItem.importDocument(b), 'menu item with no menu');
+  });
+
   await check('an export made before companions existed still imports', async () => {
     const api = fresh();
     const old = store.emptyState();

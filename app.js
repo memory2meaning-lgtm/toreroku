@@ -1506,6 +1506,10 @@
    * someone reading the screen aloud - or anyone who finds dragging hard -
    * still gets to reorder.
    */
+  /* Which finger is moving a row, if any. Held outside the handles because
+   * the point of it is to keep two of them from acting at once. */
+  var dragging = null;
+
   function grabHandle(items, index, name) {
     var handle = h('div', {
       style: 'width:44px;height:44px;flex:none;font-size:15px;color:var(--faint);'
@@ -1529,6 +1533,12 @@
     handle.onpointerdown = function (event) {
       var row = handle.parentNode;
       if (!row) return;
+      /* One at a time. Two fingers on two different handles both remember the
+       * position their row had when the screen was drawn, so the second one to
+       * be let go moves whatever has since slid into its old place - the wrong
+       * exercise, in front of you. */
+      if (dragging !== null) return;
+      dragging = event.pointerId;
       var height = row.getBoundingClientRect().height || 56;
       var from = event.clientY;
       var slid = 0;
@@ -1538,6 +1548,7 @@
       handle.style.cursor = 'grabbing';
 
       handle.onpointermove = function (moving) {
+        if (moving.pointerId !== dragging) return;
         slid = moving.clientY - from;
         row.style.transform = 'translateY(' + slid + 'px)';
         row.style.opacity = '0.85';
@@ -1545,6 +1556,8 @@
       var finish = function () {
         handle.onpointermove = null;
         handle.onpointerup = null;
+        handle.onpointercancel = null;
+        dragging = null;
         row.style.transform = '';
         row.style.opacity = '';
         row.style.zIndex = '';
@@ -1724,7 +1737,10 @@
         + encodeURIComponent('https://www.youtube.com/watch?v=' + id));
       if (response.ok) {
         var info = await response.json();
-        if (info && info.title && !edit.name.trim()) {
+        /* Only if this is still the video on the screen. An answer about a URL
+         * that has since been replaced would put the wrong film's name on the
+         * menu, which is worse than no name at all. */
+        if (info && info.title && !edit.name.trim() && videoId(edit.video_url) === id) {
           edit.name = String(info.title).slice(0, 100);
           edit.fromVideo = true;
         }
@@ -1735,6 +1751,10 @@
       /* No name is better than a wrong one; the owner can type it. */
       edit.lookFailed = true;
     }
+    /* A failure is not remembered as "asked and answered": someone who pasted
+     * a link out of signal, then found signal, can paste it again and have it
+     * work. Only a success closes the question. */
+    if (edit.lookFailed && edit.looked === id) edit.looked = null;
     edit.looking = false;
     draw();
   }
@@ -2069,9 +2089,11 @@
           if (draft.step < SETUP_STEPS - 1) { draft.step += 1; draw(); } else finishSetup(draft);
         },
         function () {
-          if (draft.step === 0) finishSetup({ nickname: '', companion: null });
-          else if (draft.step < SETUP_STEPS - 1) { draft.step += 1; draw(); }
-          else finishSetup({ nickname: draft.nickname, companion: null });
+          /* あとで means "do not ask me the rest", not "throw away what I have
+           * already said": tapping a companion and then あとで used to leave
+           * you with none. Whatever is in hand is kept either way. */
+          if (draft.step < SETUP_STEPS - 1 && draft.step > 0) { draft.step += 1; draw(); }
+          else finishSetup(draft);
         }));
       return;
     }
@@ -2308,7 +2330,17 @@
         settings: results[2].settings, menus: menusNow, totalSessions: total });
       giveTheKeyboardBack(held);
     } catch (error) {
-      root.replaceChildren(h('div', { class: 'boot' }, [error && error.note ? error.note : '画面を開けませんでした。']));
+      /* Whatever went wrong, leaving someone on a single line of text with
+       * nothing to press is the wrong place to leave them. */
+      root.replaceChildren(h('div', { style: 'padding:24px 20px;display:flex;flex-direction:column;gap:14px' }, [
+        h('div', { style: 'font-size:14px;color:var(--body);line-height:1.7',
+          text: error && error.note ? error.note : '画面を開けませんでした。' }),
+        h('div', { style: 'font-size:12px;color:var(--faint);line-height:1.7',
+          text: '記録は端末の中に残っています。もう一度開いてみてください。' }),
+        h('button', { style: 'border:0;background:var(--deep);color:#fff;font-family:inherit;font-size:15px;'
+          + 'font-weight:800;border-radius:16px;min-height:50px;cursor:pointer',
+          onclick: function () { problem = null; state.screen = { name: 'home' }; draw(); } }, ['もう一度'])
+      ]));
     }
   }
 

@@ -970,6 +970,45 @@
             throw ApiError(400, 'この書き出しファイルは読み込めません');
           }
         });
+        /* A counter that has fallen behind the rows it counts is worse than a
+         * missing one: the next thing saved is handed an id that is already
+         * taken, and from then on two different exercises answer to the same
+         * number - editing changes one of them, deleting takes both.
+         * Demonstrated, so it is checked. */
+        var behind = [
+          ['ex', 'exercises', 'ex_id'], ['menu', 'menus', 'menu_id'],
+          ['menu_item', 'menu_items', 'menu_item_id'], ['session', 'sessions', 'session_id'],
+          ['item', 'items', 'item_id']
+        ];
+        behind.forEach(function (one) {
+          var highest = 0;
+          document[one[1]].forEach(function (row) {
+            var id = row && row[one[2]];
+            if (typeof id !== 'number' || !Number.isInteger(id) || id < 1) {
+              throw ApiError(400, 'この書き出しファイルは読み込めません');
+            }
+            if (id > highest) highest = id;
+          });
+          if (document.seq[one[0]] < highest) {
+            throw ApiError(400, 'この書き出しファイルは読み込めません');
+          }
+        });
+        /* And every row has to belong to something that is here. An exercise
+         * hanging off a record that is gone can never be seen or removed, and
+         * when its id comes round again it is thrown away by whatever writes
+         * next - quietly, years later. */
+        var present = function (rows, key) {
+          var held = {};
+          rows.forEach(function (row) { held[row[key]] = true; });
+          return held;
+        };
+        var sessions = present(document.sessions, 'session_id');
+        var exercises = present(document.exercises, 'ex_id');
+        var menus = present(document.menus, 'menu_id');
+        var dangling =
+          document.items.some(function (i) { return !sessions[i.session_id]; })
+          || document.menu_items.some(function (mi) { return !menus[mi.menu_id] || !exercises[mi.ex_id]; });
+        if (dangling) throw ApiError(400, 'この書き出しファイルは読み込めません');
         return write(function (draft) {
           Object.keys(draft).forEach(function (key) { delete draft[key]; });
           Object.assign(draft, clone(document));

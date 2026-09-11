@@ -1341,6 +1341,11 @@
     try {
       var text = await file.text();
       await api.importDocument(JSON.parse(text));
+      /* The line above the card was chosen for a phone that had different
+       * records in it. Whatever it says about today, it was said about
+       * somebody else's day. */
+      try { localStorage.removeItem(LINE_KEY); localStorage.removeItem(SAID_KEY); }
+      catch (e) { /* private window */ }
       /* A document written before the first-run questions existed carries no
        * mark; the records in it say plainly that this is not a first run. */
       var after = await api.get('/api/settings');
@@ -2569,7 +2574,12 @@
         })))
       ]),
       problem ? warnBar(problem, null, null) : null,
-      installed() ? null : warnBar('ホーム画面に追加していません。記録が消えることがあります。', '手順', function () {
+      /* The reason differs by phone, so the warning cannot be one sentence.
+       * On iOS the records really are thrown away after seven idle days; on
+       * Android they are not, and saying so would be scaremongering. */
+      installed() ? null : warnBar(whichPhone() === 'ios'
+        ? 'ホーム画面に追加していません。記録が消えることがあります。'
+        : 'ホーム画面に追加していません。追加すると、次からすぐ開けます。', '手順', function () {
         state.a2hsFrom = 'home';
         state.screen = { name: 'a2hs' };
         draw();

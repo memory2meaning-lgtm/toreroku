@@ -979,6 +979,15 @@
       },
 
       importDocument: function (document) {
+        /* A file from a version that does not exist yet is a different
+         * problem from a file that is simply wrong, and the person holding it
+         * can act on the difference: one means update the app, the other
+         * means this is not one of ours. */
+        if (document && typeof document === 'object'
+          && typeof document.v === 'number' && document.v > SCHEMA) {
+          throw ApiError(400, 'このファイルは新しい版のお家トレで書き出されています。'
+            + 'アプリを新しくしてから読み込んでください。');
+        }
         if (!document || typeof document !== 'object' || document.v !== SCHEMA
           || !Array.isArray(document.sessions) || !document.seq) {
           throw ApiError(400, 'この書き出しファイルは読み込めません');

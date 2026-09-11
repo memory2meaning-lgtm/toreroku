@@ -632,6 +632,20 @@ async function main() {
     equal(week.this_week, 1, 'but one day');
   });
 
+  await check('a file from a newer version says so, not just no', async () => {
+    const api = fresh();
+    const ahead = store.emptyState();
+    ahead.v = store.SCHEMA + 1;
+    let note = '';
+    try { await api.importDocument(ahead); } catch (error) { note = error.note; }
+    assert(note.indexOf('新しい版') >= 0, 'it says the file is from a newer version: ' + note);
+    const nonsense = fresh();
+    let other = '';
+    try { await nonsense.importDocument({ v: 'x', sessions: [], seq: {} }); }
+    catch (error) { other = error.note; }
+    equal(other, 'この書き出しファイルは読み込めません', 'and anything else is simply refused');
+  });
+
   await check('an export made before companions existed still imports', async () => {
     const api = fresh();
     const old = store.emptyState();

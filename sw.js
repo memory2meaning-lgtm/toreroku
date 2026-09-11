@@ -7,19 +7,68 @@
 'use strict';
 
 const VERSION = 'ouchitore-v2';
-const SHELL = ['./', './index.html', './store.js', './app.js', './manifest.webmanifest'];
+const ALWAYS = ['./', './index.html', './manifest.webmanifest', './tokens.css'];
+
+/* What the app is made of, read off the page rather than written down here.
+ *
+ * index.html names its scripts with a ?v=NN that changes whenever they do, so
+ * a list kept in this file would be a second copy of the truth and would drift
+ * from it - and the wrong copy is the one that gets cached. Worse, a version
+ * this file has not heard of is not stored at install, and a phone carried out
+ * of signal before the page had a chance to store it for itself will not
+ * start: index.html comes back, its scripts do not.
+ *
+ * So: fetch the page, take the addresses out of its script tags, and store
+ * exactly those.
+ */
+function wantedFrom(html) {
+  const found = [];
+  const tags = /<script[^>]+src=["']([^"']+)["']/gi;
+  let hit;
+  while ((hit = tags.exec(html)) !== null) found.push('./' + hit[1].replace(/^\.\//, ''));
+  return ALWAYS.concat(found);
+}
+
+function whatThePageNeeds() {
+  return fetch('./index.html', { cache: 'no-store' })
+    .then(page => page.text())
+    .then(wantedFrom)
+    .catch(() => ALWAYS.slice());
+}
 
 self.addEventListener('install', event => {
-  event.waitUntil(caches.open(VERSION).then(cache => cache.addAll(SHELL)).then(() => self.skipWaiting()));
+  event.waitUntil(
+    whatThePageNeeds()
+      .then(wanted => caches.open(VERSION).then(cache => cache.addAll(wanted)))
+      .then(() => self.skipWaiting())
+  );
 });
 
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys()
       .then(names => Promise.all(names.filter(name => name !== VERSION).map(name => caches.delete(name))))
+      /* Yesterday's scripts are still in here under yesterday's ?v=, and
+       * nothing would ever ask for them again. The cache name only changes
+       * when this file changes, so without this they pile up for good. */
+      .then(() => fetch('./index.html', { cache: 'no-store' }).then(sweep).catch(() => { }))
       .then(() => self.clients.claim())
   );
 });
+
+/* Throw away the versioned copies of files this page no longer names. */
+function sweep(page) {
+  return page.text().then(html => {
+    const keep = wantedFrom(html).map(one => new URL(one, self.location.href).href);
+    return caches.open(VERSION).then(cache => cache.keys().then(held => Promise.all(
+      held.map(request => {
+        if (!/\?v=\d+$/.test(request.url)) return null;
+        if (keep.indexOf(request.url) >= 0) return null;
+        return cache.delete(request);
+      })
+    )));
+  }).catch(() => { });
+}
 
 self.addEventListener('fetch', event => {
   const request = event.request;
@@ -40,6 +89,11 @@ self.addEventListener('fetch', event => {
         if (fresh && fresh.ok) {
           const copy = fresh.clone();
           caches.open(VERSION).then(cache => cache.put(request, copy));
+          /* The page just told us which scripts it wants. Anything versioned
+           * that it did not ask for is last week's, and nothing will ever ask
+           * for it again - so it goes now, rather than waiting for this file
+           * itself to change, which may be never. */
+          event.waitUntil(sweep(fresh.clone()));
         }
         return fresh;
       }).catch(() => caches.match(request).then(hit => hit || caches.match('./index.html')))

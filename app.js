@@ -2354,33 +2354,5 @@
      * - would not reach a phone that already had the app. */
     navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
       .catch(function () { /* offline use is a bonus, not a requirement */ });
-
-    /* The service worker stores index.html and the scripts by their plain
-     * names, but the page asks for them with the ?v=NN that says which
-     * version it wants, and a stored copy under a different address is no
-     * copy at all.  So the page puts away what it is actually made of - the
-     * addresses in its own tags - the moment it has finished loading.
-     * Without this, someone who installs the app and goes out of signal
-     * before opening it a second time finds it will not start.
-     *
-     * The name has to be the one sw.js uses: it throws away every other. */
-    setTimeout(function () {
-      if (!window.caches) return;
-      var mine = ['./', './index.html', './manifest.webmanifest', './tokens.css'];
-      for (var i = 0; i < document.scripts.length; i++) {
-        var from = document.scripts[i].getAttribute('src');
-        if (from) mine.push(from);
-      }
-      /* Into whichever store the service worker is keeping, found by name
-       * rather than written down twice: sw.js throws away every cache but its
-       * own on activation, so a copy written under a name that has moved on
-       * would be swept away the next time the app updates. */
-      caches.keys().then(function (names) {
-        var theirs = names.filter(function (name) { return name.indexOf('ouchitore-') === 0; })[0];
-        return caches.open(theirs || 'ouchitore-v2');
-      }).then(function (store) {
-        mine.forEach(function (one) { store.add(one).catch(function () { }); });
-      }).catch(function () { });
-    }, 1500);
   }
 })();

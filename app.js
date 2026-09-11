@@ -60,16 +60,47 @@
   var INK_STEPS = ['#dce3ec', '#b3c0d1', '#7e8ea3', '#37465c'];
   var INK_TEXT = ['var(--ink)', 'var(--ink)', '#fff', '#fff'];
 
-  /* ---- greeting ----
-   * The store hands over facts only; these are the design's own sentences,
-   * from artboards 1b, 1c and 1d.  A greeting, and at most one plain fact.
-   * Never praise, never a streak. */
-  /* The name is spent once per launch.  Being called by name every time the
-   * home screen redraws would be the tacky kind of familiarity; once, when the
-   * app opens, is the greeting doing its job. */
+  /* ---- the line above the card ----
+   *
+   * Design settled what the companion may say, after the owner corrected me:
+   * it is not mute, it simply never pushes. Their rule, in their words - the
+   * companion "sees what happened and says that, and does not touch how you
+   * feel or what you should do next"; and because saying nothing at all turns
+   * watching into surveillance, opening the app always leaves one line there.
+   *
+   * What it may say: the time of day, the first day ever, that today is still
+   * blank, how long since the last time, how many records today, how many days
+   * this week. One of them, never two.
+   *
+   * What it may not: anything right after a record is written (that would be
+   * praise - the circle and the figures move, the line stays where it was),
+   * anything counting down to a round number, anything claiming to know how
+   * you feel, and anything anywhere but the home screen.
+   *
+   * Chosen once a day and then fixed, so it does not change under you as you
+   * use the app; and the same sentence is not repeated within three days.
+   * That memory lives on this device only - it says nothing about the records
+   * and has no business travelling with them.
+   */
   var nameSpent = false;
+  var LINE_KEY = 'ouchitore-line';
+  var SAID_KEY = 'ouchitore-said';
 
-  function greetingLine(facts, nickname) {
+  function remembered(key) {
+    try { return JSON.parse(localStorage.getItem(key) || '{}'); }
+    catch (e) { return {}; }
+  }
+
+  function remember(key, value) {
+    try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { /* private window */ }
+  }
+
+  function daysBetween(from, to) {
+    if (!from || !to) return 999;
+    return Math.round((parseYmd(to) - parseYmd(from)) / 86400000);
+  }
+
+  function greetingLine(facts, nickname, todayCount) {
     var hello = facts.part_of_day === 'morning' ? 'おはようございます'
       : facts.part_of_day === 'afternoon' ? 'こんにちは' : 'こんばんは';
     if (nickname && !nameSpent) {
@@ -78,14 +109,38 @@
     } else {
       hello += '。';
     }
-    if (facts.first_ever) return hello;
-    if (facts.days_since !== null && facts.days_since >= 2) {
-      return hello + facts.days_since + '日ぶりですね。';
+
+    /* Already decided today: the same line all day, whatever happens in
+     * between. Writing a record must not change what is said about it. */
+    var held = remembered(LINE_KEY);
+    if (held.date === facts.date && held.text) return hello + held.text;
+
+    var said = remembered(SAID_KEY);
+    var free = function (kind) { return daysBetween(said[kind], facts.date) >= 3; };
+
+    /* In Design's order, and only one of them. */
+    var candidates = [];
+    if (facts.first_ever) candidates.push(['first', 'はじめまして。ここに書いていきます。']);
+    if (facts.days_since !== null && facts.days_since >= 3) {
+      candidates.push(['gap', '前に書いたのは' + facts.days_since + '日前です。']);
     }
-    if (facts.has_today && facts.days_this_week >= 2) {
-      return hello + '今週はこれで' + facts.days_this_week + '日です。';
+    if (!facts.has_today) candidates.push(['blank', 'きょうはまだ書いていません。']);
+    if (facts.has_today && todayCount > 0) {
+      candidates.push(['today', 'きょうは' + todayCount + '件あります。']);
     }
-    return hello;
+    if (facts.days_this_week >= 2) {
+      candidates.push(['week', '今週は' + facts.days_this_week + '日目です。']);
+    }
+
+    var pick = candidates.filter(function (one) { return free(one[0]); })[0] || null;
+    if (!pick) {
+      remember(LINE_KEY, { date: facts.date, text: '' });
+      return hello;
+    }
+    said[pick[0]] = facts.date;
+    remember(SAID_KEY, said);
+    remember(LINE_KEY, { date: facts.date, text: pick[1] });
+    return hello + pick[1];
   }
 
   /* ---- home ---- */
@@ -233,7 +288,7 @@
     });
 
     return h('div', { style: 'padding:0 18px 14px;display:flex;flex-direction:column;gap:8px' }, [
-      h('div', { style: 'font-size:13px;color:var(--body);line-height:1.5;min-height:20px', text: greetingLine(facts, settings.nickname) }),
+      h('div', { style: 'font-size:13px;color:var(--body);line-height:1.5;min-height:20px', text: greetingLine(facts, settings.nickname, sessions.length) }),
       h('div', {
         style: 'border:1px solid var(--line);border-radius:16px;background:#fff;padding:14px;'
           + 'display:flex;gap:14px;align-items:flex-start'
@@ -1503,7 +1558,13 @@
             ? [
               step(1, '右上の ⋮ を押す', '⋮'),
               step(2, 'アプリをインストール（またはホーム画面に追加）を選ぶ', '＋'),
-              step(3, 'インストール を押す', '')
+              step(3, 'インストール を押す', ''),
+              /* LINE や Instagram の中のブラウザ、Chrome 以外のブラウザでは
+               * 同じ項目が別の場所にある。断定した手順を出したまま黙っている
+               * より、場所が違いうると言っておくほうが親切。 */
+              h('div', { style: 'font-size:11px;color:var(--faint);line-height:1.6;padding:2px 2px 0',
+                text: 'ブラウザによっては、メニューの場所や呼び名が違います。'
+                  + 'アプリの中で開いた画面では出ないことがあるので、その時はブラウザで開き直してください。' })
             ]
             : [
               step(1, 'アドレスバーの右にある インストール を押す', '＋'),
@@ -1523,12 +1584,20 @@
           + 'box-shadow:var(--shadow-action);cursor:pointer',
           onclick: async function () {
             var offer = installOffer;
-            installOffer = null;
+            var answer = null;
             try {
               offer.prompt();
-              await offer.userChoice;
+              answer = await offer.userChoice;
             } catch (e) { /* the browser withdrew the offer */ }
-            onClose();
+            /* Cancelling is not accepting. The browser resolves either way, so
+             * the outcome has to be read: turned down, the screen stays where
+             * it is and the offer can be made again. */
+            if (answer && answer.outcome === 'accepted') {
+              installOffer = null;
+              onClose();
+            } else {
+              draw();
+            }
           } }, ['このまま追加する']) : null,
         h('button', { style: installOffer
           ? 'border:1px solid var(--line);background:#fff;color:var(--body);font-family:inherit;font-size:14px;'
@@ -2155,12 +2224,19 @@
     return !kept && !view.today.sessions.length && !view.menus.length;
   }
 
+  var finishing = false;
+
   async function finishSetup(draft) {
+    /* A tap that lands twice - a slow save, a finger that bounces - would
+     * write the settings twice and redraw over itself. The first one wins. */
+    if (finishing) return;
+    finishing = true;
     try {
       await api.post('/api/settings/save', {
         nickname: draft.nickname, companion: draft.companion, setup_done: ymd(new Date())
       });
     } catch (error) { problem = error && error.note ? error.note : null; }
+    finishing = false;
     state.setup = null;
     /* Someone can arrive here by sharing a video to an app they have never
      * opened: Android installs it, the share opens the menu editor, and the
@@ -2206,9 +2282,15 @@
         function () {
           /* あとで means "do not ask me the rest", not "throw away what I have
            * already said": tapping a companion and then あとで used to leave
-           * you with none. Whatever is in hand is kept either way. */
+           * you with none. Whatever is in hand is kept either way.
+           *
+           * The last question is the exception, because there the button says
+           * 相棒は選ばない - and if the draft arrived carrying a companion from
+           * settings, keeping it would make the button a liar. */
           if (draft.step < SETUP_STEPS - 1 && draft.step > 0) { draft.step += 1; draw(); }
-          else finishSetup(draft);
+          else if (draft.step === SETUP_STEPS - 1) {
+            finishSetup({ nickname: draft.nickname, companion: null });
+          } else finishSetup(draft);
         }));
       return;
     }
@@ -2376,8 +2458,14 @@
           /* Already put down today, and at what time. The first one is
            * enough: the circle says it happened, and the day's own list
            * below has every record with its time. */
+          /* Sorted by when it was done rather than when it was written down:
+           * someone who records the evening session first and the morning one
+           * afterwards should see the morning time under the tick, not the
+           * order they happened to type them in. */
           var already = (view.today.sessions || []).filter(function (s) {
             return s.menu_id === menu.menu_id;
+          }).sort(function (a, b) {
+            return String(a.performed_time || '99:99').localeCompare(String(b.performed_time || '99:99'));
           })[0];
           return menuRow(menu, i === 0, view.today.date,
             already ? (already.performed_time || '記録済み') : null,

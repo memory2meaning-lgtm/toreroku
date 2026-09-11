@@ -6,7 +6,7 @@
  */
 'use strict';
 
-const VERSION = 'ouchitore-v1';
+const VERSION = 'ouchitore-v2';
 const SHELL = ['./', './index.html', './store.js', './app.js', './manifest.webmanifest'];
 
 self.addEventListener('install', event => {
@@ -56,13 +56,20 @@ self.addEventListener('fetch', event => {
         }).catch(() => { });
         return hit;
       }
+      /* No fallback here on purpose. This branch answers scripts, styles and
+       * pictures, and handing back index.html when one of them cannot be
+       * fetched gives the page HTML where JavaScript should be - which is not
+       * a degraded app but a dead one: "Unexpected token '<'" and a screen
+       * stuck on 読み込んでいます. Letting the request fail is honest, and the
+       * page the browser already has keeps working. Only a navigation falls
+       * back to the stored page, and that is handled above. */
       return fetch(request).then(fresh => {
         if (fresh && fresh.ok) {
           const copy = fresh.clone();
           caches.open(VERSION).then(cache => cache.put(request, copy));
         }
         return fresh;
-      }).catch(() => caches.match('./index.html'));
+      });
     })
   );
 });

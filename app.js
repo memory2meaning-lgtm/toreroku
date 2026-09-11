@@ -313,7 +313,7 @@
     }
 
     var body = [
-      h('div', { style: 'font-size:14px;font-weight:800;color:var(--ink);line-height:1.25', text: name }),
+      h('div', { style: 'font-size:14px;font-weight:800;color:var(--ink);line-height:1.25;' + TWO_LINES, text: name }),
       h('div', { style: 'font-size:11px;color:var(--sub)', text: sub })
     ];
     detail.forEach(function (d) { body.push(d); });
@@ -2348,7 +2348,12 @@
   draw();
 
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {
-    navigator.serviceWorker.register('sw.js').catch(function () { /* offline use is a bonus, not a requirement */ });
+    /* updateViaCache 'none': without it the browser may hand the old sw.js
+     * back from its own HTTP cache for up to a day, so a fix to the worker -
+     * including the one that stopped it serving the page in place of a script
+     * - would not reach a phone that already had the app. */
+    navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
+      .catch(function () { /* offline use is a bonus, not a requirement */ });
 
     /* The service worker stores index.html and the scripts by their plain
      * names, but the page asks for them with the ?v=NN that says which
@@ -2366,7 +2371,14 @@
         var from = document.scripts[i].getAttribute('src');
         if (from) mine.push(from);
       }
-      caches.open('ouchitore-v1').then(function (store) {
+      /* Into whichever store the service worker is keeping, found by name
+       * rather than written down twice: sw.js throws away every cache but its
+       * own on activation, so a copy written under a name that has moved on
+       * would be swept away the next time the app updates. */
+      caches.keys().then(function (names) {
+        var theirs = names.filter(function (name) { return name.indexOf('ouchitore-') === 0; })[0];
+        return caches.open(theirs || 'ouchitore-v2');
+      }).then(function (store) {
         mine.forEach(function (one) { store.add(one).catch(function () { }); });
       }).catch(function () { });
     }, 1500);

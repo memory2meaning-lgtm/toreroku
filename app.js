@@ -113,7 +113,20 @@
     /* Already decided today: the same line all day, whatever happens in
      * between. Writing a record must not change what is said about it. */
     var held = remembered(LINE_KEY);
-    if (held.date === facts.date && held.text) return hello + held.text;
+    if (held.date === facts.date) {
+      /* Holding the line steady after a record is Design's rule, so that
+       * writing something down is never answered with praise. But a line that
+       * has become untrue is worse than one that flatters: きょうはまだ書いて
+       * いません, said to someone who has just written something, is simply
+       * wrong. When that happens the fact is dropped and the greeting stands
+       * alone - still saying nothing about what was done. */
+      if (held.kind === 'blank' && facts.has_today) {
+        remember(LINE_KEY, { date: facts.date, kind: 'none', text: '' });
+        return hello;
+      }
+      if (held.text) return hello + held.text;
+      if (held.kind) return hello;
+    }
 
     var said = remembered(SAID_KEY);
     var free = function (kind) { return daysBetween(said[kind], facts.date) >= 3; };
@@ -134,12 +147,12 @@
 
     var pick = candidates.filter(function (one) { return free(one[0]); })[0] || null;
     if (!pick) {
-      remember(LINE_KEY, { date: facts.date, text: '' });
+      remember(LINE_KEY, { date: facts.date, kind: 'none', text: '' });
       return hello;
     }
     said[pick[0]] = facts.date;
     remember(SAID_KEY, said);
-    remember(LINE_KEY, { date: facts.date, text: pick[1] });
+    remember(LINE_KEY, { date: facts.date, kind: pick[0], text: pick[1] });
     return hello + pick[1];
   }
 
@@ -548,8 +561,12 @@
           + 'border:0;background:none;padding:0;font-family:inherit;cursor:pointer',
         'aria-label': done ? menu.name + ' は ' + doneAt + ' につけました'
                            : menu.name + ' をつける',
-        onclick: done ? null : onDone,
-        disabled: done
+        /* aria-disabled rather than disabled: the native attribute takes the
+         * button out of the focus order on some platforms, and then someone
+         * listening to the screen can never reach the very sentence that says
+         * it is done. It stays reachable and does nothing when pressed. */
+        'aria-disabled': done ? 'true' : null,
+        onclick: done ? null : onDone
       }, [
         mark,
         h('div', {

@@ -792,16 +792,24 @@
   }
 
   function numberBox(value, unitLabel, onChange) {
+    /* A text field that only takes digits. type=number on Android Chrome
+     * squeezes its spinner into the box, hiding the value (seen on the
+     * owner's phone 2026-09-12: "10" showed as ":" and "1("). */
     return h('div', {
       style: 'border:1px solid var(--line);border-radius:9px;padding:7px 9px;min-height:36px;'
         + 'display:flex;align-items:center;gap:3px;background:#fff'
     }, [
       h('input', {
-        type: 'number', value: String(value), min: '1', inputmode: 'numeric',
+        type: 'text', value: String(value), inputmode: 'numeric', pattern: '[0-9]*',
+        'aria-label': unitLabel,
         style: 'font-family:var(--mono);font-size:13px;font-weight:700;color:var(--ink);'
-          + 'border:0;background:none;padding:0;width:' + (String(value).length + 1.5) + 'ch;'
-          + 'text-align:right;-moz-appearance:textfield',
-        onchange: function () { onChange(parseInt(this.value, 10)); }
+          + 'border:0;background:none;padding:0;width:3.5ch;min-width:3.5ch;'
+          + 'text-align:right;-webkit-appearance:none;appearance:none',
+        onchange: function () {
+          var n = parseInt(this.value, 10);
+          if (!(n >= 1)) { this.value = String(value); return; }
+          onChange(n);
+        }
       }),
       h('span', { style: 'font-size:11px;color:var(--sub)', text: unitLabel })
     ]);
@@ -1717,40 +1725,48 @@
   function titleState(edit) {
     if (edit.looking) {
       return h('div', { style: 'display:flex;align-items:center;gap:8px;margin-top:-10px;'
-        + 'font-size:13px;color:var(--sub)' }, [
+        + 'font-size:14px;color:var(--body)' }, [
         h('div', { style: 'width:14px;height:14px;border:2px solid var(--line);'
           + 'border-top-color:var(--sub);border-radius:8px;flex:none' }),
-        h('div', { text: '題名を取っています' })
+        h('div', { text: '動画の題名を取りに行っています。' })
       ]);
     }
     if (edit.lookFailed && !edit.name.trim()) {
-      return h('div', { style: 'font-size:11px;color:var(--faint);line-height:1.6;margin-top:-10px',
-        text: '題名は取れませんでした。欄は空のままです（誤った名前は入れません）。URL はそのまま使えます。' });
+      return h('div', { style: 'font-size:14px;color:var(--body);line-height:1.6;margin-top:-10px',
+        text: '動画の題名は取れませんでした。名前はご自分で書いてください。' });
     }
     if (!edit.fromVideo || !edit.name.trim()) return null;
 
-    var link = function (label, onTap) {
-      return h('button', { style: 'border:0;background:none;padding:0;font-size:12px;font-weight:700;'
-        + 'color:var(--deep);text-decoration:underline;font-family:inherit;cursor:pointer;'
-        + 'min-height:44px;display:flex;align-items:center;margin:-11px 0', onclick: onTap }, [label]);
-    };
-    return h('div', { style: 'display:flex;flex-direction:column;gap:6px;margin-top:-10px' }, [
-      h('div', { style: 'display:flex;align-items:center;gap:8px;flex-wrap:wrap' }, [
-        h('div', { style: 'display:inline-flex;align-items:center;gap:5px;border:1px dashed var(--sub);'
-          + 'border-radius:8px;padding:3px 8px;font-size:11px;font-weight:700;color:var(--sub)',
-          text: '動画から入れた題名' }),
-        link('短くする', function () {
-          /* The part before the first separator is almost always the title
-           * proper; what follows is the channel's own advertising. */
-          var cut = edit.name.split(/[|｜【(（\[]/)[0].trim();
-          edit.name = (cut || edit.name).slice(0, 100);
-          draw();
-        }),
-        link('空にする', function () { edit.name = ''; edit.fromVideo = false; draw(); })
-      ]),
-      h('div', { style: 'font-size:11px;color:var(--faint);line-height:1.6',
-        text: '直すと破線の札は消えます。自分で書いた名前として扱います。' })
+    /* Design (2026-09-12) took the dashed tag and its footnote away: one plain
+     * sentence says what happened, and the "shorten" button carries the
+     * shortened title itself, so nobody has to be told what it would cut. */
+    var shortened = shortenTitle(edit.name);
+    var OUTLINE = 'border:1px solid var(--line);border-radius:12px;background:#fff;min-height:44px;'
+      + 'padding:6px 14px;font-family:inherit;cursor:pointer;color:var(--ink);text-align:left;'
+      + 'display:flex;flex-direction:column;justify-content:center;gap:2px;max-width:100%';
+    return h('div', { style: 'display:flex;flex-direction:column;gap:8px;margin-top:-8px' }, [
+      h('div', { style: 'font-size:14px;color:var(--body);line-height:1.6',
+        text: '動画の題名を、そのまま入れました。長いときは短くできます。書き直しても構いません。' }),
+      h('div', { style: 'display:flex;gap:8px;flex-wrap:wrap;align-items:stretch' }, [
+        shortened !== edit.name ? h('button', { style: OUTLINE + ';min-width:0;flex:1 1 180px', onclick: function () {
+          edit.name = shortened; edit.fromVideo = false; draw();
+        } }, [
+          h('span', { style: 'font-size:14px;font-weight:700', text: '短くする' }),
+          h('span', { style: 'font-size:12px;color:var(--sub);white-space:nowrap;overflow:hidden;'
+            + 'text-overflow:ellipsis;display:block', text: shortened })
+        ]) : null,
+        h('button', { style: OUTLINE + ';flex:0 0 auto', onclick: function () {
+          edit.name = ''; edit.fromVideo = false; draw();
+        } }, [h('span', { style: 'font-size:14px;font-weight:700', text: '消して自分で書く' })])
+      ])
     ]);
+  }
+
+  /* The part before the first separator is almost always the title proper;
+   * what follows is the channel's own advertising. */
+  function shortenTitle(name) {
+    var cut = name.split(/[|｜【(（\[]/)[0].trim();
+    return (cut || name).slice(0, 100);
   }
 
   /* Design replaced the two little arrows with one handle you hold and drag:
@@ -1910,13 +1926,14 @@
             oninput: function () { edit.note = this.value; } }, [edit.note || ''])),
         h('div', { style: 'display:flex;flex-direction:column;gap:2px' }, [
           h('div', { style: 'display:flex;align-items:baseline;justify-content:space-between;padding-bottom:6px' }, [
-            h('div', { style: 'font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.04em', text: '種目' }),
+            h('div', { style: 'font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.04em' }, [
+              '種目', h('span', { style: 'font-weight:700;color:var(--faint);margin-left:4px', text: '（任意）' })]),
             h('div', { style: 'font-family:var(--mono);font-size:11px;color:var(--faint)',
               text: edit.items.length + ' / 100' })
           ])
         ].concat(rows.length ? rows : [
-          h('div', { style: 'padding:10px 0;border-top:1px solid var(--line2);font-size:12px;color:var(--sub)',
-            text: '種目がありません。下から足してください。' })
+          h('div', { style: 'padding:10px 0 16px;border-top:1px solid var(--line2);font-size:14px;color:var(--body);line-height:1.6',
+            text: '動画の中でやった種目を、名前と回数で書いておけます。書かなくても、メニューは作れます。' })
         ])),
         /* Typing a name has to come first: on a phone that has just installed
          * the app the library is empty, and with only "一覧から足す" there was no

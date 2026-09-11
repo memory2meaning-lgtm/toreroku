@@ -385,30 +385,58 @@
     return { id: held, clear: function () { try { sessionStorage.removeItem(key); } catch (e) { } } };
   }
 
-  function menuRow(menu, first, date, onDone, onPart) {
+  /* One place to press, at the end of the row.
+   *
+   * This was a filled button the width of the card, repeated once per menu.
+   * Both Apple and Google say in as many words that the strongly emphasised
+   * button is for one action per view - "keep the number of prominent buttons
+   * to one or two per view", "ideally for only one action on a page" - and of
+   * nine apps looked at (LINE, Gmail, メルカリ, クックパッド, Zaim, マネー
+   * フォワード ME, Reminders, Todoist, Things 3) not one puts a filled button
+   * inside a list row. Design settled on the circle.
+   *
+   * Not yet done: white, a thin outline, a pale tick, and the word つける.
+   * Done: filled, a white tick, and the time underneath. Three things carry
+   * it - the fill, the tick, and the time - so none of it rests on hue.
+   */
+  function menuRow(menu, first, date, doneAt, onDone, onOpen) {
+    var done = !!doneAt;
+    var mark = h('div', {
+      style: 'width:44px;height:44px;border-radius:22px;display:flex;align-items:center;'
+        + 'justify-content:center;font-size:19px;font-weight:800;'
+        + (done ? 'background:var(--ink);border:1.5px solid var(--ink);color:#fff;'
+                : 'background:#fff;border:1.5px solid var(--sub);color:var(--sub);')
+    }, ['✓']);
+
     return h('div', {
-      style: 'display:flex;flex-direction:column;gap:10px;padding:12px 0;'
+      style: 'display:flex;gap:10px;align-items:flex-start;padding:12px 0;'
         + (first ? '' : 'border-top:1px solid var(--line2);')
     }, [
-      h('div', { style: 'display:flex;gap:12px;align-items:flex-start' }, [
-        h('div', { style: 'flex:1;min-width:0;display:flex;flex-direction:column;gap:3px' }, [
-          h('div', { style: 'font-size:15px;font-weight:800;color:var(--ink);line-height:1.3;' + TWO_LINES,
-                text: menu.name }),
-          h('div', { style: 'font-family:var(--mono);font-size:11px;color:var(--sub)', text: menuShape(menu) })
-        ]),
-        menuThumb(menu.video_url)
+      h('button', {
+        style: 'flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;align-items:flex-start;'
+          + 'border:0;background:none;padding:0;font-family:inherit;text-align:left;cursor:pointer',
+        'aria-label': menu.name + ' を開く',
+        onclick: onOpen
+      }, [
+        h('div', { style: 'font-size:15px;font-weight:800;color:var(--ink);line-height:1.35;' + TWO_LINES,
+          text: menu.name }),
+        h('div', { style: 'font-family:var(--mono);font-size:11px;color:var(--sub)', text: menuShape(menu) })
       ]),
-      h('div', { style: 'display:flex;gap:8px' }, [
-        h('button', {
-          style: 'flex:1;border:0;background:var(--deep);color:#fff;font-family:inherit;font-size:14px;'
-            + 'font-weight:800;border-radius:13px;min-height:44px;box-shadow:var(--shadow-action);cursor:pointer',
-          onclick: onDone
-        }, ['完了を記録']),
-        menu.items.length ? h('button', {
-          style: 'border:1px solid var(--line);background:#fff;color:var(--body);font-family:inherit;'
-            + 'font-size:13px;font-weight:700;border-radius:13px;min-height:44px;padding:0 14px;cursor:pointer',
-          onclick: onPart
-        }, ['一部だけ']) : null
+      menuThumb(menu.video_url),
+      h('button', {
+        style: 'width:52px;flex:none;display:flex;flex-direction:column;align-items:center;gap:3px;'
+          + 'border:0;background:none;padding:0;font-family:inherit;cursor:pointer',
+        'aria-label': done ? menu.name + ' は ' + doneAt + ' につけました'
+                           : menu.name + ' をつける',
+        onclick: done ? null : onDone,
+        disabled: done
+      }, [
+        mark,
+        h('div', {
+          style: done ? 'font-family:var(--mono);font-size:10px;color:var(--ink);font-weight:700'
+                      : 'font-size:10px;color:var(--sub);font-weight:700',
+          text: done ? doneAt : 'つける'
+        })
       ])
     ]);
   }
@@ -525,7 +553,7 @@
             + 'cursor:pointer;opacity:' + (chosen.length ? '1' : '.45'),
           disabled: chosen.length === 0,
           onclick: function () { savePartial(draft, menu); }
-        }, ['選んだ' + chosen.length + '種目を記録'])
+        }, ['選んだ' + chosen.length + '種目をつける'])
       ])
     ]);
   }
@@ -2255,10 +2283,22 @@
         h('div', { style: 'display:flex;flex-direction:column;gap:2px' }, [
           h('div', { style: 'font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.04em', text: 'メニュー' })
         ].concat(view.menus.map(function (menu, i) {
+          /* Already put down today, and at what time. The first one is
+           * enough: the circle says it happened, and the day's own list
+           * below has every record with its time. */
+          var already = (view.today.sessions || []).filter(function (s) {
+            return s.menu_id === menu.menu_id;
+          })[0];
           return menuRow(menu, i === 0, view.today.date,
+            already ? (already.performed_time || '記録済み') : null,
             complete.bind(null, menu, view.today.date),
             function () {
               problem = null;
+              /* Pressing the row opens the menu, where the exercises can be
+               * ticked one by one - what used to be 一部だけ, off the row and
+               * onto a screen of its own. A menu with nothing in it has
+               * nothing to tick, so it opens for editing instead. */
+              if (!menu.items.length) { openMenuEdit(menu.menu_id); return; }
               state.draft = {
                 date: view.today.date,
                 time: pad(new Date().getHours()) + ':' + pad(new Date().getMinutes()),

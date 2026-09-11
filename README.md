@@ -60,13 +60,31 @@ iPhone の Safari には、**7日間使わないとブラウザに保存した�
 node tools/test_store.js
 ```
 
-43 件。ブラウザ側は `selftest.html` を開くと 7 件走ります（実際の記録には触れません）。
+47 件。ブラウザ側は `selftest.html` を開くと 7 件走ります（実際の記録には触れません）。
 
 絵を作り直したときは、配るサイズに落とし直します（原画は1枚1MBあり、そのままでは配れません）。
 
 ```
 python tools/build_frames.py
 ```
+
+10人分の使い方を数週間ぶん流して、データの辻褄を確かめることもできます（実時間では出ない種類のズレが出ます）。
+
+10 people, 56 days each, seed 20260911
+
+  one video, most mornings            41 records | 41 x recorded a menu
+  three exercises, weekdays           30 records | 30 x recorded a menu
+  does part of it and says so         25 records | 25 x recorded part of a menu
+  forgets for a fortnight              4 records | 4 x recorded a menu
+  writes it down by hand              29 records | 29 x wrote one down by hand
+  corrects yesterday                  35 records | 14 x corrected an earlier day, 35 x recorded a menu
+  deletes what they did not do        23 records | 6 x deleted a record, 29 x recorded a menu
+  keeps changing the menu             26 records | 10 x rearranged a menu, 26 x recorded a menu
+  moves to a new phone now and then   29 records | 3 x moved to a new phone, 29 x recorded a menu
+  barely uses it                       6 records | 6 x recorded a menu
+
+248 records in all. Nothing lost, nothing counted twice, and every
+document still the same after being carried to another phone.
 
 コマごとに「基準の絵からどれだけ動いたか」を出します。まばたきは 0.1% 前後、小さな動きで数%。二桁になっていたら、それは同じ絵の別コマではなく別のポーズなので、描き直します。
 

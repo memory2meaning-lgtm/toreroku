@@ -524,6 +524,50 @@ async function main() {
     equal(today.sessions[0].items[0].name, 'プランク');
   });
 
+  await check('a file with impossible numbers in it is refused', async () => {
+    const bad = [
+      ['sets', -5], ['sets', 0], ['sets', 100], ['reps', 'not-a-number'],
+      ['seconds', 99999], ['unit', 'minutes']
+    ];
+    for (const [field, value] of bad) {
+      const api = fresh();
+      const doc = store.emptyState();
+      doc.seq.ex = 1;
+      const row = { ex_id: 1, name: '腕立て', sets: 2, reps: 10, seconds: null, unit: 'reps',
+        use_count: 0, last_used: null, created: '2026-01-01T00:00:00Z' };
+      row[field] = value;
+      doc.exercises.push(row);
+      await rejects(400, () => api.importDocument(doc), field + ' = ' + value);
+    }
+  });
+
+  await check('a file with no name on an exercise is refused', async () => {
+    const api = fresh();
+    const doc = store.emptyState();
+    doc.seq.ex = 1;
+    doc.exercises.push({ ex_id: 1, name: '   ', sets: 1, reps: 1, seconds: null, unit: 'reps',
+      use_count: 0, last_used: null, created: '2026-01-01T00:00:00Z' });
+    await rejects(400, () => api.importDocument(doc));
+  });
+
+  await check('a file the app itself wrote always comes back', async () => {
+    /* The bounds above are the app's own, so anything it can write must pass:
+     * checked against a document with one of everything in it. */
+    const api = fresh();
+    const ex = (await api.post('/api/library/save',
+      { name: 'プランク', sets: 2, seconds: 30, unit: 'sec' })).ex_id;
+    const menu = (await api.post('/api/menu/save', { menu_id: null, revision: null, name: '夜',
+      video_url: 'https://www.youtube.com/watch?v=abcdefghijk',
+      items: [{ ex_id: ex, sets: 2, seconds: 30, unit: 'sec' }] })).menu_id;
+    await api.post('/api/menu/complete',
+      { menu_id: menu, date: '2026-09-11', request_id: 'round-trip', performed_time: '21:00' });
+    const doc = await api.exportDocument();
+    const other = fresh();
+    const back = await other.importDocument(JSON.parse(JSON.stringify(doc)));
+    equal(back.ok, true, 'accepted');
+    equal(JSON.stringify(await other.exportDocument()), JSON.stringify(doc), 'unchanged');
+  });
+
   await check('an export made before companions existed still imports', async () => {
     const api = fresh();
     const old = store.emptyState();

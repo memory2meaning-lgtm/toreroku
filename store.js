@@ -1051,6 +1051,36 @@
         var sessions = present(document.sessions, 'session_id');
         var exercises = present(document.exercises, 'ex_id');
         var menus = present(document.menus, 'menu_id');
+        /* And the numbers in each row. Everything written through the app goes
+         * past strictInt on the way in; a file does not, so a hand-edited one
+         * could carry sets: -5 or reps: "not-a-number" into the screens, which
+         * count on them being numbers. Names and units likewise.
+         *
+         * The bounds are the same ones the app enforces, so a file it wrote is
+         * always acceptable and a file it could not have written is not. */
+        var whole = function (value, low, high) {
+          if (value === null || value === undefined) return true;
+          return typeof value === 'number' && Number.isInteger(value)
+            && value >= low && value <= high;
+        };
+        var named = function (value, limit) {
+          return typeof value === 'string' && value.trim().length > 0 && value.length <= limit;
+        };
+        var counted = function (row) {
+          return whole(row.sets, 1, 99) && whole(row.reps, 1, 999)
+            && whole(row.seconds, 1, 3600)
+            && (row.unit === 'reps' || row.unit === 'sec' || row.unit === null || row.unit === undefined);
+        };
+        var wrong =
+          document.exercises.some(function (e) { return !named(e.name, 100) || !counted(e); })
+          || document.menus.some(function (m) { return !named(m.name, 100); })
+          || document.menu_items.some(function (mi) { return !counted(mi); })
+          || document.items.some(function (i) { return !named(i.name, 100) || !counted(i); })
+          || document.sessions.some(function (ss) {
+            return !(typeof ss.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(ss.date));
+          });
+        if (wrong) throw ApiError(400, 'この書き出しファイルは読み込めません');
+
         var dangling =
           document.items.some(function (i) { return !sessions[i.session_id]; })
           || document.menu_items.some(function (mi) { return !menus[mi.menu_id] || !exercises[mi.ex_id]; });

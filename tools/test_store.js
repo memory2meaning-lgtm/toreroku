@@ -568,6 +568,70 @@ async function main() {
     equal(JSON.stringify(await other.exportDocument()), JSON.stringify(doc), 'unchanged');
   });
 
+  await check('each counter is checked on its own', async () => {
+    for (const name of ['ex', 'menu', 'menu_item', 'session', 'item']) {
+      const api = fresh();
+      const doc = store.emptyState();
+      delete doc.seq[name];
+      await rejects(400, () => api.importDocument(doc), name + ' missing');
+      const wrong = store.emptyState();
+      wrong.seq[name] = -1;
+      await rejects(400, () => api.importDocument(wrong), name + ' negative');
+      const notWhole = store.emptyState();
+      notWhole.seq[name] = 1.5;
+      await rejects(400, () => api.importDocument(notWhole), name + ' fractional');
+    }
+  });
+
+  await check('a setting is cleared by null as well as by empty', async () => {
+    const api = fresh();
+    await api.post('/api/settings/save',
+      { nickname: 'nita', companion: 'owl', setup_done: '2026-09-01', last_export: '2026-09-02' });
+    await api.post('/api/settings/save',
+      { nickname: null, companion: null, setup_done: null, last_export: null });
+    equal((await api.get('/api/settings')).settings,
+      { companion: null, nickname: null, setup_done: null, last_export: null });
+  });
+
+  await check('the order the exercises were ticked in does not make a new request', async () => {
+    const api = fresh();
+    const a = (await api.post('/api/library/save',
+      { name: 'スクワット', sets: 2, reps: 10, unit: 'reps' })).ex_id;
+    const b = (await api.post('/api/library/save',
+      { name: 'プランク', sets: 2, seconds: 30, unit: 'sec' })).ex_id;
+    const menu = (await api.post('/api/menu/save', { menu_id: null, revision: null, name: '朝',
+      items: [{ ex_id: a, sets: 2, reps: 10, unit: 'reps' },
+              { ex_id: b, sets: 2, seconds: 30, unit: 'sec' }] })).menu_id;
+    const items = (await api.get('/api/menus')).menus.find(m => m.menu_id === menu).items
+      .map(i => ({ menu_item_id: i.menu_item_id, include: true }));
+    const first = await api.post('/api/menu/complete',
+      { menu_id: menu, date: '2026-09-11', request_id: 'order', items: items });
+    const again = await api.post('/api/menu/complete',
+      { menu_id: menu, date: '2026-09-11', request_id: 'order', items: items.slice().reverse() });
+    equal(again.session_id, first.session_id, 'the same tap, listed the other way round');
+    equal(again.idempotent, true);
+  });
+
+  await check('a day holds more than one menu, and each is counted once', async () => {
+    const api = fresh();
+    const ex = (await api.post('/api/library/save',
+      { name: 'ランジ', sets: 2, reps: 8, unit: 'reps' })).ex_id;
+    const ids = [];
+    for (const name of ['朝', '昼', '夜']) {
+      ids.push((await api.post('/api/menu/save', { menu_id: null, revision: null, name: name,
+        items: [{ ex_id: ex, sets: 2, reps: 8, unit: 'reps' }] })).menu_id);
+    }
+    for (const id of ids) {
+      await api.post('/api/menu/complete',
+        { menu_id: id, date: '2026-09-11', request_id: 'day-' + id, performed_time: '07:00' });
+    }
+    const today = await api.get('/api/today?date=2026-09-11');
+    equal(today.sessions.length, 3, 'three records');
+    equal(today.sessions.reduce((n, s) => n + s.items.length, 0), 3, 'three exercises in all');
+    const week = await api.get('/api/week?end=2026-09-11');
+    equal(week.this_week, 1, 'but one day');
+  });
+
   await check('an export made before companions existed still imports', async () => {
     const api = fresh();
     const old = store.emptyState();

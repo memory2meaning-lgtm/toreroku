@@ -113,6 +113,22 @@ const PEOPLE = [
     }
   },
   {
+    name: 'keeps changing their mind about the companion',
+    setup: async (p) => { p.menu = await p.exerciseMenu('ときどき', ['スクワット']); },
+    day: async (p, roll) => {
+      if (roll() < 0.4) await p.complete(p.menu, '09:' + p.minutes(roll));
+      if (roll() < 0.3) await p.fiddle(roll);
+    }
+  },
+  {
+    name: 'was handed records from elsewhere',
+    setup: async (p) => { p.menu = await p.exerciseMenu('もらった', ['腕立て', '腹筋']); },
+    day: async (p, roll) => {
+      if (roll() < 0.45) await p.complete(p.menu, '13:' + p.minutes(roll));
+      if (p.dayNumber === 30) await p.takeOverAnother();
+    }
+  },
+  {
     name: 'barely uses it',
     setup: async (p) => { p.menu = await p.exerciseMenu('たまに', ['ラジオ体操']); },
     day: async (p, roll) => { if (roll() < 0.08) await p.complete(p.menu, '10:00'); }
@@ -224,6 +240,39 @@ function person(api, roll) {
         items: order.map(i => ({ ex_id: i.ex_id, sets: i.sets, reps: i.reps, seconds: i.seconds, unit: i.unit }))
       });
       self.did('rearranged a menu');
+    },
+
+    async fiddle(r) {
+      const animals = ['capybara', 'penguin', 'owl', 'seal', 'goat', null];
+      await api.post('/api/settings/save', {
+        companion: animals[Math.floor(r() * animals.length)],
+        nickname: r() < 0.5 ? 'にた' : ''
+      });
+      self.did('changed a setting');
+    },
+
+    /* A document from somewhere else - the shape the app writes, but none of
+     * the ids this one has been handing out. Everything here belongs to the
+     * file now; nothing of the old records may survive by accident. */
+    async takeOverAnother() {
+      const other = store.createApi(store.memoryPersist(null));
+      const ex = (await other.post('/api/library/save',
+        { name: 'もらった種目', sets: 1, reps: 1, unit: 'reps' })).ex_id;
+      await other.post('/api/log',
+        { date: self.date, items: [{ ex_id: ex, sets: 1, reps: 1, unit: 'reps' }] });
+      const doc = await other.exportDocument();
+      await api.importDocument(doc);
+      const now = await api.exportDocument();
+      if (now.sessions.length !== doc.sessions.length) {
+        throw new Error('the imported document did not replace what was here');
+      }
+      /* Their own menus went with the rest of it - that is what reading a file
+       * in means - so from here they use what came with the document. Getting
+       * this wrong is how the simulation first stopped: it kept pressing a
+       * menu that no longer existed and the app quite rightly said so. */
+      const menus = (await api.get('/api/menus')).menus;
+      self.menu = menus.length ? menus[0].menu_id : await self.exerciseMenu('新しく', ['スクワット']);
+      self.did('took over a document from elsewhere');
     },
 
     async moveToANewPhone() {

@@ -6,7 +6,11 @@
  */
 'use strict';
 
-const VERSION = 'ouchitore-v2';
+/* Renamed on purpose. Everything not called this is thrown away when a new
+ * worker activates, and a phone that met the version which answered with
+ * index.html where a picture belonged is still holding those answers - the
+ * companions come back as 絵なし until the store they are in is emptied. */
+const VERSION = 'ouchitore-v3';
 const ALWAYS = ['./', './index.html', './manifest.webmanifest', './tokens.css'];
 
 /* What the app is made of, read off the page rather than written down here.

@@ -1253,7 +1253,9 @@
         }, [
           h('div', { style: 'font-size:13px;font-weight:800;color:var(--warnInk)', text: 'ホーム画面に追加' }),
           h('div', { style: 'font-size:12px;color:#7a5b12;line-height:1.6',
-            text: 'Safari は7日間使わないと記録を消します。ホーム画面に追加したものは消えません。' }),
+            text: whichPhone() === 'ios'
+              ? 'Safari は7日間使わないと記録を消します。ホーム画面に追加したものは消えません。'
+              : 'ホーム画面に追加すると、次からすぐ開けます。控えはこの下の書き出しで残せます。' }),
           h('button', { style: 'border:1px solid var(--warnInk);background:#fff;color:var(--warnInk);'
             + 'font-family:inherit;font-size:13px;font-weight:800;border-radius:12px;min-height:44px;cursor:pointer',
             onclick: onA2hs }, ['手順を見る'])

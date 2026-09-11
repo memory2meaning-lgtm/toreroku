@@ -26,7 +26,16 @@
 node tools/test_store.js
 ```
 
-3. 相棒の絵を描き直したら、配るサイズに落とす（原画は `companions/masters/`＝git 追跡外）。
+3. データ層を触ったら、10人分の使い方も流す（数週間ぶんの日付を一気に。実時間では出ない種類のズレが出る）。
+
+```
+node tools/simulate.js          # 10人 x 8週
+node tools/simulate.js 52 99    # 10人 x 1年・別の乱数
+```
+
+各人が実際に何回何をしたかを出す。**「DID NOTHING AT ALL」と出たら、そのテスターは何も試していない**＝失敗として扱う（黙って素通りするテスターを作らないため。実際に一度作った）。
+
+4. 相棒の絵を描き直したら、配るサイズに落とす（原画は `companions/masters/`＝git 追跡外）。
 
 ```
 python tools/build_frames.py
@@ -34,7 +43,7 @@ python tools/build_frames.py
 
 コマごとに「基準の絵からどれだけ動いたか」が出る。まばたき 0.1% 前後、小さな動き数%。二桁は別ポーズなので描き直す。
 
-4. 手元で見る。
+5. 手元で見る。
 
 ```
 powershell -ExecutionPolicy Bypass -File tools/serve.ps1

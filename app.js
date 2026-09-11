@@ -257,7 +257,7 @@
   var TWO_LINES = 'display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;'
     + 'overflow:hidden;word-break:break-word';
 
-  function amountCard(today, facts, settings, noMenusYet, onMakeMenu) {
+  function amountCard(today, facts, settings) {
     var companion = settings.companion;
     var sessions = today.sessions || [];
     var items = sessions.reduce(function (n, s) { return n + s.items.length; }, 0);
@@ -300,16 +300,8 @@
           has ? h('div', { style: 'display:flex;align-items:baseline;gap:8px;flex-wrap:wrap' }, figures) : null,
           h('div', { style: 'font-family:var(--mono);font-size:11px;color:var(--faint)',
             text: has ? sessions.length + '件' + (span ? ' ／ ' + span : '') : '' }),
-          has ? null : h('div', { style: 'font-size:12px;color:var(--sub);line-height:1.7',
-            text: noMenusYet
-              ? 'まだメニューがありません。YouTube の動画の URL から、ひとつ作ってみませんか。'
-              : '下のボタンから記録できます。' }),
-          has || !noMenusYet ? null : h('button', {
-            style: 'align-self:flex-start;margin-top:4px;border:1px solid var(--line);background:#fff;'
-              + 'color:var(--body);font-family:inherit;font-size:13px;font-weight:700;border-radius:12px;'
-              + 'min-height:44px;padding:0 14px;cursor:pointer',
-            onclick: onMakeMenu
-          }, ['メニューを作る'])
+          has ? null : h('div', { style: 'font-size:13px;color:var(--body);line-height:1.55',
+            text: '下のボタンから記録できます。' })
         ])
       ])
     ]);
@@ -463,6 +455,70 @@
    * Done: filled, a white tick, and the time underneath. Three things carry
    * it - the fill, the tick, and the time - so none of it rests on hue.
    */
+  /* A phone with no menus yet, from artboard 5a.
+   *
+   * The owner asked for a way in from the empty screen and offered two: a
+   * tutorial, or a few menus shipped with the app. Design took neither door
+   * exactly - no samples, because that means handing out somebody else's
+   * video links and links die - and put the field itself here rather than a
+   * way to the screen that has the field. Paste a URL and the title arrives;
+   * a menu needs no exercises; so this alone finishes the first one.
+   *
+   * No companion in this box: not choosing one is the default, and an empty
+   * frame for a picture nobody picked is worse than nothing.
+   */
+  function firstMenuBox(onPasted) {
+    var field = h('input', {
+      type: 'url', placeholder: 'https://www.youtube.com/watch?v=…',
+      style: 'border:1.5px solid var(--ink);border-radius:12px;padding:12px;min-height:50px;'
+        + 'background:#fff;font-family:var(--mono);font-size:12px;color:var(--ink);width:100%',
+      'data-field': 'first-url'
+    });
+    var numbered = function (n, text) {
+      return h('div', { style: 'display:flex;gap:9px;align-items:flex-start' }, [
+        h('div', { style: 'width:19px;height:19px;border:1.5px solid var(--sub);border-radius:5px;flex:none;'
+          + 'display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;'
+          + 'font-weight:700;color:var(--sub);margin-top:1px', text: String(n) }),
+        h('div', { style: 'font-size:12px;color:var(--body);line-height:1.6;flex:1', text: text })
+      ]);
+    };
+    return h('div', { style: 'border:1px dashed var(--faint);border-radius:16px;padding:16px;'
+      + 'display:flex;flex-direction:column;gap:12px' }, [
+      h('div', { style: 'display:flex;flex-direction:column;gap:5px' }, [
+        h('div', { style: 'font-size:15px;font-weight:800;color:var(--ink)', text: 'まだメニューがありません' }),
+        h('div', { style: 'font-size:12px;color:var(--sub);line-height:1.65',
+          text: 'ふだん見ている YouTube の運動動画の URL を貼ると、そのままメニューになります。'
+            + '題名は動画から入ります。種目は無くてもかまいません。' })
+      ]),
+      h('div', { style: 'display:flex;flex-direction:column;gap:8px' }, [
+        field,
+        h('button', { style: 'border:0;background:var(--deep);color:#fff;font-family:inherit;font-size:15px;'
+          + 'font-weight:800;border-radius:14px;min-height:50px;box-shadow:var(--shadow-action);cursor:pointer',
+          onclick: function () { onPasted(field.value, false); } }, ['貼り付けて作る'])
+      ]),
+      h('div', { style: 'display:flex;flex-direction:column;gap:6px;border-top:1px solid var(--line2);'
+        + 'padding-top:12px' }, [
+        numbered(1, 'YouTube で動画を開き、共有から URL を写す'),
+        numbered(2, '上の欄に貼る。題名が入るので、長ければ短くする'),
+        numbered(3, 'やった日は、行末の丸を押す')
+      ]),
+      h('div', { style: 'display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--line2);'
+        + 'padding-top:12px' }, [
+        h('button', { style: 'align-self:flex-start;border:0;background:none;padding:0;font-size:12px;'
+          + 'font-weight:700;color:var(--deep);text-decoration:underline;font-family:inherit;cursor:pointer;'
+          + 'min-height:44px;display:flex;align-items:center;margin:-11px 0',
+          onclick: function () { onPasted('', true); } }, ['動画を使わずに作る']),
+        h('div', { style: 'display:flex;gap:8px;align-items:flex-start' }, [
+          h('div', { style: 'width:19px;height:19px;border:1px solid var(--line);border-radius:6px;flex:none;'
+            + 'display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--sub)',
+            text: '↑', 'aria-hidden': 'true' }),
+          h('div', { style: 'font-size:11px;color:var(--faint);line-height:1.6;flex:1',
+            text: 'Android では、YouTube の共有先に「お家トレ」が出ます。そこから渡しても作れます。' })
+        ])
+      ])
+    ]);
+  }
+
   function menuRow(menu, first, date, doneAt, onDone, onOpen) {
     var done = !!doneAt;
     var mark = h('div', {
@@ -2414,10 +2470,7 @@
           state.screen = { name: 'history' };
           draw();
         }),
-      amountCard(view.today, view.facts, view.settings, view.menus.length === 0, function () {
-        problem = null;
-        newMenu();
-      }),
+      amountCard(view.today, view.facts, view.settings),
       h('div', {
         style: 'flex:1;padding:14px 18px 18px;border-top:1px solid var(--line);'
           + 'display:flex;flex-direction:column;gap:18px'
@@ -2452,8 +2505,34 @@
             onclick: function () { openManual(view.today.date); }
           }, ['種目を選んで記録'])
         ])),
-        h('div', { style: 'display:flex;flex-direction:column;gap:2px' }, [
-          h('div', { style: 'font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.04em', text: 'メニュー' })
+        h('div', { style: 'display:flex;flex-direction:column;gap:' + (view.menus.length ? '2px' : '12px') }, [
+          h('div', { style: 'font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.04em', text: 'メニュー' }),
+          view.menus.length ? null : firstMenuBox(async function (url, skipVideo) {
+            problem = null;
+            /* Made here rather than on another screen: the field is on this
+             * one because that is the whole of it. An address that is not a
+             * video goes to the editor with what was typed, so nothing that
+             * was written is thrown away. */
+            var id = videoId(url);
+            if (!skipVideo && !id) {
+              if (url.trim()) {
+                newMenu();
+                state.menuEdit.video_url = url.trim();
+                problem = 'YouTube の URL ではないようです。直すか、動画なしで作ってください。';
+                draw();
+                return;
+              }
+              problem = 'URL を貼るか、動画を使わずに作ってください。';
+              draw();
+              return;
+            }
+            newMenu();
+            if (!skipVideo) {
+              state.menuEdit.video_url = url.trim();
+              fetchTitle(state.menuEdit);
+            }
+            draw();
+          })
         ].concat(view.menus.map(function (menu, i) {
           /* Already put down today, and at what time. The first one is
            * enough: the circle says it happened, and the day's own list

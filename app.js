@@ -107,13 +107,13 @@
       var isToday = date === today;
       var count = counts[date] || 0;
       var step = count > 0 ? Math.min(count, INK_STEPS.length) - 1 : -1;
-      var style = 'flex:1;height:30px;border-radius:6px;'
+      var style = 'flex:1;height:44px;border-radius:8px;'
         + (future ? 'border:1px dashed var(--faint);background:#fff;'
                   : 'border:1px solid var(--line);background:' + (step < 0 ? '#fff' : INK_STEPS[step]) + ';'
                     + 'color:' + (step < 0 ? 'var(--faint)' : INK_TEXT[step]) + ';')
         + (isToday ? 'box-shadow:0 0 0 2px var(--card),0 0 0 3.5px var(--ink);' : '')
         + 'display:flex;align-items:center;justify-content:center;'
-        + 'font-family:var(--mono);font-size:12px;font-weight:700;padding:0;';
+        + 'font-family:var(--mono);font-size:13px;font-weight:700;padding:0;';
       cells.push(h('button', {
         style: style + (future ? 'cursor:default;' : 'cursor:pointer;'),
         disabled: future,
@@ -196,6 +196,12 @@
     return picture;
   }
 
+  /* Two lines and then an ellipsis. YouTube titles are long, and a list is a
+   * list: the whole of it is in the editing screen. Design settled this for
+   * the menu list, the home rows and the history alike. */
+  var TWO_LINES = 'display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;'
+    + 'overflow:hidden;word-break:break-word';
+
   function amountCard(today, facts, settings) {
     var companion = settings.companion;
     var sessions = today.sessions || [];
@@ -208,19 +214,23 @@
     var span = times.length > 1 ? times[0] + ' - ' + times[times.length - 1] : (times[0] || '');
     var has = sessions.length > 0;
 
-    var figures = [
-      h('div', { style: 'display:flex;align-items:baseline;gap:2px' }, [
-        h('span', { style: 'font-family:var(--mono);font-size:28px;font-weight:800;color:var(--ink);line-height:1.05', text: String(items) }),
-        h('span', { style: 'font-size:13px;font-weight:700;color:var(--sub)', text: '種目' })
-      ])
-    ];
-    if (minutes > 0) {
-      figures.push(h('div', { style: 'width:1px;height:18px;background:var(--line)' }));
-      figures.push(h('div', { style: 'display:flex;align-items:baseline;gap:2px' }, [
-        h('span', { style: 'font-family:var(--mono);font-size:28px;font-weight:800;color:var(--ink);line-height:1.05', text: String(minutes) }),
-        h('span', { style: 'font-size:13px;font-weight:700;color:var(--sub)', text: '分' })
-      ]));
-    }
+    var videos = sessions.filter(function (s) { return !!s.video_url; }).length;
+
+    /* Only what the day holds, and a zero is never written: a day spent on one
+     * video used to read 0種目, which told someone who had just trained that
+     * they had done nothing. */
+    var figure = function (count, unit) {
+      return h('div', { style: 'display:flex;align-items:baseline;gap:2px' }, [
+        h('span', { style: 'font-family:var(--mono);font-size:28px;font-weight:800;color:var(--ink);line-height:1.05', text: String(count) }),
+        h('span', { style: 'font-size:13px;font-weight:700;color:var(--sub)', text: unit })
+      ]);
+    };
+    var figures = [];
+    [[items, '種目'], [minutes, '分'], [videos, '本の動画']].forEach(function (pair) {
+      if (pair[0] <= 0) return;
+      if (figures.length) figures.push(h('div', { style: 'width:1px;height:18px;background:var(--line)' }));
+      figures.push(figure(pair[0], pair[1]));
+    });
 
     return h('div', { style: 'padding:0 18px 14px;display:flex;flex-direction:column;gap:8px' }, [
       h('div', { style: 'font-size:13px;color:var(--body);line-height:1.5;min-height:20px', text: greetingLine(facts, settings.nickname) }),
@@ -295,7 +305,7 @@
     } else {
       var source = menuOf(session.menu_id);
       if (!session.items.length) {
-        sub = session.video_url ? '動画を1本' : '記録のみ';
+        sub = session.video_url ? '動画だけ' : '記録のみ';
       } else {
         sub = session.items.length + '種目'
           + (!source ? '' : session.items.length < source.items.length ? '（一部）' : 'すべて');
@@ -356,7 +366,7 @@
 
   function menuShape(menu) {
     var first = menu.items[0];
-    if (!first) return menu.video_url ? '動画のみ' : '種目なし';
+    if (!first) return menu.video_url ? '動画だけ' : '種目なし';
     var amount = first.sets + 'セット×' + (first.unit === 'sec' ? first.seconds + '秒' : first.reps + '回');
     return menu.items.length + '種目 ・ ' + amount + (menu.items.length > 1 ? ' ほか' : '');
   }
@@ -382,7 +392,8 @@
     }, [
       h('div', { style: 'display:flex;gap:12px;align-items:flex-start' }, [
         h('div', { style: 'flex:1;min-width:0;display:flex;flex-direction:column;gap:3px' }, [
-          h('div', { style: 'font-size:15px;font-weight:800;color:var(--ink)', text: menu.name }),
+          h('div', { style: 'font-size:15px;font-weight:800;color:var(--ink);line-height:1.3;' + TWO_LINES,
+                text: menu.name }),
           h('div', { style: 'font-family:var(--mono);font-size:11px;color:var(--sub)', text: menuShape(menu) })
         ]),
         menuThumb(menu.video_url)
@@ -430,14 +441,14 @@
       var right;
       if (item.include) {
         right = h('div', { style: 'display:flex;align-items:center;gap:6px;flex:none' }, [
-          h('button', { style: 'width:34px;height:34px;border:1px solid var(--line);background:#fff;'
+          h('button', { style: 'width:44px;height:44px;border:1px solid var(--line);background:#fff;'
             + 'border-radius:9px;font-size:15px;color:var(--body);font-family:inherit;cursor:pointer',
             'aria-label': 'セットを減らす',
             onclick: function () { if (item.sets > 1) { item.sets -= 1; draw(); } } }, ['−']),
           h('div', { style: 'font-family:var(--mono);font-size:13px;font-weight:700;color:var(--ink);'
             + 'min-width:56px;text-align:center',
             text: amountLabel(source.unit, item.sets, source.reps, source.seconds) }),
-          h('button', { style: 'width:34px;height:34px;border:1px solid var(--line);background:#fff;'
+          h('button', { style: 'width:44px;height:44px;border:1px solid var(--line);background:#fff;'
             + 'border-radius:9px;font-size:15px;color:var(--body);font-family:inherit;cursor:pointer',
             'aria-label': 'セットを増やす',
             onclick: function () { if (item.sets < 99) { item.sets += 1; draw(); } } }, ['＋'])
@@ -466,9 +477,9 @@
     });
 
     return h('div', { style: 'display:flex;flex-direction:column;min-height:100vh' }, [
-      h('div', { style: 'display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line)' }, [
+      h('div', { style: 'display:flex;align-items:center;gap:12px;padding:10px 12px;min-height:64px;border-bottom:1px solid var(--line)' }, [
         h('button', { style: 'border:0;background:none;padding:0;font-size:14px;color:var(--body);'
-          + 'font-weight:700;font-family:inherit;cursor:pointer;min-height:34px', onclick: onBack }, ['戻る']),
+          + 'font-weight:700;font-family:inherit;cursor:pointer;min-height:44px;padding:0 4px', onclick: onBack }, ['戻る']),
         h('div', { style: 'flex:1;text-align:center;font-size:14px;font-weight:800;color:var(--ink)', text: menu.name }),
         h('div', { style: 'width:34px' })
       ]),
@@ -569,12 +580,12 @@
           h('div', { style: 'font-family:var(--mono);font-size:14px;font-weight:700;color:var(--ink);'
             + 'flex:none;width:44px;padding-top:1px', text: session.performed_time || '' }),
           h('div', { style: 'flex:1;min-width:0;display:flex;flex-direction:column;gap:4px' }, [
-            h('div', { style: 'font-size:14px;font-weight:800;color:var(--ink);line-height:1.25',
+            h('div', { style: 'font-size:14px;font-weight:800;color:var(--ink);line-height:1.25;' + TWO_LINES,
               text: session.menu_name || '種目 ' + session.item_count + '件' }),
             h('div', { style: 'font-size:11px;color:var(--sub)',
               text: session.session_kind === 'manual' ? '手で選んだ記録'
                 : session.item_count ? session.item_count + '種目'
-                : session.video_url ? '動画を1本' : '記録のみ' })
+                : session.video_url ? '動画だけ' : '記録のみ' })
           ])
         ]));
       });
@@ -585,9 +596,9 @@
     }
 
     return h('div', { style: 'display:flex;flex-direction:column;min-height:100vh' }, [
-      h('div', { style: 'display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line)' }, [
+      h('div', { style: 'display:flex;align-items:center;gap:12px;padding:10px 12px;min-height:64px;border-bottom:1px solid var(--line)' }, [
         h('button', { style: 'border:0;background:none;padding:0;font-size:14px;color:var(--body);'
-          + 'font-weight:700;font-family:inherit;cursor:pointer;min-height:34px', onclick: onBack }, ['戻る']),
+          + 'font-weight:700;font-family:inherit;cursor:pointer;min-height:44px;padding:0 4px', onclick: onBack }, ['戻る']),
         h('div', { style: 'flex:1;text-align:center;font-size:14px;font-weight:800;color:var(--ink)', text: '履歴' }),
         h('div', { style: 'width:34px' })
       ]),
@@ -598,7 +609,7 @@
         h('div', { style: 'font-family:var(--mono);font-size:12px;color:var(--body)',
           text: history.start + ' → ' + history.end }),
         h('button', { style: 'border:0;background:none;padding:0;font-size:12px;font-weight:700;'
-          + 'color:var(--deep);text-decoration:underline;font-family:inherit;cursor:pointer;min-height:34px',
+          + 'color:var(--deep);text-decoration:underline;font-family:inherit;cursor:pointer;min-height:44px;padding:0 4px',
           onclick: onMore }, [days + '日前へ'])
       ]),
       h('div', { style: 'padding:0 18px 18px;display:flex;flex-direction:column' }, groups)
@@ -658,7 +669,7 @@
             : numberBox(item.reps, '回', function (v) { item.reps = v; })
         ]),
         h('button', {
-          style: 'width:32px;height:32px;flex:none;border:1px solid var(--line);border-radius:9px;'
+          style: 'width:44px;height:44px;flex:none;border:1px solid var(--line);border-radius:9px;'
             + 'display:flex;align-items:center;justify-content:center;background:#fff;cursor:pointer;padding:0',
           'aria-label': item.name + ' をこの記録から外す',
           onclick: function () {
@@ -674,12 +685,12 @@
     });
 
     return h('div', { style: 'display:flex;flex-direction:column;min-height:100vh' }, [
-      h('div', { style: 'display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line)' }, [
+      h('div', { style: 'display:flex;align-items:center;gap:12px;padding:10px 12px;min-height:64px;border-bottom:1px solid var(--line)' }, [
         h('button', { style: 'border:0;background:none;padding:0;font-size:14px;color:var(--body);'
-          + 'font-weight:700;font-family:inherit;cursor:pointer;min-height:34px', onclick: onCancel }, ['やめる']),
+          + 'font-weight:700;font-family:inherit;cursor:pointer;min-height:44px;padding:0 4px', onclick: onCancel }, ['やめる']),
         h('div', { style: 'flex:1;text-align:center;font-size:14px;font-weight:800;color:var(--ink)', text: '記録を修正' }),
         h('button', { style: 'border:0;background:none;padding:0;font-size:14px;color:var(--deep);'
-          + 'font-weight:800;font-family:inherit;cursor:pointer;min-height:34px',
+          + 'font-weight:800;font-family:inherit;cursor:pointer;min-height:44px;padding:0 4px',
           onclick: function () { saveEdit(edit); } }, ['保存'])
       ]),
       problem ? h('div', {
@@ -824,16 +835,13 @@
   var SETUP_STEPS = 3;
 
   function setupScreen(draft, onChoose, onName, onNext, onSkip) {
-    var dots = h('div', { style: 'display:flex;gap:5px;justify-content:center;padding-bottom:14px' },
-      [0, 1, 2].map(function (i) {
-        return h('div', { style: 'width:' + (i === draft.step ? '18px' : '6px') + ';height:6px;'
-          + 'border-radius:3px;background:var(--' + (i === draft.step ? 'ink' : 'line') + ')' });
-      }));
+    var counted = h('div', { style: 'font-family:var(--mono);font-size:12px;color:var(--faint);'
+      + 'text-align:center;padding-bottom:14px', text: (draft.step + 1) + ' / ' + SETUP_STEPS });
 
     var head = function (title, note) {
       return h('div', { style: 'padding:22px 20px 0' }, [
         h('div', { style: 'width:40px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 18px' }),
-        dots,
+        counted,
         h('div', { style: 'font-size:19px;font-weight:800;color:var(--ink);line-height:1.3', text: title }),
         h('div', { style: 'font-size:13px;color:var(--body);line-height:1.75;padding-top:10px', text: note })
       ]);
@@ -894,8 +902,7 @@
             + 'font-weight:800;border-radius:16px;min-height:50px;box-shadow:var(--shadow-action);cursor:pointer',
             onclick: onNext }, [last ? 'はじめる' : '次へ']),
           h('button', { style: 'border:0;background:none;color:var(--sub);font-family:inherit;font-size:13px;'
-            + 'font-weight:700;min-height:44px;cursor:pointer', onclick: onSkip },
-            [draft.step === 0 ? 'いますぐ使いはじめる' : '飛ばす'])
+            + 'font-weight:700;min-height:44px;cursor:pointer', onclick: onSkip }, ['あとで'])
         ])
       ]));
   }
@@ -962,9 +969,9 @@
   function companionScreen(chosen, onBack, onChoose) {
     var name = (COMPANIONS.filter(function (c) { return c[0] === chosen; })[0] || [null, null])[1];
     return h('div', { style: 'display:flex;flex-direction:column;min-height:100vh' }, [
-      h('div', { style: 'display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line)' }, [
+      h('div', { style: 'display:flex;align-items:center;gap:12px;padding:10px 12px;min-height:64px;border-bottom:1px solid var(--line)' }, [
         h('button', { style: 'border:0;background:none;padding:0;font-size:14px;color:var(--body);'
-          + 'font-weight:700;font-family:inherit;cursor:pointer;min-height:34px', onclick: onBack }, ['戻る']),
+          + 'font-weight:700;font-family:inherit;cursor:pointer;min-height:44px;padding:0 4px', onclick: onBack }, ['戻る']),
         h('div', { style: 'flex:1;text-align:center;font-size:14px;font-weight:800;color:var(--ink)', text: '相棒' }),
         h('div', { style: 'width:34px' })
       ]),
@@ -1009,9 +1016,9 @@
       }
     });
     return h('div', { style: 'display:flex;flex-direction:column;min-height:100vh' }, [
-      h('div', { style: 'display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line)' }, [
+      h('div', { style: 'display:flex;align-items:center;gap:12px;padding:10px 12px;min-height:64px;border-bottom:1px solid var(--line)' }, [
         h('button', { style: 'border:0;background:none;padding:0;font-size:14px;color:var(--body);'
-          + 'font-weight:700;font-family:inherit;cursor:pointer;min-height:34px', onclick: onBack }, ['戻る']),
+          + 'font-weight:700;font-family:inherit;cursor:pointer;min-height:44px;padding:0 4px', onclick: onBack }, ['戻る']),
         h('div', { style: 'flex:1;text-align:center;font-size:14px;font-weight:800;color:var(--ink)', text: '名前' }),
         h('div', { style: 'width:34px' })
       ]),
@@ -1052,9 +1059,9 @@
       ]);
     };
     return h('div', { style: 'display:flex;flex-direction:column;min-height:100vh' }, [
-      h('div', { style: 'display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line)' }, [
+      h('div', { style: 'display:flex;align-items:center;gap:12px;padding:10px 12px;min-height:64px;border-bottom:1px solid var(--line)' }, [
         h('button', { style: 'border:0;background:none;padding:0;font-size:14px;color:var(--body);'
-          + 'font-weight:700;font-family:inherit;cursor:pointer;min-height:34px', onclick: onBack }, ['戻る']),
+          + 'font-weight:700;font-family:inherit;cursor:pointer;min-height:44px;padding:0 4px', onclick: onBack }, ['戻る']),
         h('div', { style: 'flex:1;text-align:center;font-size:14px;font-weight:800;color:var(--ink)', text: '記録を残す' }),
         h('div', { style: 'width:34px' })
       ]),
@@ -1198,9 +1205,9 @@
       ]);
     };
     return h('div', { style: 'display:flex;flex-direction:column;min-height:100vh' }, [
-      h('div', { style: 'display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line)' }, [
+      h('div', { style: 'display:flex;align-items:center;gap:12px;padding:10px 12px;min-height:64px;border-bottom:1px solid var(--line)' }, [
         h('button', { style: 'border:0;background:none;padding:0;font-size:14px;color:var(--body);'
-          + 'font-weight:700;font-family:inherit;cursor:pointer;min-height:34px', onclick: onBack }, ['戻る']),
+          + 'font-weight:700;font-family:inherit;cursor:pointer;min-height:44px;padding:0 4px', onclick: onBack }, ['戻る']),
         h('div', { style: 'flex:1;text-align:center;font-size:14px;font-weight:800;color:var(--ink)', text: '設定' }),
         h('div', { style: 'width:34px' })
       ]),
@@ -1224,20 +1231,20 @@
         + 'border-top:1px solid var(--line2)' }, [
         h('div', { style: 'flex:1;min-width:0;font-size:14px;font-weight:700;color:var(--ink)', text: item.name }),
         h('div', { style: 'display:flex;align-items:center;gap:6px;flex:none' }, [
-          h('button', { style: 'width:34px;height:34px;border:1px solid var(--line);background:#fff;'
+          h('button', { style: 'width:44px;height:44px;border:1px solid var(--line);background:#fff;'
             + 'border-radius:9px;font-size:15px;color:var(--body);font-family:inherit;cursor:pointer',
             'aria-label': 'セットを減らす',
             onclick: function () { if (item.sets > 1) { item.sets -= 1; draw(); } } }, ['−']),
           h('div', { style: 'font-family:var(--mono);font-size:13px;font-weight:700;color:var(--ink);'
             + 'min-width:56px;text-align:center',
             text: amountLabel(item.unit, item.sets, item.reps, item.seconds) }),
-          h('button', { style: 'width:34px;height:34px;border:1px solid var(--line);background:#fff;'
+          h('button', { style: 'width:44px;height:44px;border:1px solid var(--line);background:#fff;'
             + 'border-radius:9px;font-size:15px;color:var(--body);font-family:inherit;cursor:pointer',
             'aria-label': 'セットを増やす',
             onclick: function () { if (item.sets < 99) { item.sets += 1; draw(); } } }, ['＋'])
         ]),
         h('button', {
-          style: 'width:32px;height:32px;flex:none;border:1px solid var(--line);border-radius:9px;'
+          style: 'width:44px;height:44px;flex:none;border:1px solid var(--line);border-radius:9px;'
             + 'display:flex;align-items:center;justify-content:center;background:#fff;cursor:pointer;padding:0',
           'aria-label': item.name + ' を外す',
           onclick: function () { pick.items.splice(index, 1); draw(); }
@@ -1250,9 +1257,9 @@
     }).slice(0, pick.showAll ? library.length : 4);
 
     return h('div', { style: 'display:flex;flex-direction:column;min-height:100vh' }, [
-      h('div', { style: 'display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line)' }, [
+      h('div', { style: 'display:flex;align-items:center;gap:12px;padding:10px 12px;min-height:64px;border-bottom:1px solid var(--line)' }, [
         h('button', { style: 'border:0;background:none;padding:0;font-size:14px;color:var(--body);'
-          + 'font-weight:700;font-family:inherit;cursor:pointer;min-height:34px', onclick: onCancel }, ['やめる']),
+          + 'font-weight:700;font-family:inherit;cursor:pointer;min-height:44px;padding:0 4px', onclick: onCancel }, ['やめる']),
         h('div', { style: 'flex:1;text-align:center;font-size:14px;font-weight:800;color:var(--ink)',
           text: '種目を選んで記録' }),
         h('div', { style: 'width:34px' })
@@ -1309,7 +1316,7 @@
           })).concat(library.length > 4 && !pick.showAll ? [
             h('button', { style: 'border:0;background:none;padding:10px 0 0;text-align:left;'
               + 'font-size:12px;font-weight:700;color:var(--deep);text-decoration:underline;'
-              + 'font-family:inherit;cursor:pointer;min-height:34px',
+              + 'font-family:inherit;cursor:pointer;min-height:44px;padding:0 4px',
               onclick: function () { pick.showAll = true; draw(); } }, ['一覧をすべて見る'])
           ] : []))
         ])
@@ -1446,28 +1453,73 @@
   var FIELD = 'border:1px solid var(--line);border-radius:12px;padding:11px 12px;min-height:46px;'
     + 'background:#fff;font-family:inherit;font-size:14px;color:var(--ink);width:100%';
 
+  /* Design replaced the two little arrows with one handle you hold and drag:
+   * 44 to the finger, a 15px mark to the eye, pulled back 13px so the row
+   * still starts where it did. The arrows were 26x20 - too small to hit, and
+   * two taps for what is one movement.
+   *
+   * Dragging is not the only way to work it. The handle takes the keyboard
+   * too: focus it and the up and down keys move the exercise, which is how
+   * someone reading the screen aloud - or anyone who finds dragging hard -
+   * still gets to reorder.
+   */
+  function grabHandle(items, index, name) {
+    var handle = h('div', {
+      style: 'width:44px;height:44px;flex:none;font-size:15px;color:var(--faint);'
+        + 'display:flex;align-items:center;justify-content:center;margin-left:-13px;'
+        + 'touch-action:none;cursor:grab;user-select:none',
+      tabindex: '0', role: 'button',
+      'aria-label': name + ' を並べ替える（長押しして動かす。上下キーでも動かせます）'
+    }, ['≡']);
+
+    var move = function (to) {
+      if (to < 0 || to >= items.length || to === index) return;
+      items.splice(to, 0, items.splice(index, 1)[0]);
+      draw();
+    };
+
+    handle.onkeydown = function (event) {
+      if (event.key === 'ArrowUp') { event.preventDefault(); move(index - 1); }
+      if (event.key === 'ArrowDown') { event.preventDefault(); move(index + 1); }
+    };
+
+    handle.onpointerdown = function (event) {
+      var row = handle.parentNode;
+      if (!row) return;
+      var height = row.getBoundingClientRect().height || 56;
+      var from = event.clientY;
+      var slid = 0;
+      handle.setPointerCapture(event.pointerId);
+      row.style.position = 'relative';
+      row.style.zIndex = '2';
+      handle.style.cursor = 'grabbing';
+
+      handle.onpointermove = function (moving) {
+        slid = moving.clientY - from;
+        row.style.transform = 'translateY(' + slid + 'px)';
+        row.style.opacity = '0.85';
+      };
+      var finish = function () {
+        handle.onpointermove = null;
+        handle.onpointerup = null;
+        row.style.transform = '';
+        row.style.opacity = '';
+        row.style.zIndex = '';
+        handle.style.cursor = 'grab';
+        var to = index + Math.round(slid / height);
+        move(Math.max(0, Math.min(items.length - 1, to)));
+      };
+      handle.onpointerup = finish;
+      handle.onpointercancel = finish;
+    };
+    return handle;
+  }
+
   function menuEditScreen(edit, library, onCancel) {
     var rows = edit.items.map(function (item, index) {
-      return h('div', { style: 'display:flex;gap:10px;align-items:center;padding:10px 0;'
+      return h('div', { style: 'display:flex;gap:8px;align-items:center;padding:6px 0;'
         + 'border-top:1px solid var(--line2)' }, [
-        h('div', { style: 'display:flex;flex-direction:column;gap:2px;flex:none' }, [
-          h('button', { style: 'width:26px;height:20px;border:1px solid var(--line);background:#fff;'
-            + 'border-radius:6px;font-size:10px;color:var(--sub);font-family:inherit;cursor:pointer;padding:0',
-            'aria-label': item.name + ' を上へ', disabled: index === 0,
-            onclick: function () {
-              var moved = edit.items.splice(index, 1)[0];
-              edit.items.splice(index - 1, 0, moved);
-              draw();
-            } }, ['▲']),
-          h('button', { style: 'width:26px;height:20px;border:1px solid var(--line);background:#fff;'
-            + 'border-radius:6px;font-size:10px;color:var(--sub);font-family:inherit;cursor:pointer;padding:0',
-            'aria-label': item.name + ' を下へ', disabled: index === edit.items.length - 1,
-            onclick: function () {
-              var moved = edit.items.splice(index, 1)[0];
-              edit.items.splice(index + 1, 0, moved);
-              draw();
-            } }, ['▼'])
-        ]),
+        grabHandle(edit.items, index, item.name),
         h('div', { style: 'flex:1;min-width:0;font-size:14px;font-weight:700;color:var(--ink)', text: item.name }),
         h('div', { style: 'display:flex;align-items:center;gap:6px;flex:none' }, [
           numberBox(item.sets, 'セット', function (v) { item.sets = v; }),
@@ -1477,7 +1529,7 @@
             : numberBox(item.reps, '回', function (v) { item.reps = v; })
         ]),
         h('button', {
-          style: 'width:32px;height:32px;flex:none;border:1px solid var(--line);border-radius:9px;'
+          style: 'width:44px;height:44px;flex:none;border:1px solid var(--line);border-radius:9px;'
             + 'display:flex;align-items:center;justify-content:center;background:#fff;cursor:pointer;padding:0',
           'aria-label': item.name + ' をメニューから外す',
           onclick: function () { edit.items.splice(index, 1); draw(); }
@@ -1490,13 +1542,13 @@
     });
 
     return h('div', { style: 'display:flex;flex-direction:column;min-height:100vh' }, [
-      h('div', { style: 'display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line)' }, [
+      h('div', { style: 'display:flex;align-items:center;gap:12px;padding:10px 12px;min-height:64px;border-bottom:1px solid var(--line)' }, [
         h('button', { style: 'border:0;background:none;padding:0;font-size:14px;color:var(--body);'
-          + 'font-weight:700;font-family:inherit;cursor:pointer;min-height:34px', onclick: onCancel }, ['やめる']),
+          + 'font-weight:700;font-family:inherit;cursor:pointer;min-height:44px;padding:0 4px', onclick: onCancel }, ['やめる']),
         h('div', { style: 'flex:1;text-align:center;font-size:14px;font-weight:800;color:var(--ink)',
           text: edit.menu_id ? 'メニューを編集' : 'メニューを作る' }),
         h('button', { style: 'border:0;background:none;padding:0;font-size:14px;color:var(--deep);'
-          + 'font-weight:800;font-family:inherit;cursor:pointer;min-height:34px',
+          + 'font-weight:800;font-family:inherit;cursor:pointer;min-height:44px;padding:0 4px',
           onclick: function () { saveMenu(edit); } }, ['保存'])
       ]),
       problem ? h('div', {
@@ -1719,9 +1771,9 @@
 
   function libraryScreen(library, onBack) {
     return h('div', { style: 'display:flex;flex-direction:column;min-height:100vh' }, [
-      h('div', { style: 'display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line)' }, [
+      h('div', { style: 'display:flex;align-items:center;gap:12px;padding:10px 12px;min-height:64px;border-bottom:1px solid var(--line)' }, [
         h('button', { style: 'border:0;background:none;padding:0;font-size:14px;color:var(--body);'
-          + 'font-weight:700;font-family:inherit;cursor:pointer;min-height:34px', onclick: onBack }, ['戻る']),
+          + 'font-weight:700;font-family:inherit;cursor:pointer;min-height:44px;padding:0 4px', onclick: onBack }, ['戻る']),
         h('div', { style: 'flex:1;text-align:center;font-size:14px;font-weight:800;color:var(--ink)', text: '種目の一覧' }),
         h('div', { style: 'width:34px' })
       ]),
@@ -1753,7 +1805,7 @@
             h('div', { style: 'font-family:var(--mono);font-size:12px;color:var(--sub);flex:none',
               text: amountLabel(e.unit, e.sets, e.reps, e.seconds) }),
             h('button', {
-              style: 'width:32px;height:32px;flex:none;border:1px solid var(--line);border-radius:9px;'
+              style: 'width:44px;height:44px;flex:none;border:1px solid var(--line);border-radius:9px;'
                 + 'display:flex;align-items:center;justify-content:center;background:#fff;cursor:pointer;padding:0',
               'aria-label': e.name + ' を一覧から消す',
               onclick: function () { removeExercise(e); }
@@ -1806,7 +1858,8 @@
             onclick: onOpen.bind(null, menu.menu_id)
           }, [
             h('div', { style: 'flex:1;min-width:0;display:flex;flex-direction:column;gap:3px' }, [
-              h('div', { style: 'font-size:15px;font-weight:800;color:var(--ink)', text: menu.name }),
+              h('div', { style: 'font-size:15px;font-weight:800;color:var(--ink);line-height:1.3;' + TWO_LINES,
+                text: menu.name }),
               h('div', { style: 'font-family:var(--mono);font-size:11px;color:var(--sub)', text: menuShape(menu) })
             ]),
             menuThumb(menu.video_url)
@@ -1921,8 +1974,20 @@
      * opened: Android installs it, the share opens the menu editor, and the
      * first run steps in front of it. The video they shared waits rather than
      * being dropped on the floor. */
-    state.screen = state.afterSetup || { name: 'home' };
-    state.afterSetup = null;
+    /* Straight on to the add-to-home sheet: WebKit throws away what a browser
+     * stored after seven idle days, and an app on the home screen is exempt,
+     * so this is the one piece of housekeeping the records depend on. Someone
+     * arriving with a shared video goes to that instead - they came to write
+     * something down, not to be told about storage. */
+    if (state.afterSetup) {
+      state.screen = state.afterSetup;
+      state.afterSetup = null;
+    } else if (!installed()) {
+      state.a2hsFrom = 'home';
+      state.screen = { name: 'a2hs' };
+    } else {
+      state.screen = { name: 'home' };
+    }
     draw();
   }
 

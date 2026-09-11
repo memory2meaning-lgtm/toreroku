@@ -1,0 +1,1574 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="stylesheet" href="_ds/m2m-design-system-3fdc6fde-acd6-47ab-9db3-0dd7470f5041/tokens.css">
+<script src="_ds/m2m-design-system-3fdc6fde-acd6-47ab-9db3-0dd7470f5041/_ds_bundle.js"></script>
+<style>
+  body{margin:0;background:#eef1f6}
+</style>
+<script>
+  window.__ohFallback = true;
+  document.addEventListener("error", function (e) {
+    var el = e.target;
+    if (!el || el.tagName !== "IMG") return;
+    el.style.display = "none";
+    var ph = el.parentNode && el.parentNode.querySelector("[data-ph]");
+    if (ph) ph.style.display = "flex";
+  }, true);
+</script>
+</helmet>
+
+<section style="display:flex;flex-direction:column;gap:28px;padding:48px 48px 0;font-family:var(--sans);color:var(--body)">
+
+  <div style="display:flex;flex-direction:column;gap:6px">
+    <div style="font-size:20px;font-weight:800;color:var(--ink)">宿題5件</div>
+    <div style="font-size:13px;color:var(--sub);max-width:820px;line-height:1.7"><a href="#3a" style="color:var(--deep);text-decoration:underline">3a</a> 押せる大きさ（44px に統一。ファイル全体の既存モックにも反映済み） ／ <a href="#3b" style="color:var(--deep);text-decoration:underline">3b</a> 初回起動の3つの問い。<br>【2】動画だけの日、【3】メニュー作成の入力順、【4】長い題名の折り返しは、下の段で決めたものがそのまま答えです。要点だけ再掲します：動画だけの日は「1 本の動画」を主役にして 0 種目とは書かない／入力順は「1. 動画の URL → 2. メニュー名 → 3. メモ」で、名前欄の下に破線の札「動画から入れた題名」＋「短くする」「空にする」／題名は一覧・ホーム・履歴のいずれも2行で打ち切り、全文は編集画面で見せる（今回この規則に揃えました）。</div>
+  </div>
+
+  <div id="3a" style="display:flex;flex-direction:column;gap:14px">
+    <div style="display:flex;align-items:center;gap:8px">
+      <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:#fff;background:var(--ink);border-radius:6px;padding:3px 7px">3a</div>
+      <div style="font-size:13px;font-weight:700;color:var(--ink)">押せる大きさ ─ 当たりは44、絵はそのまま</div>
+    </div>
+    <div style="font-size:12px;color:var(--sub);line-height:1.7;max-width:820px">考え方は一つだけです。<b style="color:var(--ink)">絵や文字の大きさは変えず、押せる範囲だけを44px まで広げる</b>。文字リンクは上下に負のマージンで当たりを伸ばすので、行の間合いは今のままです。枠のある部品（セル・±・ゴミ箱）は枠ごと44に広げます。</div>
+    <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+
+      <div style="width:354px;display:flex;flex-direction:column;gap:8px">
+        <div style="font-size:11px;font-weight:800;color:var(--sub);letter-spacing:.04em">週の実績（30 → 44 の正方形）</div>
+        <div style="display:flex;gap:5px"><div style="flex:1;height:44px;border-radius:8px;border:1px solid var(--line);background:#dce3ec;color:var(--ink);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:13px;font-weight:700">1</div><div style="flex:1;height:44px;border-radius:8px;border:1px solid var(--line);background:#b3c0d1;color:var(--ink);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:13px;font-weight:700">2</div><div style="flex:1;height:44px;border-radius:8px;border:1px solid #7e8ea3;background:#7e8ea3;color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:13px;font-weight:700">3</div><div style="flex:1;height:44px;border-radius:8px;border:1px solid #37465c;background:#37465c;color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:13px;font-weight:700">4</div><div style="flex:1;height:44px;border-radius:8px;border:1px solid var(--line);background:#fff;color:var(--faint);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:13px;font-weight:700"></div><div style="flex:1;height:44px;border-radius:8px;border:1px solid #37465c;background:#37465c;color:#fff;box-shadow:0 0 0 2px var(--card),0 0 0 3.5px var(--ink);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:13px;font-weight:700">5</div><div style="flex:1;height:44px;border-radius:8px;border:1px dashed var(--faint);background:#fff"></div></div>
+        <div style="display:flex;gap:5px;font-family:var(--mono);font-size:10px;color:var(--faint)"><div style="flex:1;text-align:center">月</div><div style="flex:1;text-align:center">火</div><div style="flex:1;text-align:center">水</div><div style="flex:1;text-align:center">木</div><div style="flex:1;text-align:center">金</div><div style="flex:1;text-align:center">土</div><div style="flex:1;text-align:center">日</div></div>
+        <div style="font-size:11px;color:var(--faint);line-height:1.6">375px 幅で 18px の余白と 5px の隙を引くと1マス44.1px。ちょうど正方形になり、数字も13pxに上げられます。未来の日は破線で押せません。</div>
+      </div>
+
+      <div style="width:354px;display:flex;flex-direction:column;gap:8px">
+        <div style="font-size:11px;font-weight:800;color:var(--sub);letter-spacing:.04em">種目の行（並べ替え・± ・削除）</div>
+        <div style="border:1px solid var(--line);border-radius:14px;background:#fff;padding:4px 12px;display:flex;flex-direction:column">
+          <div style="display:flex;gap:8px;align-items:center;padding:6px 0">
+            <div style="width:44px;height:44px;flex:none;font-size:15px;color:var(--faint);display:flex;align-items:center;justify-content:center;margin-left:-13px">≡</div>
+            <div style="flex:1;min-width:0;font-size:14px;font-weight:700;color:var(--ink)">スクワット</div>
+            <div style="display:flex;align-items:center;gap:6px;flex:none">
+                  <button style="width:44px;height:44px;border:1px solid var(--line);background:#fff;border-radius:11px;font-size:17px;color:var(--body);font-family:inherit;cursor:pointer">−</button>
+                  <div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--ink);min-width:58px;text-align:center">3×10回</div>
+                  <button style="width:44px;height:44px;border:1px solid var(--line);background:#fff;border-radius:11px;font-size:17px;color:var(--body);font-family:inherit;cursor:pointer">＋</button>
+                </div>
+            <div style="width:44px;height:44px;flex:none;border:1px solid var(--line);border-radius:11px;display:flex;align-items:center;justify-content:center;background:#fff"><div style="width:11px;height:13px;border:1.5px solid var(--sub);border-top:0;border-radius:0 0 3px 3px;position:relative"><div style="position:absolute;left:-2.5px;right:-2.5px;top:-4px;height:1.5px;background:var(--sub)"></div></div></div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;padding:6px 0;border-top:1px solid var(--line2)">
+            <div style="width:44px;height:44px;flex:none;font-size:15px;color:var(--faint);display:flex;align-items:center;justify-content:center;margin-left:-13px">≡</div>
+            <div style="flex:1;min-width:0;font-size:14px;font-weight:700;color:var(--ink)">プランク</div>
+            <div style="display:flex;align-items:center;gap:6px;flex:none">
+                  <button style="width:44px;height:44px;border:1px solid var(--line);background:#fff;border-radius:11px;font-size:17px;color:var(--body);font-family:inherit;cursor:pointer">−</button>
+                  <div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--ink);min-width:58px;text-align:center">2×30秒</div>
+                  <button style="width:44px;height:44px;border:1px solid var(--line);background:#fff;border-radius:11px;font-size:17px;color:var(--body);font-family:inherit;cursor:pointer">＋</button>
+                </div>
+            <div style="width:44px;height:44px;flex:none;border:1px solid var(--line);border-radius:11px;display:flex;align-items:center;justify-content:center;background:#fff"><div style="width:11px;height:13px;border:1.5px solid var(--sub);border-top:0;border-radius:0 0 3px 3px;position:relative"><div style="position:absolute;left:-2.5px;right:-2.5px;top:-4px;height:1.5px;background:var(--sub)"></div></div></div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--faint);line-height:1.6">▲▼ の2つ押しはやめ、長押しの掴み（≡）1つに。掴みは当たり44、見える印は15pxのまま。行の高さは56になります。</div>
+      </div>
+
+      <div style="width:354px;display:flex;flex-direction:column;gap:8px">
+        <div style="font-size:11px;font-weight:800;color:var(--sub);letter-spacing:.04em">見出しの「戻る」「保存」（34 → 44）</div>
+        <div style="border:1px solid var(--line);border-radius:14px;background:#fff;overflow:hidden"><div style="display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--line)">
+            <div style="font-size:14px;color:var(--body);font-weight:700;min-height:44px;display:flex;align-items:center;padding:0 10px;margin-left:-10px">戻る</div>
+            <div style="flex:1;text-align:center;font-size:14px;font-weight:800;color:var(--ink)">メニューを編集</div>
+            <div style="font-size:14px;color:var(--deep);font-weight:800;min-height:44px;display:flex;align-items:center;padding:0 10px;margin-right:-10px">保存</div>
+          </div>
+          <div style="padding:12px 16px;font-size:12px;color:var(--sub);line-height:1.6">帯の高さは 64。文字の位置は今までと同じで、指の当たりが左右の端まで届きます。</div>
+        </div>
+        <div style="font-size:11px;font-weight:800;color:var(--sub);letter-spacing:.04em;padding-top:6px">行の中の文字リンク</div>
+        <div style="border:1px solid var(--line);border-radius:14px;background:#fff;padding:11px 12px;display:flex;flex-direction:column;gap:4px">
+          <div style="font-size:14px;font-weight:800;color:var(--ink)">朝のストレッチ</div>
+          <div style="font-size:11px;color:var(--sub)">4種目すべて</div>
+          <div style="font-size:12px;font-weight:700;color:var(--deep);text-decoration:underline;min-height:44px;display:flex;align-items:center;margin:-11px 0">種目を見る</div>
+        </div>
+        <div style="font-size:11px;color:var(--faint);line-height:1.6">「種目を見る」「とじる」「修正」は当たり44、上下の負のマージンで見た目の間合いは変わりません。</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="3b" style="display:flex;flex-direction:column;gap:14px">
+    <div style="display:flex;align-items:center;gap:8px">
+      <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:#fff;background:var(--ink);border-radius:6px;padding:3px 7px">3b</div>
+      <div style="font-size:13px;font-weight:700;color:var(--ink)">初回起動の3つの問い</div>
+    </div>
+    <div style="font-size:12px;color:var(--sub);line-height:1.7;max-width:820px">順番はそのままで良いと思います。直したい点は3つ：<b style="color:var(--ink)">どの画面も飛ばせること</b>（呼び名と相棒は任意なので「あとで」を必ず置く）、<b style="color:var(--ink)">いま何問目かを数字で示すこと</b>（点ではなく「1 / 3」。色相に頼らない）、そして<b style="color:var(--ink)">最後にホーム画面追加の手順へ続けること</b>（記録が消えないための手順なので、3問のあとに <a href="#1c" style="color:var(--deep);text-decoration:underline">1c</a> のシートが出る並びにします）。<br>呼び名については一点確認したいことがあります。いま呼び名の使い道は挨拶の行だけです。使うなら「おはようございます、たなかさん。」のように出しますが、どこにも出さないなら問い自体を削るのが筋だと思います。下の案は「挨拶で使う」前提です。</div>
+
+    <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start">
+
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="font-size:11px;font-weight:800;color:var(--sub);letter-spacing:.04em">1 / 3　ようこそ</div>
+        <div style="width:390px;min-height:560px;background:var(--card);border:1px solid var(--line);border-radius:28px;box-shadow:var(--shadow-card);overflow:hidden;display:flex;flex-direction:column">
+          <div style="padding:22px 20px 0;font-family:var(--mono);font-size:12px;color:var(--faint)">1 / 3</div>
+          <div style="padding:10px 20px 20px;display:flex;flex-direction:column;gap:16px;flex:1">
+            <div style="font-size:20px;font-weight:800;color:var(--ink);line-height:1.35">お家トレは、やった日を淡々と残す記録帳です</div>
+            <div style="display:flex;flex-direction:column;gap:1px;background:var(--line2);border:1px solid var(--line);border-radius:14px;overflow:hidden">
+              <div style="display:flex;gap:12px;padding:13px 14px;background:#fff;align-items:flex-start">
+                <div style="width:20px;height:20px;border:1.5px solid var(--sub);border-radius:6px;flex:none;margin-top:1px"></div>
+                <div style="font-size:13px;color:var(--body);line-height:1.6;flex:1">記録はこの端末の中だけに残ります。アカウントはありません。どこにも送りません。</div>
+              </div>
+              <div style="display:flex;gap:12px;padding:13px 14px;background:#fff;align-items:flex-start">
+                <div style="width:20px;height:20px;border:1.5px solid var(--sub);border-radius:6px;flex:none;margin-top:1px"></div>
+                <div style="font-size:13px;color:var(--body);line-height:1.6;flex:1">点数も順位も付けません。続いた日数を数えて急かすこともしません。</div>
+              </div>
+            </div>
+            <div style="flex:1"></div>
+            <button style="border:0;background:var(--deep);color:#fff;font-family:inherit;font-size:15px;font-weight:800;border-radius:16px;min-height:50px;box-shadow:var(--shadow-action);cursor:pointer">はじめる</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="font-size:11px;font-weight:800;color:var(--sub);letter-spacing:.04em">2 / 3　呼び名（任意）</div>
+        <div style="width:390px;min-height:560px;background:var(--card);border:1px solid var(--line);border-radius:28px;box-shadow:var(--shadow-card);overflow:hidden;display:flex;flex-direction:column">
+          <div style="padding:22px 20px 0;font-family:var(--mono);font-size:12px;color:var(--faint)">2 / 3</div>
+          <div style="padding:10px 20px 20px;display:flex;flex-direction:column;gap:16px;flex:1">
+            <div style="font-size:20px;font-weight:800;color:var(--ink);line-height:1.35">呼び名はありますか</div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="border:1.5px solid var(--ink);border-radius:12px;padding:12px;min-height:50px;display:flex;align-items:center;background:#fff;font-size:15px;color:var(--faint)">たなか</div>
+              <div style="font-size:12px;color:var(--sub);line-height:1.65">朝晩の挨拶に使います。<span style="font-family:var(--mono)">おはようございます、たなかさん。</span></div>
+              <div style="font-size:11px;color:var(--faint);line-height:1.6">書かなくてもかまいません。あとで設定から変えられます。</div>
+            </div>
+            <div style="flex:1"></div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <button style="border:0;background:var(--deep);color:#fff;font-family:inherit;font-size:15px;font-weight:800;border-radius:16px;min-height:50px;box-shadow:var(--shadow-action);cursor:pointer">つづける</button>
+              <button style="border:1px solid var(--line);background:#fff;color:var(--sub);font-family:inherit;font-size:14px;font-weight:700;border-radius:16px;min-height:48px;cursor:pointer">あとで</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="font-size:11px;font-weight:800;color:var(--sub);letter-spacing:.04em">3 / 3　相棒（選ばないが既定）</div>
+        <div style="width:390px;min-height:560px;background:var(--card);border:1px solid var(--line);border-radius:28px;box-shadow:var(--shadow-card);overflow:hidden;display:flex;flex-direction:column">
+          <div style="padding:22px 20px 0;font-family:var(--mono);font-size:12px;color:var(--faint)">3 / 3</div>
+          <div style="padding:10px 20px 20px;display:flex;flex-direction:column;gap:14px;flex:1">
+            <div style="font-size:20px;font-weight:800;color:var(--ink);line-height:1.35">相棒を選びますか</div>
+            <div style="font-size:12px;color:var(--sub);line-height:1.65">ホームの「きょう動いた分」のところに小さく出ます。トレーニングをそっと見守ります。励ましたり、煽ったりはしません。</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+              <sc-for list="{{ companions }}" as="c" hint-placeholder-count="9">
+                <div style="border:1px solid var(--line);border-radius:12px;padding:8px;display:flex;flex-direction:column;gap:6px;align-items:center;background:#fff;min-height:44px">
+                  <div style="width:100%;aspect-ratio:1;display:flex;align-items:center;justify-content:center;overflow:hidden">
+                    <img src="companions/companion-capybara.png" alt="" style="width:100%;height:100%;object-fit:contain">
+                  </div>
+                  <div style="font-size:11px;font-weight:700;color:var(--body)">{{ c.name }}</div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="flex:1"></div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <button style="border:1px solid var(--line);background:#fff;color:var(--sub);font-family:inherit;font-size:14px;font-weight:700;border-radius:16px;min-height:48px;cursor:pointer">選ばない</button>
+              <div style="font-size:11px;color:var(--faint);line-height:1.6">選ばなくてもアプリは同じように使えます。あとで設定から選べます。この次に、記録を消さないための「ホーム画面に追加」の手順が出ます。</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="display:flex;flex-direction:column;gap:28px;padding:48px 48px 0;font-family:var(--sans);color:var(--body)">
+
+  <div style="display:flex;flex-direction:column;gap:6px">
+    <div style="font-size:20px;font-weight:800;color:var(--ink)">残りの4画面</div>
+    <div style="font-size:13px;color:var(--sub);max-width:760px"><a href="#2a" style="color:var(--deep);text-decoration:underline">2a</a> メニュー作成・編集 ／ <a href="#2b" style="color:var(--deep);text-decoration:underline">2b</a> 履歴・過去日の編集 ／ <a href="#2c" style="color:var(--deep);text-decoration:underline">2c</a> 手で種目を選んで記録 ／ <a href="#2d" style="color:var(--deep);text-decoration:underline">2d</a> 設定。store が返す文はそのまま出しています。</div>
+  </div>
+
+
+  <div style="display:flex;flex-direction:column;gap:10px;max-width:760px">
+    <div style="font-size:13px;font-weight:700;color:var(--ink)">週の目盛り ─ 件数の4段</div>
+    <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+      <div style="width:342px;display:flex;flex-direction:column;gap:7px">
+        <div style="display:flex;gap:5px">
+          <div style="flex:1;height:44px;border-radius:8px;border:1px solid var(--line);background:#dce3ec;color:var(--ink);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:12px;font-weight:700">1</div>
+          <div style="flex:1;height:44px;border-radius:8px;border:1px solid var(--line);background:#b3c0d1;color:var(--ink);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:12px;font-weight:700">2</div>
+          <div style="flex:1;height:44px;border-radius:8px;border:1px solid #7e8ea3;background:#7e8ea3;color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:12px;font-weight:700">3</div>
+          <div style="flex:1;height:44px;border-radius:8px;border:1px solid #37465c;background:#37465c;color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:12px;font-weight:700">4</div>
+          <div style="flex:1;height:44px;border-radius:8px;border:1px solid var(--line);background:#fff;color:var(--faint);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:12px;font-weight:700"></div>
+          <div style="flex:1;height:44px;border-radius:8px;border:1px solid #37465c;background:#37465c;color:#fff;box-shadow:0 0 0 2px var(--card),0 0 0 3.5px var(--ink);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:12px;font-weight:700">5</div>
+          <div style="flex:1;height:44px;border-radius:8px;border:1px dashed var(--faint);background:#fff"></div>
+        </div>
+        <div style="display:flex;gap:5px;font-family:var(--mono);font-size:10px;color:var(--faint)"><div style="flex:1;text-align:center">月</div><div style="flex:1;text-align:center">火</div><div style="flex:1;text-align:center">水</div><div style="flex:1;text-align:center">木</div><div style="flex:1;text-align:center">金</div><div style="flex:1;text-align:center">土</div><div style="flex:1;text-align:center">日</div></div>
+        <div style="font-size:11px;color:var(--faint);line-height:1.6">左から 1件・2件・3件・4件・0件・5件（今日＝二重の輪郭）・未来（破線、押せない）。</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;gap:8px;align-items:center"><div style="width:34px;height:26px;border-radius:6px;border:1px solid var(--line);background:#fff"></div><div style="font-family:var(--mono);font-size:12px;color:var(--body)">0件　#ffffff</div></div>
+        <div style="display:flex;gap:8px;align-items:center"><div style="width:34px;height:26px;border-radius:6px;border:1px solid var(--line);background:#dce3ec"></div><div style="font-family:var(--mono);font-size:12px;color:var(--body)">1件　#dce3ec　文字 ink</div></div>
+        <div style="display:flex;gap:8px;align-items:center"><div style="width:34px;height:26px;border-radius:6px;border:1px solid var(--line);background:#b3c0d1"></div><div style="font-family:var(--mono);font-size:12px;color:var(--body)">2件　#b3c0d1　文字 ink</div></div>
+        <div style="display:flex;gap:8px;align-items:center"><div style="width:34px;height:26px;border-radius:6px;border:1px solid #7e8ea3;background:#7e8ea3"></div><div style="font-family:var(--mono);font-size:12px;color:var(--body)">3件　#7e8ea3　文字 白</div></div>
+        <div style="display:flex;gap:8px;align-items:center"><div style="width:34px;height:26px;border-radius:6px;border:1px solid #37465c;background:#37465c"></div><div style="font-family:var(--mono);font-size:12px;color:var(--body)">4件以上　#37465c　文字 白</div></div>
+        <div style="font-size:11px;color:var(--faint);line-height:1.6;max-width:300px">灰青のまま明度だけで4段。相対輝度 100 → 79 → 58 → 35 → 12% と単調に下がるので、色相を抜いても順番が分かります。数字は薄い2段が ink、濃い2段が白で、どの段でも 4.5:1 以上です。</div>
+      </div>
+    </div>
+  </div>
+
+
+  <div style="display:flex;flex-direction:column;gap:12px;max-width:1100px">
+    <div style="font-size:13px;font-weight:700;color:var(--ink)">「きょう動いた分」の数字 ─ 0 は出さない</div>
+    <div style="font-size:12px;color:var(--sub);line-height:1.6;max-width:740px">数え方は「その日にあるものだけを並べる」。種目が1件も無い日は種目と分を出さず、動画の本数を主役にします。0 種目とは書きません。</div>
+    <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start">
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="font-size:11px;font-weight:800;color:var(--sub);letter-spacing:.04em">種目のある日</div>
+        <div style="width:354px;border:1px solid var(--line);border-radius:16px;background:#fff;padding:14px;display:flex;gap:14px;align-items:flex-start"><img src="companions/companion-capybara.png" alt="" style="width:84px;height:84px;flex:none;object-fit:contain">
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+              <div style="font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.04em">きょう動いた分</div>
+              <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap"><div style="display:flex;align-items:baseline;gap:2px"><span style="font-family:var(--mono);font-size:28px;font-weight:800;color:var(--ink);line-height:1.05">15</span><span style="font-size:13px;font-weight:700;color:var(--sub)">種目</span></div><div style="width:1px;height:18px;background:var(--line)"></div><div style="display:flex;align-items:baseline;gap:2px"><span style="font-family:var(--mono);font-size:28px;font-weight:800;color:var(--ink);line-height:1.05">12</span><span style="font-size:13px;font-weight:700;color:var(--sub)">分</span></div></div>
+              <div style="font-family:var(--mono);font-size:11px;color:var(--faint)">2件 ／ 07:20 - 19:52</div>
+            </div>
+          </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="font-size:11px;font-weight:800;color:var(--sub);letter-spacing:.04em">動画だけの日</div>
+        <div style="width:354px;border:1px solid var(--line);border-radius:16px;background:#fff;padding:14px;display:flex;gap:14px;align-items:flex-start"><img src="companions/companion-capybara.png" alt="" style="width:84px;height:84px;flex:none;object-fit:contain">
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+              <div style="font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.04em">きょう動いた分</div>
+              <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap"><div style="display:flex;align-items:baseline;gap:2px"><span style="font-family:var(--mono);font-size:28px;font-weight:800;color:var(--ink);line-height:1.05">1</span><span style="font-size:13px;font-weight:700;color:var(--sub)">本の動画</span></div></div>
+              <div style="font-family:var(--mono);font-size:11px;color:var(--faint)">1件 ／ 20:09</div>
+            </div>
+          </div>
+        <div style="width:354px;font-size:11px;color:var(--faint);line-height:1.6">種目の行を持たない記録しか無い日。種目と分は出しません。</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="font-size:11px;font-weight:800;color:var(--sub);letter-spacing:.04em">両方ある日</div>
+        <div style="width:354px;border:1px solid var(--line);border-radius:16px;background:#fff;padding:14px;display:flex;gap:14px;align-items:flex-start"><img src="companions/companion-capybara.png" alt="" style="width:84px;height:84px;flex:none;object-fit:contain">
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+              <div style="font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.04em">きょう動いた分</div>
+              <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap"><div style="display:flex;align-items:baseline;gap:2px"><span style="font-family:var(--mono);font-size:28px;font-weight:800;color:var(--ink);line-height:1.05">8</span><span style="font-size:13px;font-weight:700;color:var(--sub)">種目</span></div><div style="width:1px;height:18px;background:var(--line)"></div><div style="display:flex;align-items:baseline;gap:2px"><span style="font-family:var(--mono);font-size:28px;font-weight:800;color:var(--ink);line-height:1.05">6</span><span style="font-size:13px;font-weight:700;color:var(--sub)">分</span></div><div style="width:1px;height:18px;background:var(--line)"></div><div style="display:flex;align-items:baseline;gap:2px"><span style="font-family:var(--mono);font-size:28px;font-weight:800;color:var(--ink);line-height:1.05">1</span><span style="font-size:13px;font-weight:700;color:var(--sub)">本の動画</span></div></div>
+              <div style="font-family:var(--mono);font-size:11px;color:var(--faint)">3件 ／ 07:20 - 20:09</div>
+            </div>
+          </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="font-size:11px;font-weight:800;color:var(--sub);letter-spacing:.04em">相棒を選んでいない人（既定）</div>
+        <div style="width:354px;border:1px solid var(--line);border-radius:16px;background:#fff;padding:14px;display:flex;gap:14px;align-items:flex-start">
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+              <div style="font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.04em">きょう動いた分</div>
+              <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap"><div style="display:flex;align-items:baseline;gap:2px"><span style="font-family:var(--mono);font-size:28px;font-weight:800;color:var(--ink);line-height:1.05">15</span><span style="font-size:13px;font-weight:700;color:var(--sub)">種目</span></div><div style="width:1px;height:18px;background:var(--line)"></div><div style="display:flex;align-items:baseline;gap:2px"><span style="font-family:var(--mono);font-size:28px;font-weight:800;color:var(--ink);line-height:1.05">12</span><span style="font-size:13px;font-weight:700;color:var(--sub)">分</span></div></div>
+              <div style="font-family:var(--mono);font-size:11px;color:var(--faint)">2件 ／ 07:20 - 19:52</div>
+            </div>
+          </div>
+        <div style="width:354px;border:1px solid var(--line);border-radius:16px;background:#fff;padding:14px;display:flex;gap:14px;align-items:flex-start">
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+              <div style="font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.04em">きょうはこれから</div>
+              <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap"><div style="font-size:13px;color:var(--body);line-height:1.55">下のボタンから記録できます。</div></div>
+              <div style="font-family:var(--mono);font-size:11px;color:var(--faint)"></div>
+            </div>
+          </div>
+        <div style="width:354px;font-size:11px;color:var(--faint);line-height:1.6">絵の幅と余白ごと無くし、見出しと数字が左端に寄ります。文字は出しません。絵が読み込めなかったときも同じ形（何も出ない）です。</div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start;padding-top:8px">
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="font-size:11px;font-weight:800;color:var(--sub);letter-spacing:.04em">メニュー一覧の行（種目ゼロ・375px 幅）</div>
+        <div style="width:339px;border:1px solid var(--line);border-radius:14px;background:#fff;padding:12px;display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;gap:12px;align-items:flex-start">
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+              <div style="font-size:15px;font-weight:800;color:var(--ink);line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">食後の簡単全身運動｜血糖値の上昇を抑えるためのエクササイズ【9分間】</div>
+              <div style="font-family:var(--mono);font-size:11px;color:var(--sub)">動画だけ</div>
+            </div>
+            <div style="width:104px;height:59px;border-radius:8px;background:#e9eef5;border:1px solid var(--line);overflow:hidden;flex:none;position:relative;display:flex;align-items:center;justify-content:center">
+              <img src="https://i.ytimg.com/vi/sTANio_2E0Q/mqdefault.jpg" alt="" style="width:100%;height:100%;object-fit:cover">
+              <div data-ph style="display:none;font-size:9px;color:var(--faint)">動画なし</div>
+              <div style="position:absolute;right:4px;bottom:4px;width:19px;height:19px;border-radius:10px;background:rgba(20,28,40,.34);display:flex;align-items:center;justify-content:center"><div style="width:0;height:0;border-left:6px solid rgba(255,255,255,.88);border-top:4px solid transparent;border-bottom:4px solid transparent;margin-left:2px"></div></div>
+            </div>
+          </div>
+          <button style="border:0;background:var(--deep);color:#fff;font-family:inherit;font-size:14px;font-weight:800;border-radius:13px;min-height:44px;box-shadow:var(--shadow-action);cursor:pointer;width:100%">完了を記録</button>
+        </div>
+        <div style="width:339px;font-size:11px;color:var(--faint);line-height:1.6">種目が無いので「一部だけ」は出しません。ボタンは1つだけで幅いっぱい。名前は3行に折り返しても崩れません。</div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="font-size:11px;font-weight:800;color:var(--sub);letter-spacing:.04em">記録の行（種目ゼロ）</div>
+        <div style="width:339px;border:1px solid var(--line);border-radius:14px;background:#fff;padding:12px;display:flex;gap:12px;align-items:flex-start">
+          <div style="font-family:var(--mono);font-size:14px;font-weight:700;color:var(--ink);flex:none;width:44px;padding-top:1px">20:09</div>
+          <div style="flex:1;min-width:0;display:flex;gap:12px;align-items:flex-start">
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+              <div style="font-size:14px;font-weight:800;color:var(--ink);line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">食後の簡単全身運動｜血糖値の上昇を抑えるためのエクササイズ【9分間】</div>
+              <div style="font-size:11px;color:var(--sub)">動画だけ</div>
+            </div>
+            <div style="width:120px;height:68px;border-radius:8px;background:#e9eef5;border:1px solid var(--line);overflow:hidden;flex:none;position:relative;display:flex;align-items:center;justify-content:center">
+              <img src="https://i.ytimg.com/vi/sTANio_2E0Q/mqdefault.jpg" alt="" style="width:100%;height:100%;object-fit:cover">
+              <div data-ph style="display:none;font-size:9px;color:var(--faint)">動画なし</div>
+              <div style="position:absolute;right:4px;bottom:4px;width:19px;height:19px;border-radius:10px;background:rgba(20,28,40,.34);display:flex;align-items:center;justify-content:center"><div style="width:0;height:0;border-left:6px solid rgba(255,255,255,.88);border-top:4px solid transparent;border-bottom:4px solid transparent;margin-left:2px"></div></div>
+            </div>
+          </div>
+        </div>
+        <div style="width:339px;font-size:11px;color:var(--faint);line-height:1.6">開く中身が無いので「種目を見る」は出しません。動画へはサムネイルから。</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start">
+
+    <!-- ============ 2a メニュー作成・編集 ============ -->
+    <div id="2a" style="display:flex;gap:20px;align-items:flex-start">
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:#fff;background:var(--ink);border-radius:6px;padding:3px 7px">2a</div>
+          <div style="font-size:13px;font-weight:700;color:var(--ink)">メニューを編集</div>
+        </div>
+        <div style="width:390px;min-height:844px;background:var(--card);border:1px solid var(--line);border-radius:28px;box-shadow:var(--shadow-card);overflow:hidden;display:flex;flex-direction:column">
+          <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line)">
+            <div style="font-size:14px;color:var(--body);font-weight:700;min-height:44px;display:flex;align-items:center;padding:0 10px;margin:-5px -10px">やめる</div>
+            <div style="flex:1;text-align:center;font-size:14px;font-weight:800;color:var(--ink)">メニューを編集</div>
+            <div style="font-size:14px;color:var(--deep);font-weight:800;min-height:44px;display:flex;align-items:center;padding:0 10px;margin:-5px -10px">保存</div>
+          </div>
+
+          <div style="display:flex;align-items:flex-start;gap:10px;padding:11px 14px;border-bottom:1px solid #f0e2bf;background:var(--warnSoft)">
+            <div style="width:20px;height:20px;border:1.5px solid var(--warnInk);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:var(--warnInk);flex:none">!</div>
+            <div style="flex:1;font-size:12px;color:#7a5b12;line-height:1.5">メニューが他で変更されています。再読込してください。</div>
+            <button style="border:1px solid var(--warnInk);background:#fff;color:var(--warnInk);font-family:inherit;font-size:12px;font-weight:700;border-radius:9px;padding:8px 10px;min-height:36px;cursor:pointer">再読込</button>
+          </div>
+
+          <div style="padding:16px 18px;display:flex;flex-direction:column;gap:16px">
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <div style="font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.04em">1. 動画の URL<span style="font-weight:700;color:var(--faint)">（任意）</span></div>
+              <div style="display:flex;gap:10px;align-items:flex-start">
+                <div style="flex:1;min-width:0;border:1px solid var(--line);border-radius:12px;padding:11px 12px;min-height:59px;display:flex;align-items:center;background:#fff;font-family:var(--mono);font-size:12px;color:var(--body);word-break:break-all;line-height:1.45">https://www.youtube.com/watch?v=sTANio_2E0Q</div>
+                <div style="width:104px;height:59px;border-radius:8px;background:#e9eef5;border:1px solid var(--line);overflow:hidden;flex:none;position:relative;display:flex;align-items:center;justify-content:center">
+                  <img src="https://i.ytimg.com/vi/sTANio_2E0Q/mqdefault.jpg" alt="" style="width:100%;height:100%;object-fit:cover">
+                  <div data-ph style="display:none;font-size:9px;color:var(--faint)">動画なし</div>
+                  <div style="position:absolute;right:4px;bottom:4px;width:19px;height:19px;border-radius:10px;background:rgba(20,28,40,.34);display:flex;align-items:center;justify-content:center"><div style="width:0;height:0;border-left:6px solid rgba(255,255,255,.88);border-top:4px solid transparent;border-bottom:4px solid transparent;margin-left:2px"></div></div>
+                </div>
+              </div>
+              <div style="font-size:11px;color:var(--faint);line-height:1.6">貼ると、下のメニュー名に動画の題名が入ります。動画を使わないメニューは、空のままで先へ進めます。</div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px">
+                <div style="font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.04em">2. メニュー名<span style="font-weight:700;color:var(--faint)">（必須）</span></div>
+                <div style="font-family:var(--mono);font-size:11px;color:var(--faint)">34 / 100</div>
+              </div>
+              <div style="border:1.5px solid var(--ink);border-radius:12px;padding:11px 12px;min-height:46px;display:flex;align-items:center;background:#fff;font-size:15px;font-weight:700;color:var(--ink);line-height:1.45;text-wrap:pretty">食後の簡単全身運動｜血糖値の上昇を抑えるためのエクササイズ【9分間】</div>
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                <div style="display:inline-flex;align-items:center;gap:5px;border:1px dashed var(--sub);border-radius:8px;padding:3px 8px;font-size:11px;font-weight:700;color:var(--sub)">動画から入れた題名</div>
+                <div style="font-size:12px;font-weight:700;color:var(--deep);text-decoration:underline;min-height:44px;display:flex;align-items:center;margin:-11px 0">短くする</div>
+                <div style="font-size:12px;font-weight:700;color:var(--deep);text-decoration:underline;min-height:44px;display:flex;align-items:center;margin:-11px 0">空にする</div>
+              </div>
+              <div style="font-size:11px;color:var(--faint);line-height:1.6">直すと破線の札は消えます。自分で書いた名前として扱います。</div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <div style="font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.04em">3. メモ<span style="font-weight:700;color:var(--faint)">（任意）</span></div>
+              <div style="border:1px solid var(--line);border-radius:12px;padding:11px 12px;min-height:66px;background:#fff;font-size:13px;color:var(--body);line-height:1.6">膝が痛い日はランジを抜く</div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:2px">
+              <div style="display:flex;align-items:baseline;justify-content:space-between;padding-bottom:6px">
+                <div style="font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.04em">種目</div>
+                <div style="font-family:var(--mono);font-size:11px;color:var(--faint)">6 / 100</div>
+              </div>
+
+              <div style="display:flex;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line2)">
+                <div style="width:44px;height:44px;flex:none;font-size:15px;color:var(--faint);display:flex;align-items:center;justify-content:center;margin-left:-13px">≡</div>
+                <div style="flex:1;min-width:0;font-size:14px;font-weight:700;color:var(--ink)">スクワット</div>
+                <div style="display:flex;align-items:center;gap:6px;flex:none">
+                  <div style="border:1px solid var(--line);border-radius:9px;padding:7px 9px;min-height:36px;display:flex;align-items:center;gap:3px;background:#fff"><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--ink)">3</span><span style="font-size:11px;color:var(--sub)">セット</span></div>
+                  <div style="font-size:12px;color:var(--faint)">×</div>
+                  <div style="border:1px solid var(--line);border-radius:9px;padding:7px 9px;min-height:36px;display:flex;align-items:center;gap:3px;background:#fff"><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--ink)">10</span><span style="font-size:11px;color:var(--sub)">回</span></div>
+                </div>
+                <div style="width:44px;height:44px;flex:none;border:1px solid var(--line);border-radius:11px;display:flex;align-items:center;justify-content:center;background:#fff"><div style="width:11px;height:13px;border:1.5px solid var(--sub);border-top:0;border-radius:0 0 3px 3px;position:relative"><div style="position:absolute;left:-2.5px;right:-2.5px;top:-4px;height:1.5px;background:var(--sub)"></div></div></div>
+              </div>
+
+              <div style="display:flex;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line2)">
+                <div style="width:44px;height:44px;flex:none;font-size:15px;color:var(--faint);display:flex;align-items:center;justify-content:center;margin-left:-13px">≡</div>
+                <div style="flex:1;min-width:0;font-size:14px;font-weight:700;color:var(--ink)">プランク</div>
+                <div style="display:flex;align-items:center;gap:6px;flex:none">
+                  <div style="border:1px solid var(--line);border-radius:9px;padding:7px 9px;min-height:36px;display:flex;align-items:center;gap:3px;background:#fff"><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--ink)">2</span><span style="font-size:11px;color:var(--sub)">セット</span></div>
+                  <div style="font-size:12px;color:var(--faint)">×</div>
+                  <div style="border:1.5px solid var(--ink);border-radius:9px;padding:7px 9px;min-height:36px;display:flex;align-items:center;gap:3px;background:#fff"><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--ink)">30</span><span style="font-size:11px;color:var(--sub)">秒</span></div>
+                </div>
+                <div style="width:44px;height:44px;flex:none;border:1px solid var(--line);border-radius:11px;display:flex;align-items:center;justify-content:center;background:#fff"><div style="width:11px;height:13px;border:1.5px solid var(--sub);border-top:0;border-radius:0 0 3px 3px;position:relative"><div style="position:absolute;left:-2.5px;right:-2.5px;top:-4px;height:1.5px;background:var(--sub)"></div></div></div>
+              </div>
+
+              <div style="display:flex;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line2)">
+                <div style="width:44px;height:44px;flex:none;font-size:15px;color:var(--faint);display:flex;align-items:center;justify-content:center;margin-left:-13px">≡</div>
+                <div style="flex:1;min-width:0;font-size:14px;font-weight:700;color:var(--ink)">ランジ</div>
+                <div style="display:flex;align-items:center;gap:6px;flex:none">
+                  <div style="border:1px solid var(--line);border-radius:9px;padding:7px 9px;min-height:36px;display:flex;align-items:center;gap:3px;background:#fff"><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--ink)">3</span><span style="font-size:11px;color:var(--sub)">セット</span></div>
+                  <div style="font-size:12px;color:var(--faint)">×</div>
+                  <div style="border:1px solid var(--line);border-radius:9px;padding:7px 9px;min-height:36px;display:flex;align-items:center;gap:3px;background:#fff"><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--ink)">10</span><span style="font-size:11px;color:var(--sub)">回</span></div>
+                </div>
+                <div style="width:44px;height:44px;flex:none;border:1px solid var(--line);border-radius:11px;display:flex;align-items:center;justify-content:center;background:#fff"><div style="width:11px;height:13px;border:1.5px solid var(--sub);border-top:0;border-radius:0 0 3px 3px;position:relative"><div style="position:absolute;left:-2.5px;right:-2.5px;top:-4px;height:1.5px;background:var(--sub)"></div></div></div>
+              </div>
+
+              <div style="display:flex;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line2);border-bottom:1px solid var(--line2)">
+                <div style="width:44px;height:44px;flex:none;font-size:15px;color:var(--faint);display:flex;align-items:center;justify-content:center;margin-left:-13px">≡</div>
+                <div style="flex:1;min-width:0;font-size:14px;font-weight:700;color:var(--ink)">ヒップリフト</div>
+                <div style="display:flex;align-items:center;gap:6px;flex:none">
+                  <div style="border:1px solid var(--line);border-radius:9px;padding:7px 9px;min-height:36px;display:flex;align-items:center;gap:3px;background:#fff"><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--ink)">3</span><span style="font-size:11px;color:var(--sub)">セット</span></div>
+                  <div style="font-size:12px;color:var(--faint)">×</div>
+                  <div style="border:1px solid var(--line);border-radius:9px;padding:7px 9px;min-height:36px;display:flex;align-items:center;gap:3px;background:#fff"><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--ink)">15</span><span style="font-size:11px;color:var(--sub)">回</span></div>
+                </div>
+                <div style="width:44px;height:44px;flex:none;border:1px solid var(--line);border-radius:11px;display:flex;align-items:center;justify-content:center;background:#fff"><div style="width:11px;height:13px;border:1.5px solid var(--sub);border-top:0;border-radius:0 0 3px 3px;position:relative"><div style="position:absolute;left:-2.5px;right:-2.5px;top:-4px;height:1.5px;background:var(--sub)"></div></div></div>
+              </div>
+
+              <div style="font-size:11px;color:var(--faint);padding:8px 0 0">ほか2件（カーフレイズ、もも上げ）</div>
+
+              <button style="margin-top:10px;border:1px dashed var(--faint);background:transparent;color:var(--body);font-family:inherit;font-size:13px;font-weight:700;border-radius:13px;min-height:46px;cursor:pointer">種目を追加（庫から選ぶ）</button>
+            </div>
+
+            <div style="border-top:1px solid var(--line);padding-top:14px;display:flex;flex-direction:column;gap:8px">
+              <button style="border:1px solid var(--line);background:#fff;color:var(--body);font-family:inherit;font-size:14px;font-weight:700;border-radius:13px;min-height:46px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">
+                <span style="width:12px;height:14px;border:1.5px solid var(--sub);border-top:0;border-radius:0 0 3px 3px;position:relative;display:inline-block"><span style="position:absolute;left:-2.5px;right:-2.5px;top:-4px;height:1.5px;background:var(--sub);display:block"></span></span>
+                このメニューを削除
+              </button>
+              <div style="font-size:11px;color:var(--faint);line-height:1.6">メニューを削除しても、このメニューで残した記録は消えません。</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="font-size:13px;font-weight:700;color:var(--ink);padding-top:26px">削除の確認</div>
+        <div style="width:330px;background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow-card);padding:18px;display:flex;flex-direction:column;gap:14px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="width:26px;height:26px;border:1.5px solid var(--ink);border-radius:8px;display:flex;align-items:center;justify-content:center;flex:none"><div style="width:11px;height:13px;border:1.5px solid var(--ink);border-top:0;border-radius:0 0 3px 3px;position:relative"><div style="position:absolute;left:-2.5px;right:-2.5px;top:-4px;height:1.5px;background:var(--ink)"></div></div></div>
+            <div style="font-size:15px;font-weight:800;color:var(--ink)">「下半身 10分」を削除</div>
+          </div>
+          <div style="font-size:13px;color:var(--body);line-height:1.65">このメニューは一覧から消えます。これまでに残した記録（12件）はそのまま残ります。</div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <button style="border:1.5px solid var(--ink);background:#fff;color:var(--ink);font-family:inherit;font-size:15px;font-weight:800;border-radius:14px;min-height:48px;cursor:pointer">削除する</button>
+            <button style="border:1px solid var(--line);background:#fff;color:var(--sub);font-family:inherit;font-size:14px;font-weight:700;border-radius:14px;min-height:46px;cursor:pointer">やめる</button>
+          </div>
+        </div>
+        <div style="width:330px;display:flex;flex-direction:column;gap:10px;margin-top:6px">
+          <div style="font-size:13px;font-weight:700;color:var(--ink)">URL を貼ったあとの3通り</div>
+
+          <div style="border:1px solid var(--line);border-radius:14px;background:#fff;padding:12px;display:flex;flex-direction:column;gap:7px">
+            <div style="font-size:11px;font-weight:800;color:var(--sub);letter-spacing:.04em">取りに行っている間</div>
+            <div style="border:1px solid var(--line);border-radius:10px;padding:10px 11px;min-height:44px;display:flex;align-items:center;gap:8px;background:#fafbfd">
+              <div style="width:14px;height:14px;border:2px solid var(--line);border-top-color:var(--sub);border-radius:8px;flex:none"></div>
+              <div style="font-size:13px;color:var(--sub)">題名を取っています</div>
+            </div>
+            <div style="font-size:11px;color:var(--faint);line-height:1.6">欄は触れます。待たずに自分で書いてもかまいません。書き始めたら取得は当てません。</div>
+          </div>
+
+          <div style="border:1px solid var(--line);border-radius:14px;background:#fff;padding:12px;display:flex;flex-direction:column;gap:7px">
+            <div style="font-size:11px;font-weight:800;color:var(--sub);letter-spacing:.04em">取れなかったとき</div>
+            <div style="border:1.5px solid var(--ink);border-radius:10px;padding:10px 11px;min-height:44px;display:flex;align-items:center;background:#fff;font-size:14px;color:var(--faint)">メニュー名を書く</div>
+            <div style="font-size:11px;color:var(--faint);line-height:1.6">題名は取れませんでした。欄は空のままです（誤った名前は入れません）。URL はそのまま使えます。</div>
+          </div>
+
+          <div style="border:1px solid var(--line);border-radius:14px;background:#fff;padding:12px;display:flex;flex-direction:column;gap:7px">
+            <div style="font-size:11px;font-weight:800;color:var(--sub);letter-spacing:.04em">動画を使わないとき</div>
+            <div style="border:1px solid var(--line);border-radius:10px;padding:10px 11px;min-height:44px;display:flex;align-items:center;background:#fafbfd;font-family:var(--mono);font-size:12px;color:var(--faint)">URL は空のまま</div>
+            <div style="border:1.5px solid var(--ink);border-radius:10px;padding:10px 11px;min-height:44px;display:flex;align-items:center;background:#fff;font-size:15px;font-weight:700;color:var(--ink)">腰ストレッチ</div>
+            <div style="font-size:11px;color:var(--faint);line-height:1.6">サムネイルの枠は出ません。一覧では名前だけの行になります。</div>
+          </div>
+        </div>
+
+        <div style="width:330px;display:flex;flex-direction:column;gap:10px;margin-top:6px">
+          <div style="font-size:13px;font-weight:700;color:var(--ink)">長い題名の見え方（34文字）</div>
+          <div style="border:1px solid var(--line);border-radius:14px;background:#fff;padding:12px;display:flex;flex-direction:column;gap:12px">
+            <div style="display:flex;flex-direction:column;gap:7px">
+              <div style="font-size:11px;font-weight:800;color:var(--sub);letter-spacing:.04em">メニュー一覧の行</div>
+              <div style="display:flex;gap:12px;align-items:flex-start">
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+                  <div style="font-size:15px;font-weight:800;color:var(--ink);line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">食後の簡単全身運動｜血糖値の上昇を抑えるためのエクササイズ【9分間】</div>
+                  <div style="font-family:var(--mono);font-size:11px;color:var(--sub)">5種目 ・ 3セット×10回 ほか</div>
+                </div>
+                <div style="width:104px;height:59px;border-radius:8px;background:#e9eef5;border:1px solid var(--line);overflow:hidden;flex:none;position:relative;display:flex;align-items:center;justify-content:center">
+                  <img src="https://i.ytimg.com/vi/sTANio_2E0Q/mqdefault.jpg" alt="" style="width:100%;height:100%;object-fit:cover">
+                  <div data-ph style="display:none;font-size:9px;color:var(--faint)">動画なし</div>
+                  <div style="position:absolute;right:4px;bottom:4px;width:19px;height:19px;border-radius:10px;background:rgba(20,28,40,.34);display:flex;align-items:center;justify-content:center"><div style="width:0;height:0;border-left:6px solid rgba(255,255,255,.88);border-top:4px solid transparent;border-bottom:4px solid transparent;margin-left:2px"></div></div>
+                </div>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:7px;border-top:1px solid var(--line2);padding-top:12px">
+              <div style="font-size:11px;font-weight:800;color:var(--sub);letter-spacing:.04em">記録の行（2行で打ち切る）</div>
+              <div style="display:flex;gap:12px;align-items:flex-start">
+                <div style="font-family:var(--mono);font-size:14px;font-weight:700;color:var(--ink);flex:none;width:44px;padding-top:1px">07:20</div>
+                <div style="flex:1;min-width:0;display:flex;gap:12px;align-items:flex-start">
+                  <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+                    <div style="font-size:14px;font-weight:800;color:var(--ink);line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">食後の簡単全身運動｜血糖値の上昇を抑えるためのエクササイズ【9分間】</div>
+                    <div style="font-size:11px;color:var(--sub)">5種目すべて</div>
+                    <div style="font-size:12px;font-weight:700;color:var(--deep);text-decoration:underline;min-height:44px;display:flex;align-items:center;margin:-11px 0">種目を見る</div>
+                  </div>
+                  <div style="width:120px;height:68px;border-radius:8px;background:#e9eef5;border:1px solid var(--line);overflow:hidden;flex:none;position:relative;display:flex;align-items:center;justify-content:center">
+                  <img src="https://i.ytimg.com/vi/sTANio_2E0Q/mqdefault.jpg" alt="" style="width:100%;height:100%;object-fit:cover">
+                  <div data-ph style="display:none;font-size:9px;color:var(--faint)">動画なし</div>
+                  <div style="position:absolute;right:4px;bottom:4px;width:19px;height:19px;border-radius:10px;background:rgba(20,28,40,.34);display:flex;align-items:center;justify-content:center"><div style="width:0;height:0;border-left:6px solid rgba(255,255,255,.88);border-top:4px solid transparent;border-bottom:4px solid transparent;margin-left:2px"></div></div>
+                </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style="font-size:11px;color:var(--faint);line-height:1.6">一覧・ホーム・履歴はどれも2行で打ち切り、続きは「…」になります。全文は編集画面で見られます。名前は編集で直せます。</div>
+        </div>
+
+        <div style="width:330px;display:flex;flex-direction:column;gap:8px;margin-top:6px">
+          <div style="font-size:13px;font-weight:700;color:var(--ink)">保存できないとき</div>
+          <div style="display:flex;align-items:flex-start;gap:10px;border:1.5px solid var(--warnInk);background:var(--warnSoft);border-radius:12px;padding:11px 12px">
+            <div style="width:18px;height:18px;border:1.5px solid var(--warnInk);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--warnInk);flex:none">!</div>
+            <div style="font-size:12px;color:#7a5b12;line-height:1.55">同じ名前のメニューがあります。</div>
+          </div>
+          <div style="font-size:11px;color:var(--faint);line-height:1.6">文は store が返したものをそのまま出します。名前の欄に枠を付けて示し、入力は消しません。</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ 2b 履歴 ============ -->
+    <div id="2b" style="display:flex;gap:20px;align-items:flex-start">
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:#fff;background:var(--ink);border-radius:6px;padding:3px 7px">2b</div>
+          <div style="font-size:13px;font-weight:700;color:var(--ink)">履歴</div>
+        </div>
+        <div style="width:390px;min-height:844px;background:var(--card);border:1px solid var(--line);border-radius:28px;box-shadow:var(--shadow-card);overflow:hidden;display:flex;flex-direction:column">
+          <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line)">
+            <div style="font-size:14px;color:var(--body);font-weight:700;min-height:44px;display:flex;align-items:center;padding:0 10px;margin:-5px -10px">戻る</div>
+            <div style="flex:1;text-align:center;font-size:14px;font-weight:800;color:var(--ink)">履歴</div>
+            <div style="font-size:14px;color:var(--deep);font-weight:800;min-height:44px;display:flex;align-items:center;padding:0 10px;margin:-5px -10px">編集</div>
+          </div>
+
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 18px;border-bottom:1px solid var(--line2);background:#fafbfd">
+            <div style="font-family:var(--mono);font-size:12px;color:var(--body)">2026-08-12 → 2026-09-10</div>
+            <div style="font-size:12px;font-weight:700;color:var(--deep);text-decoration:underline;min-height:44px;display:flex;align-items:center;margin:-11px 0">30日前へ</div>
+          </div>
+
+          <div style="padding:0 18px 18px;display:flex;flex-direction:column">
+
+            <div style="display:flex;align-items:baseline;justify-content:space-between;padding:14px 0 6px">
+              <div style="font-size:13px;font-weight:800;color:var(--ink)"><span style="font-family:var(--mono)">09-10</span> 木</div>
+              <div style="font-family:var(--mono);font-size:11px;color:var(--faint)">2件 ・ 8種目</div>
+            </div>
+            <div style="padding:11px 0;border-top:1px solid var(--line2);display:flex;gap:12px;align-items:flex-start">
+              <div style="font-family:var(--mono);font-size:14px;font-weight:700;color:var(--ink);flex:none;width:44px;padding-top:1px">07:20</div>
+              <div style="flex:1;min-width:0;display:flex;gap:12px;align-items:flex-start">
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+                  <div style="font-size:14px;font-weight:800;color:var(--ink);line-height:1.25">朝のストレッチ</div>
+                  <div style="font-size:11px;color:var(--sub)">4種目すべて</div>
+                  <div style="font-size:12px;font-weight:700;color:var(--deep);text-decoration:underline;min-height:44px;display:flex;align-items:center;margin:-11px 0">種目を見る</div>
+                </div>
+                <div style="width:120px;height:68px;border-radius:8px;background:#e9eef5;border:1px solid var(--line);overflow:hidden;flex:none;position:relative;display:flex;align-items:center;justify-content:center">
+                  <img src="https://i.ytimg.com/vi/UBMk30rjy0o/mqdefault.jpg" alt="" style="width:100%;height:100%;object-fit:cover">
+                  <div data-ph style="display:none;font-size:9px;color:var(--faint)">動画なし</div>
+                  <div style="position:absolute;right:4px;bottom:4px;width:19px;height:19px;border-radius:10px;background:rgba(20,28,40,.34);display:flex;align-items:center;justify-content:center"><div style="width:0;height:0;border-left:6px solid rgba(255,255,255,.88);border-top:4px solid transparent;border-bottom:4px solid transparent;margin-left:2px"></div></div>
+                </div>
+              </div>
+            </div>
+            <div style="padding:11px 0;border-top:1px solid var(--line2);display:flex;gap:12px;align-items:flex-start">
+              <div style="font-family:var(--mono);font-size:14px;font-weight:700;color:var(--ink);flex:none;width:44px;padding-top:1px">12:05</div>
+              <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+                <div style="font-size:14px;font-weight:800;color:var(--ink);line-height:1.25">スクワット ほか1件</div>
+                <div style="font-size:11px;color:var(--sub)">手で選んだ記録</div>
+                <div style="font-size:12px;font-weight:700;color:var(--deep);text-decoration:underline;min-height:44px;display:flex;align-items:center;margin:-11px 0">種目を見る</div>
+              </div>
+            </div>
+
+            <div style="display:flex;align-items:baseline;justify-content:space-between;padding:18px 0 6px">
+              <div style="font-size:13px;font-weight:800;color:var(--ink)"><span style="font-family:var(--mono)">09-08</span> 火</div>
+              <div style="font-family:var(--mono);font-size:11px;color:var(--faint)">1件 ・ 6種目</div>
+            </div>
+            <div style="padding:11px 0;border-top:1px solid var(--line2);display:flex;gap:12px;align-items:flex-start">
+              <div style="font-family:var(--mono);font-size:14px;font-weight:700;color:var(--ink);flex:none;width:44px;padding-top:1px">19:40</div>
+              <div style="flex:1;min-width:0;display:flex;gap:12px;align-items:flex-start">
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+                  <div style="font-size:14px;font-weight:800;color:var(--ink);line-height:1.25">下半身 10分</div>
+                  <div style="font-size:11px;color:var(--sub)">6種目すべて</div>
+                  <div style="display:flex;flex-direction:column;gap:3px;border-left:2px solid var(--line);padding:2px 0 2px 10px;margin-top:2px">
+                    <div style="display:flex;justify-content:space-between;gap:10px;font-size:12px;color:var(--body)"><span>スクワット</span><span style="font-family:var(--mono);color:var(--sub)">3×10回</span></div>
+                    <div style="display:flex;justify-content:space-between;gap:10px;font-size:12px;color:var(--body)"><span>プランク</span><span style="font-family:var(--mono);color:var(--sub)">2×30秒</span></div>
+                    <div style="display:flex;justify-content:space-between;gap:10px;font-size:12px;color:var(--body)"><span>ランジ</span><span style="font-family:var(--mono);color:var(--sub)">3×10回</span></div>
+                    <div style="font-size:11px;color:var(--faint)">ほか3件</div>
+                  </div>
+                  <div style="font-size:12px;font-weight:700;color:var(--deep);text-decoration:underline;min-height:44px;display:flex;align-items:center;margin:-11px 0;margin-top:2px">とじる</div>
+                </div>
+                <div style="width:120px;height:68px;border-radius:8px;background:#e9eef5;border:1px solid var(--line);overflow:hidden;flex:none;position:relative;display:flex;align-items:center;justify-content:center">
+                  <img src="https://i.ytimg.com/vi/sTANio_2E0Q/mqdefault.jpg" alt="" style="width:100%;height:100%;object-fit:cover">
+                  <div data-ph style="display:none;font-size:9px;color:var(--faint)">動画なし</div>
+                  <div style="position:absolute;right:4px;bottom:4px;width:19px;height:19px;border-radius:10px;background:rgba(20,28,40,.34);display:flex;align-items:center;justify-content:center"><div style="width:0;height:0;border-left:6px solid rgba(255,255,255,.88);border-top:4px solid transparent;border-bottom:4px solid transparent;margin-left:2px"></div></div>
+                </div>
+              </div>
+            </div>
+
+            <div style="display:flex;align-items:baseline;justify-content:space-between;padding:18px 0 6px">
+              <div style="font-size:13px;font-weight:800;color:var(--ink)"><span style="font-family:var(--mono)">09-07</span> 月</div>
+              <div style="font-family:var(--mono);font-size:11px;color:var(--faint)">1件 ・ 4種目</div>
+            </div>
+            <div style="padding:11px 0;border-top:1px solid var(--line2);display:flex;gap:12px;align-items:flex-start">
+              <div style="font-family:var(--mono);font-size:14px;font-weight:700;color:var(--ink);flex:none;width:44px;padding-top:1px">07:07</div>
+              <div style="flex:1;min-width:0;display:flex;gap:12px;align-items:flex-start">
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+                  <div style="font-size:14px;font-weight:800;color:var(--ink);line-height:1.25">朝のストレッチ</div>
+                  <div style="font-size:11px;color:var(--sub)">3種目（一部）</div>
+                  <div style="font-size:12px;font-weight:700;color:var(--deep);text-decoration:underline;min-height:44px;display:flex;align-items:center;margin:-11px 0">種目を見る</div>
+                </div>
+                <div style="width:120px;height:68px;border-radius:8px;background:#e9eef5;border:1px solid var(--line);overflow:hidden;flex:none;position:relative;display:flex;align-items:center;justify-content:center">
+                  <img src="https://i.ytimg.com/vi/UBMk30rjy0o/mqdefault.jpg" alt="" style="width:100%;height:100%;object-fit:cover">
+                  <div data-ph style="display:none;font-size:9px;color:var(--faint)">動画なし</div>
+                  <div style="position:absolute;right:4px;bottom:4px;width:19px;height:19px;border-radius:10px;background:rgba(20,28,40,.34);display:flex;align-items:center;justify-content:center"><div style="width:0;height:0;border-left:6px solid rgba(255,255,255,.88);border-top:4px solid transparent;border-bottom:4px solid transparent;margin-left:2px"></div></div>
+                </div>
+              </div>
+            </div>
+
+            <div style="padding:18px 0 0;font-size:11px;color:var(--faint);line-height:1.6">記録の無い日は並びません。右上の「編集」を押すと、各記録に修正と削除が出ます。</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="font-size:13px;font-weight:700;color:var(--ink);padding-top:26px">記録を修正（編集から）</div>
+        <div style="width:390px;min-height:640px;background:var(--card);border:1px solid var(--line);border-radius:28px;box-shadow:var(--shadow-card);overflow:hidden;display:flex;flex-direction:column">
+          <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line)">
+            <div style="font-size:14px;color:var(--body);font-weight:700;min-height:44px;display:flex;align-items:center;padding:0 10px;margin:-5px -10px">やめる</div>
+            <div style="flex:1;text-align:center;font-size:14px;font-weight:800;color:var(--ink)">記録を修正</div>
+            <div style="font-size:14px;color:var(--deep);font-weight:800;min-height:44px;display:flex;align-items:center;padding:0 10px;margin:-5px -10px">保存</div>
+          </div>
+
+          <div style="display:flex;align-items:flex-start;gap:10px;padding:11px 14px;border-bottom:1px solid #f0e2bf;background:var(--warnSoft)">
+            <div style="width:20px;height:20px;border:1.5px solid var(--warnInk);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:var(--warnInk);flex:none">!</div>
+            <div style="flex:1;font-size:12px;color:#7a5b12;line-height:1.5">その日には手入力の記録が既にあります。</div>
+          </div>
+
+          <div style="padding:16px 18px;display:flex;flex-direction:column;gap:16px">
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <div style="font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.04em">日付</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;border:1.5px solid var(--warnInk);border-radius:12px;padding:11px 12px;min-height:46px;background:#fff">
+                <span style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--ink)">2026-09-09 水</span>
+                <span style="font-size:12px;color:var(--sub)">変更</span>
+              </div>
+              <div style="font-size:11px;color:var(--faint);line-height:1.6">別の日へ移せます。手で選んだ記録は1日に1つまでです。</div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <div style="font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.04em">実施時刻</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:12px;padding:11px 12px;min-height:46px;background:#fff">
+                <span style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--ink)">12:05</span>
+                <span style="font-size:12px;color:var(--sub)">変更</span>
+              </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:2px">
+              <div style="font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.04em;padding-bottom:6px">種目</div>
+              <div style="display:flex;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line2)">
+                <div style="flex:1;min-width:0;font-size:14px;font-weight:700;color:var(--ink)">スクワット</div>
+                <div style="display:flex;align-items:center;gap:6px;flex:none">
+                  <div style="border:1px solid var(--line);border-radius:9px;padding:7px 9px;min-height:36px;display:flex;align-items:center;gap:3px;background:#fff"><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--ink)">3</span><span style="font-size:11px;color:var(--sub)">セット</span></div>
+                  <div style="font-size:12px;color:var(--faint)">×</div>
+                  <div style="border:1px solid var(--line);border-radius:9px;padding:7px 9px;min-height:36px;display:flex;align-items:center;gap:3px;background:#fff"><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--ink)">10</span><span style="font-size:11px;color:var(--sub)">回</span></div>
+                </div>
+                <div style="width:44px;height:44px;flex:none;border:1px solid var(--line);border-radius:11px;display:flex;align-items:center;justify-content:center;background:#fff"><div style="width:11px;height:13px;border:1.5px solid var(--sub);border-top:0;border-radius:0 0 3px 3px;position:relative"><div style="position:absolute;left:-2.5px;right:-2.5px;top:-4px;height:1.5px;background:var(--sub)"></div></div></div>
+              </div>
+              <div style="display:flex;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line2);border-bottom:1px solid var(--line2)">
+                <div style="flex:1;min-width:0;font-size:14px;font-weight:700;color:var(--ink)">腹筋</div>
+                <div style="display:flex;align-items:center;gap:6px;flex:none">
+                  <div style="border:1px solid var(--line);border-radius:9px;padding:7px 9px;min-height:36px;display:flex;align-items:center;gap:3px;background:#fff"><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--ink)">2</span><span style="font-size:11px;color:var(--sub)">セット</span></div>
+                  <div style="font-size:12px;color:var(--faint)">×</div>
+                  <div style="border:1px solid var(--line);border-radius:9px;padding:7px 9px;min-height:36px;display:flex;align-items:center;gap:3px;background:#fff"><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--ink)">20</span><span style="font-size:11px;color:var(--sub)">回</span></div>
+                </div>
+                <div style="width:44px;height:44px;flex:none;border:1px solid var(--line);border-radius:11px;display:flex;align-items:center;justify-content:center;background:#fff"><div style="width:11px;height:13px;border:1.5px solid var(--sub);border-top:0;border-radius:0 0 3px 3px;position:relative"><div style="position:absolute;left:-2.5px;right:-2.5px;top:-4px;height:1.5px;background:var(--sub)"></div></div></div>
+              </div>
+              <button style="margin-top:10px;border:1px dashed var(--faint);background:transparent;color:var(--body);font-family:inherit;font-size:13px;font-weight:700;border-radius:13px;min-height:46px;cursor:pointer">種目を追加</button>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <div style="font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.04em">メモ</div>
+              <div style="border:1px solid var(--line);border-radius:12px;padding:11px 12px;min-height:60px;background:#fff;font-size:13px;color:var(--body);line-height:1.6">昼休みに</div>
+            </div>
+
+            <div style="border-top:1px solid var(--line);padding-top:14px;display:flex;flex-direction:column;gap:8px">
+              <button style="border:1px solid var(--line);background:#fff;color:var(--body);font-family:inherit;font-size:14px;font-weight:700;border-radius:13px;min-height:46px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">
+                <span style="width:12px;height:14px;border:1.5px solid var(--sub);border-top:0;border-radius:0 0 3px 3px;position:relative;display:inline-block"><span style="position:absolute;left:-2.5px;right:-2.5px;top:-4px;height:1.5px;background:var(--sub);display:block"></span></span>
+                この記録を削除
+              </button>
+              <div style="font-size:11px;color:var(--faint);line-height:1.6">削除は確認ダイアログを出してから実行します。</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ 2c 手で記録 ============ -->
+    <div id="2c" style="display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:#fff;background:var(--ink);border-radius:6px;padding:3px 7px">2c</div>
+        <div style="font-size:13px;font-weight:700;color:var(--ink)">種目を選んで記録</div>
+      </div>
+      <div style="width:390px;min-height:844px;background:var(--card);border:1px solid var(--line);border-radius:28px;box-shadow:var(--shadow-card);overflow:hidden;display:flex;flex-direction:column">
+        <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line)">
+          <div style="font-size:14px;color:var(--body);font-weight:700;min-height:44px;display:flex;align-items:center;padding:0 10px;margin:-5px -10px">やめる</div>
+          <div style="flex:1;text-align:center;font-size:14px;font-weight:800;color:var(--ink)">種目を選んで記録</div>
+          <div style="width:44px"></div>
+        </div>
+
+        <div style="padding:12px 18px;border-bottom:1px solid var(--line2);background:#fafbfd">
+          <div style="font-family:var(--mono);font-size:12px;color:var(--body)">2026-09-10 木</div>
+        </div>
+
+        <div style="padding:16px 18px;display:flex;flex-direction:column;gap:18px">
+
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.04em">選んだ種目</div>
+            <div style="display:flex;flex-direction:column;gap:2px">
+              <div style="display:flex;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line2)">
+                <div style="flex:1;min-width:0;font-size:14px;font-weight:800;color:var(--ink)">スクワット</div>
+                <div style="display:flex;align-items:center;gap:6px;flex:none">
+                  <button style="width:44px;height:44px;border:1px solid var(--line);background:#fff;border-radius:11px;font-size:17px;color:var(--body);font-family:inherit;cursor:pointer">−</button>
+                  <div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--ink);min-width:58px;text-align:center">3×10回</div>
+                  <button style="width:44px;height:44px;border:1px solid var(--line);background:#fff;border-radius:11px;font-size:17px;color:var(--body);font-family:inherit;cursor:pointer">＋</button>
+                </div>
+                <div style="width:44px;height:44px;flex:none;border:1px solid var(--line);border-radius:11px;display:flex;align-items:center;justify-content:center;background:#fff"><div style="width:11px;height:13px;border:1.5px solid var(--sub);border-top:0;border-radius:0 0 3px 3px;position:relative"><div style="position:absolute;left:-2.5px;right:-2.5px;top:-4px;height:1.5px;background:var(--sub)"></div></div></div>
+              </div>
+              <div style="display:flex;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line2);border-bottom:1px solid var(--line2)">
+                <div style="flex:1;min-width:0;font-size:14px;font-weight:800;color:var(--ink)">プランク</div>
+                <div style="display:flex;align-items:center;gap:6px;flex:none">
+                  <button style="width:44px;height:44px;border:1px solid var(--line);background:#fff;border-radius:11px;font-size:17px;color:var(--body);font-family:inherit;cursor:pointer">−</button>
+                  <div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--ink);min-width:58px;text-align:center">2×30秒</div>
+                  <button style="width:44px;height:44px;border:1px solid var(--line);background:#fff;border-radius:11px;font-size:17px;color:var(--body);font-family:inherit;cursor:pointer">＋</button>
+                </div>
+                <div style="width:44px;height:44px;flex:none;border:1px solid var(--line);border-radius:11px;display:flex;align-items:center;justify-content:center;background:#fff"><div style="width:11px;height:13px;border:1.5px solid var(--sub);border-top:0;border-radius:0 0 3px 3px;position:relative"><div style="position:absolute;left:-2.5px;right:-2.5px;top:-4px;height:1.5px;background:var(--sub)"></div></div></div>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.04em">種目を足す</div>
+            <div style="border:1px solid var(--line);border-radius:12px;padding:11px 12px;min-height:46px;display:flex;align-items:center;background:#fff;font-size:14px;color:var(--faint)">種目名を書く</div>
+            <div style="font-size:11px;color:var(--faint);line-height:1.6">庫に無い名前を書くと、そのまま庫に加わります。</div>
+            <div style="display:flex;flex-direction:column;gap:2px;padding-top:4px">
+              <div style="font-size:11px;color:var(--sub);padding-bottom:4px">よく記録している種目</div>
+              <div style="display:flex;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line2)">
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+                  <div style="font-size:14px;font-weight:700;color:var(--ink)">腹筋</div>
+                  <div style="font-family:var(--mono);font-size:11px;color:var(--faint)">標準 2×20回 ・ 記録 41件</div>
+                </div>
+                <button style="border:1px solid var(--line);background:#fff;color:var(--body);font-family:inherit;font-size:13px;font-weight:700;border-radius:10px;min-height:38px;padding:0 14px;cursor:pointer;flex:none">足す</button>
+              </div>
+              <div style="display:flex;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line2)">
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+                  <div style="font-size:14px;font-weight:700;color:var(--ink)">ランジ</div>
+                  <div style="font-family:var(--mono);font-size:11px;color:var(--faint)">標準 3×10回 ・ 記録 28件</div>
+                </div>
+                <button style="border:1px solid var(--line);background:#fff;color:var(--body);font-family:inherit;font-size:13px;font-weight:700;border-radius:10px;min-height:38px;padding:0 14px;cursor:pointer;flex:none">足す</button>
+              </div>
+              <div style="display:flex;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line2)">
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+                  <div style="font-size:14px;font-weight:700;color:var(--ink)">ヒップリフト</div>
+                  <div style="font-family:var(--mono);font-size:11px;color:var(--faint)">標準 3×15回 ・ 記録 22件</div>
+                </div>
+                <button style="border:1px solid var(--line);background:#fff;color:var(--body);font-family:inherit;font-size:13px;font-weight:700;border-radius:10px;min-height:38px;padding:0 14px;cursor:pointer;flex:none">足す</button>
+              </div>
+              <div style="display:flex;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line2);border-bottom:1px solid var(--line2)">
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+                  <div style="font-size:14px;font-weight:700;color:var(--ink)">首まわし</div>
+                  <div style="font-family:var(--mono);font-size:11px;color:var(--faint)">標準 2×30秒 ・ 記録 19件</div>
+                </div>
+                <button style="border:1px solid var(--line);background:#fff;color:var(--body);font-family:inherit;font-size:13px;font-weight:700;border-radius:10px;min-height:38px;padding:0 14px;cursor:pointer;flex:none">足す</button>
+              </div>
+              <div style="font-size:12px;font-weight:700;color:var(--deep);text-decoration:underline;min-height:44px;display:flex;align-items:center;margin:-11px 0;padding-top:10px">庫をすべて見る</div>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.04em">実施時刻</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:12px;padding:11px 12px;min-height:46px;background:#fff">
+              <span style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--ink)">12:05</span>
+              <span style="font-size:12px;color:var(--sub)">変更</span>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.04em">メモ<span style="font-weight:700;color:var(--faint)">（任意）</span></div>
+            <div style="border:1px solid var(--line);border-radius:12px;padding:11px 12px;min-height:60px;background:#fff;font-size:13px;color:var(--faint);line-height:1.6">書かなくてもかまいません</div>
+          </div>
+
+          <div style="border-top:1px solid var(--line);padding-top:14px;display:flex;flex-direction:column;gap:8px">
+            <button style="border:0;background:var(--deep);color:#fff;font-family:inherit;font-size:15px;font-weight:800;border-radius:16px;min-height:50px;box-shadow:var(--shadow-action);cursor:pointer">2種目を記録</button>
+            <div style="font-size:11px;color:var(--faint);line-height:1.6">同じ日に何回でも足せます。手で選んだ記録は、その日の1件にまとまります。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ 2d 設定 ============ -->
+    <div id="2d" style="display:flex;gap:20px;align-items:flex-start">
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:#fff;background:var(--ink);border-radius:6px;padding:3px 7px">2d</div>
+          <div style="font-size:13px;font-weight:700;color:var(--ink)">設定</div>
+        </div>
+        <div style="width:390px;min-height:844px;background:var(--card);border:1px solid var(--line);border-radius:28px;box-shadow:var(--shadow-card);overflow:hidden;display:flex;flex-direction:column">
+          <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line)">
+            <div style="width:44px"></div>
+            <div style="flex:1;text-align:center;font-size:14px;font-weight:800;color:var(--ink)">設定</div>
+            <div style="width:44px"></div>
+          </div>
+
+          <div style="padding:16px 18px;display:flex;flex-direction:column;gap:2px">
+            <a href="#1f" style="display:flex;gap:12px;align-items:center;padding:14px 0;border-top:1px solid var(--line2);text-decoration:none;color:inherit">
+              <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+                <div style="font-size:15px;font-weight:700;color:var(--ink)">相棒</div>
+                <div style="font-size:12px;color:var(--sub)">いまは カピバラ</div>
+              </div>
+              <img src="companions/companion-capybara.png" alt="" style="width:40px;height:40px;flex:none;object-fit:contain">
+              <div style="font-size:15px;color:var(--faint);flex:none">›</div>
+            </a>
+
+            <a href="#1g" style="display:flex;gap:12px;align-items:center;padding:14px 0;border-top:1px solid var(--line2);text-decoration:none;color:inherit">
+              <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+                <div style="font-size:15px;font-weight:700;color:var(--ink)">書き出し／読み込み</div>
+                <div style="font-size:12px;color:var(--sub)">前回の書き出し 2026-08-02</div>
+              </div>
+              <div style="font-size:15px;color:var(--faint);flex:none">›</div>
+            </a>
+
+            <a href="#1c" style="display:flex;gap:12px;align-items:center;padding:14px 0;border-top:1px solid var(--line2);text-decoration:none;color:inherit">
+              <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+                <div style="font-size:15px;font-weight:700;color:var(--ink)">ホーム画面に追加する手順</div>
+                <div style="font-size:12px;color:var(--sub);line-height:1.5">Safari は7日間使わないと記録を消します</div>
+              </div>
+              <div style="font-size:15px;color:var(--faint);flex:none">›</div>
+            </a>
+
+            <div style="display:flex;gap:12px;align-items:center;padding:14px 0;border-top:1px solid var(--line2);border-bottom:1px solid var(--line2)">
+              <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+                <div style="font-size:15px;font-weight:700;color:var(--ink)">種目の庫</div>
+                <div style="font-size:12px;color:var(--sub)">24件</div>
+              </div>
+              <div style="font-size:15px;color:var(--faint);flex:none">›</div>
+            </div>
+
+            <div style="padding:18px 0 0;font-size:11px;color:var(--faint);line-height:1.7">記録はこの端末の中だけにあります。アカウントはありません。どこにも送りません。</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="font-size:13px;font-weight:700;color:var(--ink);padding-top:26px">種目の庫</div>
+        <div style="width:390px;min-height:700px;background:var(--card);border:1px solid var(--line);border-radius:28px;box-shadow:var(--shadow-card);overflow:hidden;display:flex;flex-direction:column">
+          <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line)">
+            <div style="font-size:14px;color:var(--body);font-weight:700;min-height:44px;display:flex;align-items:center;padding:0 10px;margin:-5px -10px">戻る</div>
+            <div style="flex:1;text-align:center;font-size:14px;font-weight:800;color:var(--ink)">種目の庫</div>
+            <div style="font-size:14px;color:var(--deep);font-weight:800;min-height:44px;display:flex;align-items:center;padding:0 10px;margin:-5px -10px">編集</div>
+          </div>
+
+          <div style="display:flex;align-items:flex-start;gap:10px;padding:11px 14px;border-bottom:1px solid #f0e2bf;background:var(--warnSoft)">
+            <div style="width:20px;height:20px;border:1.5px solid var(--warnInk);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:var(--warnInk);flex:none">!</div>
+            <div style="flex:1;font-size:12px;color:#7a5b12;line-height:1.55">メニューで使用中のため削除できません。<br><span style="font-family:var(--mono)">下半身 10分 ／ 朝のストレッチ</span></div>
+          </div>
+
+          <div style="padding:14px 18px 18px;display:flex;flex-direction:column;gap:2px">
+            <div style="display:flex;gap:10px;align-items:center;padding:11px 0;border-top:1px solid var(--line2)">
+              <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+                <div style="font-size:14px;font-weight:700;color:var(--ink)">スクワット</div>
+                <div style="font-family:var(--mono);font-size:11px;color:var(--faint)">記録 52件</div>
+              </div>
+              <div style="border:1px solid var(--line);border-radius:9px;padding:7px 10px;min-height:36px;display:flex;align-items:center;background:#fff;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--ink);flex:none">3×10回</div>
+              <div style="width:44px;height:44px;flex:none;border:1px dashed var(--line);border-radius:11px;display:flex;align-items:center;justify-content:center;background:#fafbfd"><div style="width:11px;height:13px;border:1.5px solid var(--faint);border-top:0;border-radius:0 0 3px 3px;position:relative"><div style="position:absolute;left:-2.5px;right:-2.5px;top:-4px;height:1.5px;background:var(--faint)"></div></div></div>
+            </div>
+            <div style="display:flex;gap:10px;align-items:center;padding:11px 0;border-top:1px solid var(--line2)">
+              <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+                <div style="font-size:14px;font-weight:700;color:var(--ink)">プランク</div>
+                <div style="font-family:var(--mono);font-size:11px;color:var(--faint)">記録 38件</div>
+              </div>
+              <div style="border:1px solid var(--line);border-radius:9px;padding:7px 10px;min-height:36px;display:flex;align-items:center;background:#fff;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--ink);flex:none">2×30秒</div>
+              <div style="width:44px;height:44px;flex:none;border:1px dashed var(--line);border-radius:11px;display:flex;align-items:center;justify-content:center;background:#fafbfd"><div style="width:11px;height:13px;border:1.5px solid var(--faint);border-top:0;border-radius:0 0 3px 3px;position:relative"><div style="position:absolute;left:-2.5px;right:-2.5px;top:-4px;height:1.5px;background:var(--faint)"></div></div></div>
+            </div>
+            <div style="display:flex;gap:10px;align-items:center;padding:11px 0;border-top:1px solid var(--line2)">
+              <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+                <div style="font-size:14px;font-weight:700;color:var(--ink)">腹筋</div>
+                <div style="font-family:var(--mono);font-size:11px;color:var(--faint)">記録 41件</div>
+              </div>
+              <div style="border:1px solid var(--line);border-radius:9px;padding:7px 10px;min-height:36px;display:flex;align-items:center;background:#fff;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--ink);flex:none">2×20回</div>
+              <div style="width:44px;height:44px;flex:none;border:1px solid var(--line);border-radius:11px;display:flex;align-items:center;justify-content:center;background:#fff"><div style="width:11px;height:13px;border:1.5px solid var(--sub);border-top:0;border-radius:0 0 3px 3px;position:relative"><div style="position:absolute;left:-2.5px;right:-2.5px;top:-4px;height:1.5px;background:var(--sub)"></div></div></div>
+            </div>
+            <div style="display:flex;gap:10px;align-items:center;padding:11px 0;border-top:1px solid var(--line2);border-bottom:1px solid var(--line2)">
+              <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+                <div style="font-size:14px;font-weight:700;color:var(--ink)">なわとび</div>
+                <div style="font-family:var(--mono);font-size:11px;color:var(--faint)">記録 0件 ・ 未使用</div>
+              </div>
+              <div style="border:1px solid var(--line);border-radius:9px;padding:7px 10px;min-height:36px;display:flex;align-items:center;background:#fff;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--ink);flex:none">1×180秒</div>
+              <div style="width:44px;height:44px;flex:none;border:1px solid var(--line);border-radius:11px;display:flex;align-items:center;justify-content:center;background:#fff"><div style="width:11px;height:13px;border:1.5px solid var(--sub);border-top:0;border-radius:0 0 3px 3px;position:relative"><div style="position:absolute;left:-2.5px;right:-2.5px;top:-4px;height:1.5px;background:var(--sub)"></div></div></div>
+            </div>
+            <div style="padding:14px 0 0;font-size:11px;color:var(--faint);line-height:1.7">行を押すと名前と標準のセット数を直せます。メニューで使っている種目のゴミ箱は破線で、押せません。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section style="display:flex;flex-direction:column;gap:28px;padding:48px;font-family:var(--sans);color:var(--body)">
+
+  <div style="display:flex;flex-direction:column;gap:6px">
+    <div style="font-size:20px;font-weight:800;color:var(--ink)">お家トレ 公開版 ─ 初回まわりの6画面</div>
+    <div style="font-size:13px;color:var(--sub);max-width:760px">ホームは <a href="#1b" style="color:var(--deep);text-decoration:underline">1b</a> の構成に確定。既存の自分用画面の決定（名前が左・サムネイルは右の補助、冒頭は日付→アプリ名→今週の目盛り、修正／削除は「編集」に集約、記録できたことの帯や取り消しは置かない）に合わせています。区別は枠・明度・数字・ラベルで、色相には頼りません。</div>
+  </div>
+
+  <div style="display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start">
+
+        <!-- ============ 1b ホーム ============ -->
+    <div id="1b" style="display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:#fff;background:var(--ink);border-radius:6px;padding:3px 7px">1b</div>
+        <div style="font-size:13px;font-weight:700;color:var(--ink)">ホーム</div>
+      </div>
+      <div style="width:390px;min-height:844px;background:var(--card);border:1px solid var(--line);border-radius:28px;box-shadow:var(--shadow-card);overflow:hidden;display:flex;flex-direction:column">
+
+        <div style="display:flex;flex-direction:column;gap:3px;padding:18px 18px 12px">
+          <div style="font-family:var(--mono);font-size:12px;color:var(--faint)">2026-09-10 木</div>
+          <div style="font-size:19px;font-weight:800;color:var(--ink);line-height:1.1">お家トレ</div>
+        </div>
+
+        <div style="padding:0 18px 14px;display:flex;flex-direction:column;gap:7px">
+          <div style="display:flex;align-items:baseline;justify-content:space-between">
+            <div style="font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.04em">今週の実績</div>
+            <div style="font-family:var(--mono);font-size:12px;color:var(--body)">今週 3日 ・ 先週 2日</div>
+          </div>
+          <div style="display:flex;gap:5px">
+            <div style="flex:1;height:44px;border-radius:8px;border:1px solid var(--line);background:#dce3ec;color:var(--ink);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:12px;font-weight:700">1</div>
+            <div style="flex:1;height:44px;border-radius:8px;border:1px solid var(--line);background:#fff;color:var(--faint);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:12px;font-weight:700"></div>
+            <div style="flex:1;height:44px;border-radius:8px;border:1px solid var(--line);background:#b3c0d1;color:var(--ink);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:12px;font-weight:700">2</div>
+            <div style="flex:1;height:44px;border-radius:8px;border:1px solid var(--line);background:#b3c0d1;color:var(--ink);box-shadow:0 0 0 2px var(--card),0 0 0 3.5px var(--ink);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:12px;font-weight:700">2</div>
+            <div style="flex:1;height:44px;border-radius:8px;border:1px dashed var(--faint);background:#fff"></div>
+            <div style="flex:1;height:44px;border-radius:8px;border:1px dashed var(--faint);background:#fff"></div>
+            <div style="flex:1;height:44px;border-radius:8px;border:1px dashed var(--faint);background:#fff"></div>
+          </div>
+          <div style="display:flex;gap:5px;font-family:var(--mono);font-size:10px;color:var(--faint)"><div style="flex:1;text-align:center">月</div><div style="flex:1;text-align:center">火</div><div style="flex:1;text-align:center">水</div><div style="flex:1;text-align:center">木</div><div style="flex:1;text-align:center">金</div><div style="flex:1;text-align:center">土</div><div style="flex:1;text-align:center">日</div></div>
+          <div style="font-size:11px;color:var(--faint)">数字は記録の件数。押すとその日を開きます。</div>
+        </div>
+        <div style="padding:0 18px 14px;display:flex;flex-direction:column;gap:8px">
+          <div style="font-size:13px;color:var(--body);line-height:1.5;min-height:20px">おはようございます。3日ぶりですね。</div>
+          <div style="border:1px solid var(--line);border-radius:16px;background:#fff;padding:14px;display:flex;gap:14px;align-items:flex-start">
+            <img src="companions/companion-capybara.png" alt="" style="width:84px;height:84px;flex:none;object-fit:contain">
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+              <div style="font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.04em">きょう動いた分</div>
+              <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap">
+                <div style="display:flex;align-items:baseline;gap:2px"><span style="font-family:var(--mono);font-size:28px;font-weight:800;color:var(--ink);line-height:1.05">8</span><span style="font-size:13px;font-weight:700;color:var(--sub)">種目</span></div>
+                <div style="width:1px;height:18px;background:var(--line)"></div>
+                <div style="display:flex;align-items:baseline;gap:2px"><span style="font-family:var(--mono);font-size:28px;font-weight:800;color:var(--ink);line-height:1.05">6</span><span style="font-size:13px;font-weight:700;color:var(--sub)">分</span></div>
+              </div>
+              <div style="font-family:var(--mono);font-size:11px;color:var(--faint)">2件 ／ 07:20 - 12:20</div>
+            </div>
+          </div>
+        </div>
+        <div style="flex:1;padding:14px 18px 18px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:18px">
+          <div style="display:flex;flex-direction:column;gap:2px">
+
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div style="font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.04em">今日の記録</div>
+              <button style="border:1px solid var(--line);background:#fff;color:var(--body);font-family:inherit;font-size:12px;font-weight:700;border-radius:10px;min-height:34px;padding:0 12px;cursor:pointer">編集</button>
+            </div>
+
+            <div style="padding:11px 0;display:flex;gap:12px;align-items:flex-start">
+              <div style="font-family:var(--mono);font-size:14px;font-weight:700;color:var(--ink);flex:none;width:44px;padding-top:1px">07:20</div>
+              <div style="flex:1;min-width:0;display:flex;gap:12px;align-items:flex-start">
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+                  <div style="font-size:14px;font-weight:800;color:var(--ink);line-height:1.25">朝のストレッチ</div>
+                  <div style="font-size:11px;color:var(--sub)">4種目すべて</div>
+                  <div style="display:flex;flex-direction:column;gap:3px;border-left:2px solid var(--line);padding:2px 0 2px 10px;margin-top:2px">
+                    <div style="display:flex;justify-content:space-between;gap:10px;font-size:12px;color:var(--body)"><span>首まわし</span><span style="font-family:var(--mono);color:var(--sub)">2×30秒</span></div>
+                    <div style="display:flex;justify-content:space-between;gap:10px;font-size:12px;color:var(--body)"><span>肩まわし</span><span style="font-family:var(--mono);color:var(--sub)">2×30秒</span></div>
+                    <div style="display:flex;justify-content:space-between;gap:10px;font-size:12px;color:var(--body)"><span>体側のばし</span><span style="font-family:var(--mono);color:var(--sub)">2×30秒</span></div>
+                    <div style="display:flex;justify-content:space-between;gap:10px;font-size:12px;color:var(--body)"><span>前屈</span><span style="font-family:var(--mono);color:var(--sub)">2×30秒</span></div>
+                  </div>
+                  <div style="font-size:12px;font-weight:700;color:var(--deep);text-decoration:underline;min-height:44px;display:flex;align-items:center;margin:-11px 0;margin-top:2px">とじる</div>
+                </div>
+                <div style="width:120px;height:68px;border-radius:8px;background:#e9eef5;border:1px solid var(--line);overflow:hidden;flex:none;position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer">
+                  <img src="https://i.ytimg.com/vi/UBMk30rjy0o/mqdefault.jpg" alt="" style="width:100%;height:100%;object-fit:cover">
+                  <div data-ph style="display:none;font-size:9px;color:var(--faint)">動画なし</div>
+                  <div style="position:absolute;right:4px;bottom:4px;width:19px;height:19px;border-radius:10px;background:rgba(20,28,40,.34);display:flex;align-items:center;justify-content:center"><div style="width:0;height:0;border-left:6px solid rgba(255,255,255,.88);border-top:4px solid transparent;border-bottom:4px solid transparent;margin-left:2px"></div></div>
+                </div>
+              </div>
+            </div>
+            <div style="padding:11px 0;border-top:1px solid var(--line2);display:flex;gap:12px;align-items:flex-start">
+              <div style="font-family:var(--mono);font-size:14px;font-weight:700;color:var(--ink);flex:none;width:44px;padding-top:1px">12:05</div>
+              <div style="flex:1;min-width:0;display:flex;gap:12px;align-items:flex-start">
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+                  <div style="font-size:14px;font-weight:800;color:var(--ink);line-height:1.25">スクワット ほか1件</div>
+                  <div style="font-size:11px;color:var(--sub)">手で選んだ記録</div>
+                  <div style="font-size:12px;font-weight:700;color:var(--deep);text-decoration:underline;min-height:44px;display:flex;align-items:center;margin:-11px 0">種目を見る</div>
+                </div>
+              </div>
+            </div>
+
+            <button style="border:1px dashed var(--faint);background:transparent;color:var(--body);font-family:inherit;font-size:13px;font-weight:700;border-radius:13px;min-height:44px;cursor:pointer;margin-top:4px">種目を選んで記録</button>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <div style="font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.04em">メニュー</div>
+
+            <div style="display:flex;flex-direction:column;gap:10px;padding:12px 0;">
+              <div style="display:flex;gap:12px;align-items:flex-start">
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+                  <div style="font-size:15px;font-weight:800;color:var(--ink)">朝のストレッチ</div>
+                  <div style="font-family:var(--mono);font-size:11px;color:var(--sub)">4種目 ・ 2セット×30秒 ほか</div>
+                </div>
+                <div style="width:104px;height:59px;border-radius:8px;background:#e9eef5;border:1px solid var(--line);overflow:hidden;flex:none;position:relative;display:flex;align-items:center;justify-content:center">
+                  <img src="https://i.ytimg.com/vi/UBMk30rjy0o/mqdefault.jpg" alt="" style="width:100%;height:100%;object-fit:cover">
+                  <div data-ph style="display:none;font-size:9px;color:var(--faint)">動画なし</div>
+                  <div style="position:absolute;right:3px;bottom:3px;width:16px;height:16px;border-radius:8px;background:rgba(29,39,52,.78);color:#fff;font-size:8px;display:flex;align-items:center;justify-content:center;padding-left:1px">▶</div>
+                </div>
+              </div>
+              <div style="display:flex;gap:8px">
+                <button style="flex:1;border:0;background:var(--deep);color:#fff;font-family:inherit;font-size:14px;font-weight:800;border-radius:13px;min-height:44px;box-shadow:var(--shadow-action);cursor:pointer">完了を記録</button>
+                <button style="border:1px solid var(--line);background:#fff;color:var(--body);font-family:inherit;font-size:13px;font-weight:700;border-radius:13px;min-height:44px;padding:0 14px;cursor:pointer">一部だけ</button>
+              </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:10px;padding:12px 0;border-top:1px solid var(--line2);">
+              <div style="display:flex;gap:12px;align-items:flex-start">
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+                  <div style="font-size:15px;font-weight:800;color:var(--ink)">下半身 10分</div>
+                  <div style="font-family:var(--mono);font-size:11px;color:var(--sub)">6種目 ・ 3セット×10回 ほか</div>
+                </div>
+                <div style="width:104px;height:59px;border-radius:8px;background:#e9eef5;border:1px solid var(--line);overflow:hidden;flex:none;position:relative;display:flex;align-items:center;justify-content:center">
+                  <img src="https://i.ytimg.com/vi/sTANio_2E0Q/mqdefault.jpg" alt="" style="width:100%;height:100%;object-fit:cover">
+                  <div data-ph style="display:none;font-size:9px;color:var(--faint)">動画なし</div>
+                  <div style="position:absolute;right:3px;bottom:3px;width:16px;height:16px;border-radius:8px;background:rgba(29,39,52,.78);color:#fff;font-size:8px;display:flex;align-items:center;justify-content:center;padding-left:1px">▶</div>
+                </div>
+              </div>
+              <div style="display:flex;gap:8px">
+                <button style="flex:1;border:0;background:var(--deep);color:#fff;font-family:inherit;font-size:14px;font-weight:800;border-radius:13px;min-height:44px;box-shadow:var(--shadow-action);cursor:pointer">完了を記録</button>
+                <button style="border:1px solid var(--line);background:#fff;color:var(--body);font-family:inherit;font-size:13px;font-weight:700;border-radius:13px;min-height:44px;padding:0 14px;cursor:pointer">一部だけ</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <sc-if value="{{ a2hsShown }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--warnSoft);border-top:1px solid #f0e2bf">
+            <div style="width:20px;height:20px;border:1.5px solid var(--warnInk);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:var(--warnInk);flex:none">!</div>
+            <div style="font-size:12px;color:#7a5b12;line-height:1.45;flex:1">ホーム画面に追加していません。記録が消えることがあります。</div>
+            <button style="border:1px solid var(--warnInk);background:transparent;color:var(--warnInk);font-family:inherit;font-size:12px;font-weight:700;border-radius:9px;padding:8px 10px;min-height:36px;cursor:pointer">手順</button>
+          </div>
+        </sc-if>
+
+        <div style="display:flex;border-top:1px solid var(--line);background:#fff">
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 0 16px">
+            <div style="width:16px;height:16px;border-radius:4px;background:var(--ink)"></div>
+            <div style="font-size:11px;font-weight:800;color:var(--ink)">記録</div>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 0 16px">
+            <div style="width:16px;height:16px;border-radius:4px;border:1.5px solid var(--faint)"></div>
+            <div style="font-size:11px;font-weight:700;color:var(--sub)">メニュー</div>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 0 16px">
+            <div style="width:16px;height:16px;border-radius:8px;border:1.5px solid var(--faint)"></div>
+            <div style="font-size:11px;font-weight:700;color:var(--sub)">設定</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+<!-- ============ 1c 初回 ============ -->
+    <div id="1c" style="display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:#fff;background:var(--ink);border-radius:6px;padding:3px 7px">1c</div>
+        <div style="font-size:13px;font-weight:700;color:var(--ink)">初回 ─ 空のホーム＋追加の手順</div>
+      </div>
+      <div style="width:390px;height:844px;background:var(--card);border:1px solid var(--line);border-radius:28px;box-shadow:var(--shadow-card);overflow:hidden;display:flex;flex-direction:column;position:relative">
+
+        <div style="padding:18px 18px 14px;border-bottom:1px solid var(--line2)">
+          <div style="font-size:16px;font-weight:800;color:var(--ink)">お家トレ</div>
+          <div style="font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:2px">2026-09-10 木</div>
+        </div>
+
+        <div style="flex:1;padding:14px 0 18px;display:flex;flex-direction:column;gap:14px;opacity:.5">
+        <div style="padding:0 18px 14px;display:flex;flex-direction:column;gap:7px">
+          <div style="display:flex;align-items:baseline;justify-content:space-between">
+            <div style="font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.04em">今週の実績</div>
+            <div style="font-family:var(--mono);font-size:12px;color:var(--body)">今週 0日 ・ 先週 0日</div>
+          </div>
+          <div style="display:flex;gap:5px">
+            <div style="flex:1;height:44px;border-radius:8px;border:1px solid var(--line);background:#fff;color:var(--faint);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:12px;font-weight:700"></div>
+            <div style="flex:1;height:44px;border-radius:8px;border:1px solid var(--line);background:#fff;color:var(--faint);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:12px;font-weight:700"></div>
+            <div style="flex:1;height:44px;border-radius:8px;border:1px solid var(--line);background:#fff;color:var(--faint);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:12px;font-weight:700"></div>
+            <div style="flex:1;height:44px;border-radius:8px;border:1px solid var(--line);background:#fff;box-shadow:0 0 0 2px var(--card),0 0 0 3.5px var(--ink);color:var(--faint);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:12px;font-weight:700"></div>
+            <div style="flex:1;height:44px;border-radius:8px;border:1px dashed var(--faint);background:#fff"></div>
+            <div style="flex:1;height:44px;border-radius:8px;border:1px dashed var(--faint);background:#fff"></div>
+            <div style="flex:1;height:44px;border-radius:8px;border:1px dashed var(--faint);background:#fff"></div>
+          </div>
+          <div style="display:flex;gap:5px;font-family:var(--mono);font-size:10px;color:var(--faint)"><div style="flex:1;text-align:center">月</div><div style="flex:1;text-align:center">火</div><div style="flex:1;text-align:center">水</div><div style="flex:1;text-align:center">木</div><div style="flex:1;text-align:center">金</div><div style="flex:1;text-align:center">土</div><div style="flex:1;text-align:center">日</div></div>
+          <div style="font-size:11px;color:var(--faint)">数字は記録の件数。押すとその日を開きます。</div>
+        </div>
+
+        <div style="padding:0 18px 14px;display:flex;flex-direction:column;gap:8px">
+          <div style="font-size:13px;color:var(--body);line-height:1.5;min-height:20px">こんにちは。</div>
+          <div style="border:1px solid var(--line);border-radius:16px;background:#fff;padding:14px;display:flex;gap:14px;align-items:flex-start">
+            <img src="companions/companion-capybara.png" alt="" style="width:84px;height:84px;flex:none;object-fit:contain">
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:6px">
+              <div style="font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.04em">きょうはこれから</div>
+              <div style="font-size:13px;color:var(--body);line-height:1.55">下のボタンから記録できます。</div>
+            </div>
+          </div>
+        </div>
+          <div style="padding:0 16px;display:flex;flex-direction:column;gap:14px">
+          <div style="border:1px dashed var(--faint);border-radius:16px;padding:22px 16px;display:flex;flex-direction:column;gap:6px;align-items:flex-start">
+            <div style="font-size:14px;font-weight:800;color:var(--ink)">メニューがありません</div>
+            <div style="font-size:12px;color:var(--sub);line-height:1.6">メニューは、動画のURLと種目をまとめたものです。1つ作ると、やった日に1タップで記録できます。</div>
+            <button style="margin-top:8px;border:0;background:var(--deep);color:#fff;font-family:inherit;font-size:14px;font-weight:800;border-radius:14px;min-height:46px;padding:0 18px">メニューを作る</button>
+          </div>
+          </div>
+        </div>
+
+        <div style="position:absolute;inset:0;background:rgba(29,39,52,.42)"></div>
+
+        <div style="position:absolute;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);border-radius:22px 22px 28px 28px;padding:20px 20px 26px;display:flex;flex-direction:column;gap:14px">
+          <div style="width:38px;height:4px;border-radius:2px;background:var(--line);align-self:center"></div>
+          <div style="font-size:18px;font-weight:800;color:var(--ink)">ホーム画面に追加してください</div>
+          <div style="font-size:13px;color:var(--body);line-height:1.65">iPhone の Safari は、7日間使わないとブラウザに保存した記録を消します。ホーム画面に追加したものは消えません。記録はこの端末の中だけにあります。</div>
+
+          <div style="display:flex;flex-direction:column;gap:1px;background:var(--line2);border:1px solid var(--line);border-radius:14px;overflow:hidden">
+            <div style="display:flex;gap:12px;padding:12px 14px;background:#fff;align-items:center">
+              <div style="width:22px;height:22px;border-radius:6px;background:var(--ink);color:#fff;font-family:var(--mono);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex:none">1</div>
+              <div style="font-size:13px;color:var(--body);flex:1">画面下の <span style="font-weight:800;color:var(--ink)">共有</span> ボタンを押す</div>
+              <div style="width:26px;height:26px;border:1.5px solid var(--sub);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--sub);flex:none">↑</div>
+            </div>
+            <div style="display:flex;gap:12px;padding:12px 14px;background:#fff;align-items:center">
+              <div style="width:22px;height:22px;border-radius:6px;background:var(--ink);color:#fff;font-family:var(--mono);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex:none">2</div>
+              <div style="font-size:13px;color:var(--body);flex:1"><span style="font-weight:800;color:var(--ink)">ホーム画面に追加</span> を選ぶ</div>
+              <div style="width:26px;height:26px;border:1.5px solid var(--sub);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:15px;color:var(--sub);flex:none">＋</div>
+            </div>
+            <div style="display:flex;gap:12px;padding:12px 14px;background:#fff;align-items:center">
+              <div style="width:22px;height:22px;border-radius:6px;background:var(--ink);color:#fff;font-family:var(--mono);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex:none">3</div>
+              <div style="font-size:13px;color:var(--body);flex:1">右上の <span style="font-weight:800;color:var(--ink)">追加</span> を押す</div>
+              <div style="width:26px;height:26px;flex:none"></div>
+            </div>
+          </div>
+
+          <div style="display:flex;align-items:flex-start;gap:10px;border:1px solid var(--line);border-radius:12px;padding:11px 12px;background:#fafbfd">
+            <div style="width:18px;height:18px;border:1.5px solid var(--sub);border-radius:4px;flex:none;margin-top:1px"></div>
+            <div style="font-size:12px;color:var(--sub);line-height:1.55">機種変更や端末の故障に備えるときは、書き出しでファイルに残します。設定にあります。</div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <button style="border:0;background:var(--deep);color:#fff;font-family:inherit;font-size:15px;font-weight:800;border-radius:16px;min-height:50px;box-shadow:var(--shadow-action);cursor:pointer">追加しました</button>
+            <button style="border:1px solid var(--line);background:#fff;color:var(--sub);font-family:inherit;font-size:13px;font-weight:700;border-radius:16px;min-height:46px;cursor:pointer">あとで（設定からいつでも見られます）</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+        <!-- ============ 1d 1タップ完了 ============ -->
+    <div id="1d" style="display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:#fff;background:var(--ink);border-radius:6px;padding:3px 7px">1d</div>
+        <div style="font-size:13px;font-weight:700;color:var(--ink)">1タップ完了 ─ 押したあと</div>
+      </div>
+      <div style="width:390px;min-height:844px;background:var(--card);border:1px solid var(--line);border-radius:28px;box-shadow:var(--shadow-card);overflow:hidden;display:flex;flex-direction:column">
+
+        <div style="display:flex;flex-direction:column;gap:3px;padding:18px 18px 12px">
+          <div style="font-family:var(--mono);font-size:12px;color:var(--faint)">2026-09-10 木</div>
+          <div style="font-size:19px;font-weight:800;color:var(--ink);line-height:1.1">お家トレ</div>
+        </div>
+
+        <div style="padding:0 18px 14px;display:flex;flex-direction:column;gap:7px">
+          <div style="display:flex;align-items:baseline;justify-content:space-between">
+            <div style="font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.04em">今週の実績</div>
+            <div style="font-family:var(--mono);font-size:12px;color:var(--body)">今週 4日 ・ 先週 2日</div>
+          </div>
+          <div style="display:flex;gap:5px">
+            <div style="flex:1;height:44px;border-radius:8px;border:1px solid var(--line);background:#dce3ec;color:var(--ink);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:12px;font-weight:700">1</div>
+            <div style="flex:1;height:44px;border-radius:8px;border:1px solid var(--line);background:#fff;color:var(--faint);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:12px;font-weight:700"></div>
+            <div style="flex:1;height:44px;border-radius:8px;border:1px solid var(--line);background:#b3c0d1;color:var(--ink);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:12px;font-weight:700">2</div>
+            <div style="flex:1;height:44px;border-radius:8px;border:1px solid #7e8ea3;background:#7e8ea3;color:#fff;box-shadow:0 0 0 2px var(--card),0 0 0 3.5px var(--ink);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:12px;font-weight:700">3</div>
+            <div style="flex:1;height:44px;border-radius:8px;border:1px dashed var(--faint);background:#fff"></div>
+            <div style="flex:1;height:44px;border-radius:8px;border:1px dashed var(--faint);background:#fff"></div>
+            <div style="flex:1;height:44px;border-radius:8px;border:1px dashed var(--faint);background:#fff"></div>
+          </div>
+          <div style="display:flex;gap:5px;font-family:var(--mono);font-size:10px;color:var(--faint)"><div style="flex:1;text-align:center">月</div><div style="flex:1;text-align:center">火</div><div style="flex:1;text-align:center">水</div><div style="flex:1;text-align:center">木</div><div style="flex:1;text-align:center">金</div><div style="flex:1;text-align:center">土</div><div style="flex:1;text-align:center">日</div></div>
+          <div style="font-size:11px;color:var(--faint)">数字は記録の件数。押すとその日を開きます。</div>
+        </div>
+        <div style="padding:0 18px 14px;display:flex;flex-direction:column;gap:8px">
+          <div style="font-size:13px;color:var(--body);line-height:1.5;min-height:20px">こんばんは。今週は4日目です。</div>
+          <div style="border:1px solid var(--line);border-radius:16px;background:#fff;padding:14px;display:flex;gap:14px;align-items:flex-start">
+            <img src="companions/companion-capybara.png" alt="" style="width:84px;height:84px;flex:none;object-fit:contain">
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+              <div style="font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.04em">きょう動いた分</div>
+              <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap">
+                <div style="display:flex;align-items:baseline;gap:2px"><span style="font-family:var(--mono);font-size:28px;font-weight:800;color:var(--ink);line-height:1.05">15</span><span style="font-size:13px;font-weight:700;color:var(--sub)">種目</span></div>
+                <div style="width:1px;height:18px;background:var(--line)"></div>
+                <div style="display:flex;align-items:baseline;gap:2px"><span style="font-family:var(--mono);font-size:28px;font-weight:800;color:var(--ink);line-height:1.05">12</span><span style="font-size:13px;font-weight:700;color:var(--sub)">分</span></div>
+              </div>
+              <div style="font-family:var(--mono);font-size:11px;color:var(--faint)">3件 ／ 07:20 - 19:52</div>
+            </div>
+          </div>
+        </div>
+        <div style="flex:1;padding:14px 18px 18px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:18px">
+          <div style="display:flex;flex-direction:column;gap:2px">
+
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div style="font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.04em">今日の記録</div>
+              <button style="border:1px solid var(--line);background:#fff;color:var(--body);font-family:inherit;font-size:12px;font-weight:700;border-radius:10px;min-height:34px;padding:0 12px;cursor:pointer">編集</button>
+            </div>
+
+            <div style="padding:11px 0;display:flex;gap:12px;align-items:flex-start">
+              <div style="font-family:var(--mono);font-size:14px;font-weight:700;color:var(--ink);flex:none;width:44px;padding-top:1px">07:20</div>
+              <div style="flex:1;min-width:0;display:flex;gap:12px;align-items:flex-start">
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+                  <div style="font-size:14px;font-weight:800;color:var(--ink);line-height:1.25">朝のストレッチ</div>
+                  <div style="font-size:11px;color:var(--sub)">4種目すべて</div>
+                  <div style="font-size:12px;font-weight:700;color:var(--deep);text-decoration:underline;min-height:44px;display:flex;align-items:center;margin:-11px 0">種目を見る</div>
+                </div>
+                <div style="width:120px;height:68px;border-radius:8px;background:#e9eef5;border:1px solid var(--line);overflow:hidden;flex:none;position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer">
+                  <img src="https://i.ytimg.com/vi/UBMk30rjy0o/mqdefault.jpg" alt="" style="width:100%;height:100%;object-fit:cover">
+                  <div data-ph style="display:none;font-size:9px;color:var(--faint)">動画なし</div>
+                  <div style="position:absolute;right:4px;bottom:4px;width:19px;height:19px;border-radius:10px;background:rgba(20,28,40,.34);display:flex;align-items:center;justify-content:center"><div style="width:0;height:0;border-left:6px solid rgba(255,255,255,.88);border-top:4px solid transparent;border-bottom:4px solid transparent;margin-left:2px"></div></div>
+                </div>
+              </div>
+            </div>
+            <div style="padding:11px 0;border-top:1px solid var(--line2);display:flex;gap:12px;align-items:flex-start">
+              <div style="font-family:var(--mono);font-size:14px;font-weight:700;color:var(--ink);flex:none;width:44px;padding-top:1px">12:05</div>
+              <div style="flex:1;min-width:0;display:flex;gap:12px;align-items:flex-start">
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+                  <div style="font-size:14px;font-weight:800;color:var(--ink);line-height:1.25">スクワット ほか1件</div>
+                  <div style="font-size:11px;color:var(--sub)">手で選んだ記録</div>
+                  <div style="font-size:12px;font-weight:700;color:var(--deep);text-decoration:underline;min-height:44px;display:flex;align-items:center;margin:-11px 0">種目を見る</div>
+                </div>
+              </div>
+            </div>
+            <div style="padding:11px 0;border-top:1px solid var(--line2);display:flex;gap:12px;align-items:flex-start">
+              <div style="font-family:var(--mono);font-size:14px;font-weight:700;color:var(--ink);flex:none;width:44px;padding-top:1px">19:40</div>
+              <div style="flex:1;min-width:0;display:flex;gap:12px;align-items:flex-start">
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+                  <div style="font-size:14px;font-weight:800;color:var(--ink);line-height:1.25">下半身 10分</div>
+                  <div style="font-size:11px;color:var(--sub)">4種目（一部）</div>
+                  <div style="font-size:12px;font-weight:700;color:var(--deep);text-decoration:underline;min-height:44px;display:flex;align-items:center;margin:-11px 0">種目を見る</div>
+                </div>
+                <div style="width:120px;height:68px;border-radius:8px;background:#e9eef5;border:1px solid var(--line);overflow:hidden;flex:none;position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer">
+                  <img src="https://i.ytimg.com/vi/sTANio_2E0Q/mqdefault.jpg" alt="" style="width:100%;height:100%;object-fit:cover">
+                  <div data-ph style="display:none;font-size:9px;color:var(--faint)">動画なし</div>
+                  <div style="position:absolute;right:4px;bottom:4px;width:19px;height:19px;border-radius:10px;background:rgba(20,28,40,.34);display:flex;align-items:center;justify-content:center"><div style="width:0;height:0;border-left:6px solid rgba(255,255,255,.88);border-top:4px solid transparent;border-bottom:4px solid transparent;margin-left:2px"></div></div>
+                </div>
+              </div>
+            </div>
+
+            <button style="border:1px dashed var(--faint);background:transparent;color:var(--body);font-family:inherit;font-size:13px;font-weight:700;border-radius:13px;min-height:44px;cursor:pointer;margin-top:4px">種目を選んで記録</button>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <div style="font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.04em">メニュー</div>
+
+            <div style="display:flex;flex-direction:column;gap:10px;padding:12px 0;">
+              <div style="display:flex;gap:12px;align-items:flex-start">
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+                  <div style="font-size:15px;font-weight:800;color:var(--ink)">朝のストレッチ</div>
+                  <div style="font-family:var(--mono);font-size:11px;color:var(--sub)">4種目 ・ 今日 07:20</div>
+                </div>
+                <div style="width:104px;height:59px;border-radius:8px;background:#e9eef5;border:1px solid var(--line);overflow:hidden;flex:none;position:relative;display:flex;align-items:center;justify-content:center">
+                  <img src="https://i.ytimg.com/vi/UBMk30rjy0o/mqdefault.jpg" alt="" style="width:100%;height:100%;object-fit:cover">
+                  <div data-ph style="display:none;font-size:9px;color:var(--faint)">動画なし</div>
+                  <div style="position:absolute;right:3px;bottom:3px;width:16px;height:16px;border-radius:8px;background:rgba(29,39,52,.78);color:#fff;font-size:8px;display:flex;align-items:center;justify-content:center;padding-left:1px">▶</div>
+                </div>
+              </div>
+              <div style="display:flex;gap:8px">
+                <button style="flex:1;border:0;background:var(--deep);color:#fff;font-family:inherit;font-size:14px;font-weight:800;border-radius:13px;min-height:44px;box-shadow:var(--shadow-action);cursor:pointer">完了を記録</button>
+                <button style="border:1px solid var(--line);background:#fff;color:var(--body);font-family:inherit;font-size:13px;font-weight:700;border-radius:13px;min-height:44px;padding:0 14px;cursor:pointer">一部だけ</button>
+              </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:10px;padding:12px 0;border-top:1px solid var(--line2);">
+              <div style="display:flex;gap:12px;align-items:flex-start">
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+                  <div style="font-size:15px;font-weight:800;color:var(--ink)">下半身 10分</div>
+                  <div style="font-family:var(--mono);font-size:11px;color:var(--sub)">6種目 ・ 今日 19:40</div>
+                </div>
+                <div style="width:104px;height:59px;border-radius:8px;background:#e9eef5;border:1px solid var(--line);overflow:hidden;flex:none;position:relative;display:flex;align-items:center;justify-content:center">
+                  <img src="https://i.ytimg.com/vi/sTANio_2E0Q/mqdefault.jpg" alt="" style="width:100%;height:100%;object-fit:cover">
+                  <div data-ph style="display:none;font-size:9px;color:var(--faint)">動画なし</div>
+                  <div style="position:absolute;right:3px;bottom:3px;width:16px;height:16px;border-radius:8px;background:rgba(29,39,52,.78);color:#fff;font-size:8px;display:flex;align-items:center;justify-content:center;padding-left:1px">▶</div>
+                </div>
+              </div>
+              <div style="display:flex;gap:8px">
+                <button style="flex:1;border:0;background:var(--deep);color:#fff;font-family:inherit;font-size:14px;font-weight:800;border-radius:13px;min-height:44px;box-shadow:var(--shadow-action);cursor:pointer">完了を記録</button>
+                <button style="border:1px solid var(--line);background:#fff;color:var(--body);font-family:inherit;font-size:13px;font-weight:700;border-radius:13px;min-height:44px;padding:0 14px;cursor:pointer">一部だけ</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;border-top:1px solid var(--line);background:#fff">
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 0 16px">
+            <div style="width:16px;height:16px;border-radius:4px;background:var(--ink)"></div>
+            <div style="font-size:11px;font-weight:800;color:var(--ink)">記録</div>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 0 16px">
+            <div style="width:16px;height:16px;border-radius:4px;border:1.5px solid var(--faint)"></div>
+            <div style="font-size:11px;font-weight:700;color:var(--sub)">メニュー</div>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 0 16px">
+            <div style="width:16px;height:16px;border-radius:8px;border:1.5px solid var(--faint)"></div>
+            <div style="font-size:11px;font-weight:700;color:var(--sub)">設定</div>
+          </div>
+        </div>
+      </div>
+      <div style="width:390px;display:flex;flex-direction:column;gap:8px">
+        <div style="font-size:11px;color:var(--faint);line-height:1.6">押した結果は、今日の記録が1行増え、その日の目盛りの件数が上がるだけです。帯も取り消しも出しません。二重に押しても記録は1件（request_id）。</div>
+        <div style="display:flex;align-items:flex-start;gap:10px;border:1.5px solid var(--warnInk);background:var(--warnSoft);border-radius:12px;padding:11px 12px">
+          <div style="width:18px;height:18px;border:1.5px solid var(--warnInk);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--warnInk);flex:none">!</div>
+          <div style="font-size:12px;color:#7a5b12;line-height:1.55">失敗したときは store の文をそのまま出します。例：メニューが他で変更されています。再読込してください。</div>
+        </div>
+      </div>
+    </div>
+
+<!-- ============ 1e 一部だけ ============ -->
+    <div id="1e" style="display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:#fff;background:var(--ink);border-radius:6px;padding:3px 7px">1e</div>
+        <div style="font-size:13px;font-weight:700;color:var(--ink)">一部だけ実施</div>
+      </div>
+      <div style="width:390px;min-height:844px;background:var(--card);border:1px solid var(--line);border-radius:28px;box-shadow:var(--shadow-card);overflow:hidden;display:flex;flex-direction:column">
+        <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line)">
+          <div style="font-size:14px;color:var(--body);font-weight:700;min-height:44px;display:flex;align-items:center;padding:0 10px;margin:-5px -10px">戻る</div>
+          <div style="flex:1;text-align:center;font-size:14px;font-weight:800;color:var(--ink)">下半身 10分</div>
+          <div style="width:34px"></div>
+        </div>
+
+        <div style="padding:12px 16px;border-bottom:1px solid var(--line2);background:#fafbfd">
+          <div style="font-size:12px;color:var(--sub);line-height:1.55">やった種目だけ選びます。メニューそのものは変わりません。</div>
+        </div>
+
+        <div style="flex:1;display:flex;flex-direction:column;padding-bottom:16px">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px 8px">
+            <div style="font-family:var(--mono);font-size:12px;color:var(--sub)">4 / 6 選択</div>
+            <div style="display:flex;gap:8px">
+              <button style="border:1px solid var(--line);background:#fff;color:var(--body);font-family:inherit;font-size:12px;font-weight:700;border-radius:10px;min-height:36px;padding:0 10px;cursor:pointer">すべて</button>
+              <button style="border:1px solid var(--line);background:#fff;color:var(--body);font-family:inherit;font-size:12px;font-weight:700;border-radius:10px;min-height:36px;padding:0 10px;cursor:pointer">解除</button>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:8px;padding:0 16px">
+            <div style="display:flex;gap:12px;align-items:center;border:1.5px solid var(--ink);border-radius:14px;padding:11px 12px;background:#fff">
+              <div style="width:24px;height:24px;border-radius:7px;background:var(--ink);color:#fff;font-size:13px;display:flex;align-items:center;justify-content:center;flex:none">✓</div>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:14px;font-weight:800;color:var(--ink)">スクワット</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;flex:none">
+                <button style="width:44px;height:44px;border:1px solid var(--line);background:#fff;border-radius:11px;font-size:17px;color:var(--body);font-family:inherit;cursor:pointer">−</button>
+                <div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--ink);min-width:56px;text-align:center">3×10回</div>
+                <button style="width:44px;height:44px;border:1px solid var(--line);background:#fff;border-radius:11px;font-size:17px;color:var(--body);font-family:inherit;cursor:pointer">＋</button>
+              </div>
+            </div>
+
+            <div style="display:flex;gap:12px;align-items:center;border:1.5px solid var(--ink);border-radius:14px;padding:11px 12px;background:#fff">
+              <div style="width:24px;height:24px;border-radius:7px;background:var(--ink);color:#fff;font-size:13px;display:flex;align-items:center;justify-content:center;flex:none">✓</div>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:14px;font-weight:800;color:var(--ink)">ランジ</div>
+                <div style="font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:2px">定義 3×10回 → 2×10回</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;flex:none">
+                <button style="width:44px;height:44px;border:1px solid var(--line);background:#fff;border-radius:11px;font-size:17px;color:var(--body);font-family:inherit;cursor:pointer">−</button>
+                <div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--ink);min-width:56px;text-align:center">2×10回</div>
+                <button style="width:44px;height:44px;border:1px solid var(--line);background:#fff;border-radius:11px;font-size:17px;color:var(--body);font-family:inherit;cursor:pointer">＋</button>
+              </div>
+            </div>
+
+            <div style="display:flex;gap:12px;align-items:center;border:1px solid var(--line);border-radius:14px;padding:11px 12px;background:#fafbfd">
+              <div style="width:24px;height:24px;border-radius:7px;border:1.5px solid var(--faint);background:#fff;flex:none"></div>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:14px;font-weight:700;color:var(--sub);text-decoration:line-through">ヒップリフト</div>
+              </div>
+              <div style="font-family:var(--mono);font-size:12px;color:var(--faint);flex:none">3×10回</div>
+            </div>
+
+            <div style="display:flex;gap:12px;align-items:center;border:1.5px solid var(--ink);border-radius:14px;padding:11px 12px;background:#fff">
+              <div style="width:24px;height:24px;border-radius:7px;background:var(--ink);color:#fff;font-size:13px;display:flex;align-items:center;justify-content:center;flex:none">✓</div>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:14px;font-weight:800;color:var(--ink)">プランク</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;flex:none">
+                <button style="width:44px;height:44px;border:1px solid var(--line);background:#fff;border-radius:11px;font-size:17px;color:var(--body);font-family:inherit;cursor:pointer">−</button>
+                <div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--ink);min-width:56px;text-align:center">2×30秒</div>
+                <button style="width:44px;height:44px;border:1px solid var(--line);background:#fff;border-radius:11px;font-size:17px;color:var(--body);font-family:inherit;cursor:pointer">＋</button>
+              </div>
+            </div>
+
+            <div style="display:flex;gap:12px;align-items:center;border:1px solid var(--line);border-radius:14px;padding:11px 12px;background:#fafbfd">
+              <div style="width:24px;height:24px;border-radius:7px;border:1.5px solid var(--faint);background:#fff;flex:none"></div>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:14px;font-weight:700;color:var(--sub);text-decoration:line-through">カーフレイズ</div>
+              </div>
+              <div style="font-family:var(--mono);font-size:12px;color:var(--faint);flex:none">3×15回</div>
+            </div>
+
+            <div style="display:flex;gap:12px;align-items:center;border:1.5px solid var(--ink);border-radius:14px;padding:11px 12px;background:#fff">
+              <div style="width:24px;height:24px;border-radius:7px;background:var(--ink);color:#fff;font-size:13px;display:flex;align-items:center;justify-content:center;flex:none">✓</div>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:14px;font-weight:800;color:var(--ink)">もも上げ</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;flex:none">
+                <button style="width:44px;height:44px;border:1px solid var(--line);background:#fff;border-radius:11px;font-size:17px;color:var(--body);font-family:inherit;cursor:pointer">−</button>
+                <div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--ink);min-width:56px;text-align:center">2×30秒</div>
+                <button style="width:44px;height:44px;border:1px solid var(--line);background:#fff;border-radius:11px;font-size:17px;color:var(--body);font-family:inherit;cursor:pointer">＋</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="border-top:1px solid var(--line);padding:12px 16px 22px;display:flex;flex-direction:column;gap:10px;background:#fff">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div style="font-size:12px;color:var(--sub)">実施時刻</div>
+            <div style="display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:10px;padding:8px 12px;min-height:40px">
+              <span style="font-family:var(--mono);font-size:14px;font-weight:700;color:var(--ink)">19:40</span>
+              <span style="font-size:11px;color:var(--faint)">変更</span>
+            </div>
+          </div>
+          <button style="border:0;background:var(--deep);color:#fff;font-family:inherit;font-size:15px;font-weight:800;border-radius:16px;min-height:50px;box-shadow:var(--shadow-action);cursor:pointer">選んだ4種目を記録</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ 1f 相棒 ============ -->
+    <div id="1f" style="display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:#fff;background:var(--ink);border-radius:6px;padding:3px 7px">1f</div>
+        <div style="font-size:13px;font-weight:700;color:var(--ink)">相棒を選ぶ</div>
+      </div>
+      <div style="width:390px;min-height:844px;background:var(--card);border:1px solid var(--line);border-radius:28px;box-shadow:var(--shadow-card);overflow:hidden;display:flex;flex-direction:column">
+        <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line)">
+          <div style="font-size:14px;color:var(--body);font-weight:700;min-height:44px;display:flex;align-items:center;padding:0 10px;margin:-5px -10px">戻る</div>
+          <div style="flex:1;text-align:center;font-size:14px;font-weight:800;color:var(--ink)">相棒</div>
+          <div style="width:34px"></div>
+        </div>
+
+        <div style="padding:14px 16px;border-bottom:1px solid var(--line2)">
+          <div style="font-size:12px;color:var(--sub);line-height:1.6">ホームの「きょう動いた分」のところに小さく出ます。トレーニングをそっと見守ります。励ましたり、煽ったりはしません。既定は「選ばない」です。</div>
+        </div>
+
+        <div style="flex:1;padding:14px 16px 18px;display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;align-items:center;gap:12px;border:1px solid var(--line);border-radius:14px;padding:12px;background:#fafbfd">
+            <div style="width:44px;height:44px;border:1.5px dashed var(--faint);border-radius:11px;flex:none"></div>
+            <div style="flex:1">
+              <div style="font-size:14px;font-weight:800;color:var(--ink)">選ばない</div>
+              <div style="font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:2px">既定</div>
+            </div>
+            <div style="width:22px;height:22px;border-radius:11px;border:1.5px solid var(--faint);flex:none"></div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <sc-for list="{{ companions }}" as="c" hint-placeholder-count="10">
+              <div style="border:1px solid var(--line);border-radius:14px;padding:10px;display:flex;flex-direction:column;gap:8px;align-items:center;background:#fff">
+                <div style="width:100%;aspect-ratio:1;border-radius:10px;background:#fafbfd;border:1px solid var(--line2);display:flex;align-items:center;justify-content:center;overflow:hidden">
+                  <img src="companions/companion-{{ c.file }}.png" alt="{{ c.name }}" style="width:100%;height:100%;object-fit:contain">
+                  <div data-ph style="display:none;font-size:10px;color:var(--faint)">絵なし</div>
+                </div>
+                <div style="font-size:12px;font-weight:700;color:var(--body)">{{ c.name }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="border-top:1px solid var(--line);padding:12px 16px 22px;background:#fff;display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="width:22px;height:22px;border-radius:6px;background:var(--ink);color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;flex:none">✓</div>
+            <div style="font-size:13px;color:var(--body);flex:1">選択中：<span style="font-weight:800;color:var(--ink)">カピバラ</span></div>
+            <button style="border:1px solid var(--line);background:#fff;color:var(--body);font-family:inherit;font-size:12px;font-weight:700;border-radius:10px;min-height:38px;padding:0 12px;cursor:pointer">やめる</button>
+          </div>
+          <div style="font-size:11px;color:var(--faint);line-height:1.5">選択中は太い枠と ✓ で示します。絵が読み込めない場合は名前だけ出ます。</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ 1g 書き出し ============ -->
+    <div id="1g" style="display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:#fff;background:var(--ink);border-radius:6px;padding:3px 7px">1g</div>
+        <div style="font-size:13px;font-weight:700;color:var(--ink)">記録を残す ─ 書き出し／読み込み</div>
+      </div>
+      <div style="width:390px;min-height:844px;background:var(--card);border:1px solid var(--line);border-radius:28px;box-shadow:var(--shadow-card);overflow:hidden;display:flex;flex-direction:column">
+        <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line)">
+          <div style="font-size:14px;color:var(--body);font-weight:700;min-height:44px;display:flex;align-items:center;padding:0 10px;margin:-5px -10px">戻る</div>
+          <div style="flex:1;text-align:center;font-size:14px;font-weight:800;color:var(--ink)">記録を残す</div>
+          <div style="width:34px"></div>
+        </div>
+
+        <div style="flex:1;padding:16px;display:flex;flex-direction:column;gap:18px">
+
+          <div style="border:1.5px solid var(--warnInk);background:var(--warnSoft);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;align-items:center;gap:9px">
+              <div style="width:20px;height:20px;border:1.5px solid var(--warnInk);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:var(--warnInk);flex:none">!</div>
+              <div style="font-size:14px;font-weight:800;color:#7a5b12">ホーム画面に追加</div>
+            </div>
+            <div style="font-size:12px;color:#7a5b12;line-height:1.6">Safari は7日間使わないと記録を消します。ホーム画面に追加したものは消えません。</div>
+            <button style="border:1px solid var(--warnInk);background:#fff;color:var(--warnInk);font-family:inherit;font-size:13px;font-weight:800;border-radius:12px;min-height:44px;cursor:pointer">手順を見る</button>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.04em">書き出す</div>
+            <div style="border:1px solid var(--line);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:10px">
+              <div style="font-size:12px;color:var(--body);line-height:1.6">メニューと記録をまとめて1つの JSON ファイルにします。機種変更のときは、このファイルを新しい端末で読み込みます。</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--line2);padding-top:10px">
+                <div style="font-size:12px;color:var(--sub)">前回の書き出し</div>
+                <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--ink)">2026-08-02</div>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between">
+                <div style="font-size:12px;color:var(--sub)">記録の件数</div>
+                <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--ink)">142件</div>
+              </div>
+              <button style="border:0;background:var(--deep);color:#fff;font-family:inherit;font-size:15px;font-weight:800;border-radius:14px;min-height:48px;box-shadow:var(--shadow-action);cursor:pointer">ファイルに書き出す</button>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.04em">読み込む</div>
+            <div style="border:1px solid var(--line);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;align-items:flex-start;gap:10px;border:1.5px solid var(--ink);border-radius:12px;padding:11px 12px;background:#fafbfd">
+                <div style="width:18px;height:18px;border:1.5px solid var(--ink);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--ink);flex:none">!</div>
+                <div style="font-size:12px;color:var(--ink);line-height:1.55;font-weight:700">いまこの端末にある記録は、読み込んだ内容に置き換わります。</div>
+              </div>
+              <button style="border:1px solid var(--line);background:#fff;color:var(--body);font-family:inherit;font-size:14px;font-weight:800;border-radius:14px;min-height:48px;cursor:pointer">ファイルを選ぶ</button>
+              <div style="display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:12px;padding:10px 12px">
+                <div style="width:28px;height:34px;border:1px solid var(--line);border-radius:4px;background:#fafbfd;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:8px;color:var(--sub);flex:none">JSON</div>
+                <div style="flex:1;min-width:0">
+                  <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">ouchi-tore-2026-08-02.json</div>
+                  <div style="font-size:11px;color:var(--sub);margin-top:2px">メニュー3件 ・ 記録142件</div>
+                </div>
+              </div>
+              <button style="border:0;background:var(--deep);color:#fff;font-family:inherit;font-size:15px;font-weight:800;border-radius:14px;min-height:48px;box-shadow:var(--shadow-action);cursor:pointer">置き換えて読み込む</button>
+            </div>
+          </div>
+
+          <div style="font-size:11px;color:var(--faint);line-height:1.6">記録はこの端末の中だけにあります。どこにも送りません。</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showA2hsBar&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;ホーム&quot;},&quot;companion&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;capybara&quot;,&quot;options&quot;:[&quot;&quot;,&quot;capybara&quot;,&quot;penguin&quot;,&quot;sloth&quot;,&quot;tortoise&quot;,&quot;owl&quot;,&quot;seal&quot;,&quot;goat&quot;,&quot;tanuki&quot;,&quot;otter&quot;,&quot;alpaca&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;ホーム&quot;}}">
+class Component extends DCLogic {
+  // 相棒の絵。いまは1体1ポーズ（companion-<動物>.png）。
+  // ポーズを増やすときは POSES を 1 より大きくするだけで、日付で順に回る。
+  buddySrc(animal, dateStr) {
+    const POSES = 1;
+    if (!animal) return '';
+    if (POSES <= 1) return 'companions/companion-' + animal + '.png';
+    const d = new Date(dateStr + 'T00:00:00');
+    const n = Math.floor(d.getTime() / 86400000) % POSES + 1;
+    return 'companions/companion-' + animal + '-' + n + '.png';
+  }
+  renderVals() {
+    return {
+      a2hsShown: this.props.showA2hsBar ?? true,
+      companions: [
+        { name: 'カピバラ', file: 'capybara' },
+        { name: 'ペンギン', file: 'penguin' },
+        { name: 'ナマケモノ', file: 'sloth' },
+        { name: 'リクガメ', file: 'tortoise' },
+        { name: 'フクロウ', file: 'owl' },
+        { name: 'アザラシ', file: 'seal' },
+        { name: 'ヤギ', file: 'goat' },
+        { name: 'タヌキ', file: 'tanuki' },
+        { name: 'カワウソ', file: 'otter' },
+        { name: 'アルパカ', file: 'alpaca' }
+      ]
+    };
+  }
+}
+
+</script>
+</body>
+</html>

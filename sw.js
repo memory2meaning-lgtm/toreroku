@@ -85,7 +85,13 @@ self.addEventListener('fetch', event => {
    * their old numbers and never sees the update at all. */
   if (request.mode === 'navigate' || url.pathname.endsWith('/index.html')) {
     event.respondWith(
-      fetch(request).then(fresh => {
+      /* no-store, so the page really does come from the network. Asking for it
+       * plainly lets the browser answer out of its own HTTP cache - GitHub
+       * Pages sends max-age=600 on HTML - and then the phone keeps requesting
+       * yesterday's scripts by their old ?v= for as long as that lasts. Seen
+       * happening locally: a plain reload showed the previous version while
+       * the same URL with a query on the end showed the new one. */
+      fetch(request.url, { cache: 'no-store', credentials: 'same-origin' }).then(fresh => {
         if (fresh && fresh.ok) {
           const copy = fresh.clone();
           caches.open(VERSION).then(cache => cache.put(request, copy));

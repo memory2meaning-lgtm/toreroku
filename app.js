@@ -884,8 +884,13 @@
       body = [
         head('お家トレへようこそ', '家でやったトレーニングを、その場で残しておくための記録帳です。'),
         h('div', { style: 'padding:16px 20px 0;display:flex;flex-direction:column;gap:8px' }, [
-          line('記録はこの端末の中だけにあります。どこにも送られません。'),
-          line('点数をつけません。順位もつけません。続いた日数も数えません。'),
+          /* The owner's own words. The first two used to state a fact and stop
+           * there - "記録はこの端末の中だけにあります", "点数をつけません" -
+           * without saying what follows from it, which is the part someone
+           * opening this for the first time actually wants. */
+          line('記録は、あなたのスマホの外には保存されません。外に出ることはありません。'),
+          line('続けることを強いたり、評価をつけたりはしません。思い立ったときに記録してください。'
+            + 'ひとつひとつ記録を重ねることが大事だと考えています。'),
           line('はじめに三つだけうかがいます。どれも飛ばせますし、あとから設定で変えられます。')
         ])
       ];

@@ -863,14 +863,11 @@
   var SETUP_STEPS = 3;
 
   function setupScreen(draft, onChoose, onName, onNext, onSkip) {
-    var counted = h('div', { style: 'font-family:var(--mono);font-size:12px;color:var(--faint);'
-      + 'text-align:center;padding-bottom:14px', text: (draft.step + 1) + ' / ' + SETUP_STEPS });
-
     var head = function (title, note) {
       return h('div', { style: 'padding:22px 20px 0' }, [
-        h('div', { style: 'width:40px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 18px' }),
-        counted,
-        h('div', { style: 'font-size:19px;font-weight:800;color:var(--ink);line-height:1.3', text: title }),
+        h('div', { style: 'font-family:var(--mono);font-size:12px;color:var(--faint);padding-bottom:10px',
+          text: (draft.step + 1) + ' / ' + SETUP_STEPS }),
+        h('div', { style: 'font-size:20px;font-weight:800;color:var(--ink);line-height:1.35', text: title }),
         h('div', { style: 'font-size:13px;color:var(--body);line-height:1.75;padding-top:10px', text: note })
       ]);
     };
@@ -895,21 +892,31 @@
     } else if (draft.step === 1) {
       var counter = h('div', { style: 'font-family:var(--mono);font-size:11px;color:var(--faint)',
         text: Array.from(draft.nickname).length + ' / 12' });
+      var sample = h('div', { style: 'font-size:12px;color:var(--sub);line-height:1.65' }, [
+        'アプリを開いたときの挨拶に、一度だけ使います。',
+        h('span', { style: 'font-family:var(--mono)',
+          text: 'おはようございます、' + (draft.nickname || 'たなか') + 'さん。' })
+      ]);
       body = [
-        head('なんとお呼びしましょう',
-          'アプリを開いたときのあいさつで一度だけ呼びます。そのあとは呼びません。空のままでもかまいません。'),
-        h('div', { style: 'padding:18px 20px 0' }, [
-          h('div', { style: 'display:flex;flex-direction:column;gap:6px' }, [
+        head('呼び名はありますか', ''),
+        h('div', { style: 'padding:8px 20px 0' }, [
+          h('div', { style: 'display:flex;flex-direction:column;gap:8px' }, [
             h('div', { style: 'display:flex;align-items:baseline;justify-content:space-between' }, [
               h('div', { style: 'font-size:12px;font-weight:800;color:var(--sub)', text: '呼び名（任意）' }),
               counter
             ]),
-            h('input', { type: 'text', value: draft.nickname, maxlength: '12', style: FIELD,
-              placeholder: '呼ばれたい名前', autocomplete: 'nickname',
+            h('input', { type: 'text', value: draft.nickname, maxlength: '12',
+              style: FIELD + ';border:1.5px solid var(--ink);min-height:50px;font-size:15px',
+              placeholder: 'たなか', autocomplete: 'nickname',
               oninput: function () {
                 onName(this.value);
                 counter.textContent = Array.from(this.value).length + ' / 12';
-              } })
+                sample.lastChild.textContent = 'おはようございます、'
+                  + (this.value || 'たなか') + 'さん。';
+              } }),
+            sample,
+            h('div', { style: 'font-size:11px;color:var(--faint);line-height:1.6',
+              text: '書かなくてもかまいません。あとで設定から変えられます。' })
           ])
         ])
       ];
@@ -917,21 +924,25 @@
       body = [
         head('相棒をひとつ', COMPANION_NOTE),
         h('div', { style: 'padding:16px 20px 0;display:flex;flex-direction:column;gap:12px' },
-          companionChoices(draft.companion, onChoose))
+          companionChoices(draft.companion, onChoose).slice(1))
       ];
     }
 
     var last = draft.step === SETUP_STEPS - 1;
+    var foot = [];
+    if (!last) {
+      foot.push(h('button', { style: 'border:0;background:var(--deep);color:#fff;font-family:inherit;'
+        + 'font-size:15px;font-weight:800;border-radius:16px;min-height:50px;'
+        + 'box-shadow:var(--shadow-action);cursor:pointer', onclick: onNext }, ['つづける']));
+    }
+    foot.push(h('button', { style: 'border:1px solid var(--line);background:#fff;color:var(--sub);'
+      + 'font-family:inherit;font-size:14px;font-weight:700;border-radius:16px;min-height:48px;cursor:pointer',
+      onclick: onSkip }, [last ? '相棒は選ばない' : 'あとで']));
+
     return h('div', { style: 'display:flex;flex-direction:column;min-height:100vh;background:#fff' },
       body.concat([
         h('div', { style: 'flex:1;min-height:18px' }),
-        h('div', { style: 'padding:12px 20px 26px;display:flex;flex-direction:column;gap:8px;background:#fff' }, [
-          h('button', { style: 'border:0;background:var(--deep);color:#fff;font-family:inherit;font-size:15px;'
-            + 'font-weight:800;border-radius:16px;min-height:50px;box-shadow:var(--shadow-action);cursor:pointer',
-            onclick: onNext }, [last ? 'はじめる' : '次へ']),
-          h('button', { style: 'border:0;background:none;color:var(--sub);font-family:inherit;font-size:13px;'
-            + 'font-weight:700;min-height:44px;cursor:pointer', onclick: onSkip }, ['あとで'])
-        ])
+        h('div', { style: 'padding:12px 20px 26px;display:flex;flex-direction:column;gap:8px;background:#fff' }, foot)
       ]));
   }
 
@@ -2111,7 +2122,14 @@
     if (state.screen.name === 'setup') {
       var draft = state.setup || (state.setup = { step: 0, nickname: '', companion: null });
       root.replaceChildren(setupScreen(draft,
-        function (slug) { draft.companion = slug; draw(); },
+        function (slug) {
+          draft.companion = slug;
+          /* On the last question, choosing is answering: Design left no button
+           * under the pictures, because tapping one already says everything a
+           * button would have asked for. */
+          if (draft.step === SETUP_STEPS - 1 && slug) finishSetup(draft);
+          else draw();
+        },
         function (value) { draft.nickname = value; },
         function () {
           if (draft.step < SETUP_STEPS - 1) { draft.step += 1; draw(); } else finishSetup(draft);

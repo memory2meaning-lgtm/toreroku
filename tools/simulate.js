@@ -1,4 +1,4 @@
-/* Ten people using the app for eight weeks, in about a second.
+/* Twelve people using the app for eight weeks, in about a second.
  *
  *   node tools/simulate.js [weeks] [seed]
  *

@@ -5,7 +5,7 @@
 アカウント登録はありません。サーバーもありません。記録はその端末の中だけに残ります。
 
 > 状態：**まだ公開していません。** 画面はひととおり動いていて、手元の端末で確かめている最中です。
-> 判断の材料は `context/WORKOUT_APP_PUBLISH_RESEARCH_20260910.md`、機能の正本は `context/M2M_WORKOUT_SPEC.md`。
+> 決まっていること（見た目・言葉づかい）は `design/SETTLED.md`、このリポジトリの決まりは `CLAUDE.md`。
 
 ---
 
@@ -51,8 +51,8 @@ iPhone の Safari には、**7日間使わないとブラウザに保存した�
 | `manifest.webmanifest` | ホーム画面に追加したときの名前と色 |
 | `selftest.html` | この端末で本当に保存できるかを確かめるページ |
 
-`store.js` は、PC 版（`tools/workout_web.py`）と同じ道筋・同じ検証・同じ答えを返します。
-画面のコードは PC 版と共通で、呼ぶ相手が変わるだけです。
+`store.js` は、作者が自分用に使っている PC 版と同じ道筋・同じ検証・同じ答えを返します。
+画面のコードもその PC 版と共通で、呼ぶ相手が変わるだけです。
 
 ## 確かめ方
 
@@ -60,7 +60,7 @@ iPhone の Safari には、**7日間使わないとブラウザに保存した�
 node tools/test_store.js
 ```
 
-54 件。ブラウザ側は `selftest.html` を開くと 7 件走ります（実際の記録には触れません）。
+55 件。ブラウザ側は `selftest.html` を開くと 7 件走ります（実際の記録には触れません）。
 
 絵を作り直したときは、配るサイズに落とし直します（原画は1枚1MBあり、そのままでは配れません）。
 
@@ -70,20 +70,22 @@ python tools/build_frames.py
 
 12人分の使い方を数週間ぶん流して、データの辻褄を確かめることもできます（実時間では出ない種類のズレが出ます）。
 
-10 people, 56 days each, seed 20260911
+12 people, 56 days each, seed 20260911
 
-  one video, most mornings            41 records | 41 x recorded a menu
-  three exercises, weekdays           30 records | 30 x recorded a menu
-  does part of it and says so         25 records | 25 x recorded part of a menu
-  forgets for a fortnight              4 records | 4 x recorded a menu
-  writes it down by hand              29 records | 29 x wrote one down by hand
-  corrects yesterday                  35 records | 14 x corrected an earlier day, 35 x recorded a menu
-  deletes what they did not do        23 records | 6 x deleted a record, 29 x recorded a menu
-  keeps changing the menu             26 records | 10 x rearranged a menu, 26 x recorded a menu
-  moves to a new phone now and then   29 records | 3 x moved to a new phone, 29 x recorded a menu
-  barely uses it                       6 records | 6 x recorded a menu
+  one video, most mornings                        43 records | 43 x recorded a menu
+  three exercises, weekdays                       24 records | 24 x recorded a menu
+  does part of it and says so                     20 records | 20 x recorded part of a menu
+  forgets for a fortnight                          4 records | 4 x recorded a menu
+  writes it down by hand                          20 records | 20 x wrote one down by hand
+  corrects yesterday                              33 records | 19 x corrected an earlier day, 33 x recorded a menu
+  deletes what they did not do                    17 records | 5 x deleted a record, 22 x recorded a menu
+  keeps changing the menu                         24 records | 18 x rearranged a menu, 24 x recorded a menu
+  moves to a new phone now and then               23 records | 3 x moved to a new phone, 23 x recorded a menu
+  keeps changing their mind about the companion   29 records | 14 x changed a setting, 29 x recorded a menu
+  was handed records from elsewhere               14 records | 33 x recorded a menu, 1 x took over a document from elsewhere
+  barely uses it                                   6 records | 6 x recorded a menu
 
-248 records in all. Nothing lost, nothing counted twice, and every
+257 records in all. Nothing lost, nothing counted twice, and every
 document still the same after being carried to another phone.
 
 コマごとに「基準の絵からどれだけ動いたか」を出します。まばたきは 0.1% 前後、小さな動きで数%。二桁になっていたら、それは同じ絵の別コマではなく別のポーズなので、描き直します。

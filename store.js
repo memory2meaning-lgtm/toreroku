@@ -741,7 +741,15 @@
     var held = initial ? clone(initial) : null;
     return {
       load: async function () { return held ? clone(held) : null; },
-      save: async function (state) { held = clone(state); }
+      save: async function (state) { held = clone(state); },
+      /* The same read-change-write in one go that the database offers, so the
+       * tests exercise the path the phone actually takes. */
+      update: async function (apply) {
+        var draft = clone(held || emptyState());
+        var result = apply(draft);
+        held = clone(draft);
+        return result;
+      }
     };
   }
 
@@ -811,6 +819,32 @@
       },
       save: function (state) {
         return run('readwrite', function (store) { store.put(state, DOC_KEY); });
+      },
+
+      /* Read the document, change it, and write it back without ever leaving
+       * the transaction.
+       *
+       * This is what keeps two tabs from writing over each other. A lock can
+       * do it too, but only where the browser has one - and where it does not,
+       * the old fault came straight back: both tabs read the same document,
+       * both saved, and one person's record went out with the other's. The
+       * database has always been able to do this properly; it was being asked
+       * for a read and then, separately, for a write.
+       *
+       * The change has to be made without waiting for anything: a transaction
+       * closes the moment it is left idle. Everything slow - hashing a request
+       * id, asking YouTube for a title - is already done before this is called.
+       */
+      update: function (apply) {
+        return run('readwrite', function (store, done) {
+          var reading = store.get(DOC_KEY);
+          reading.onsuccess = function () {
+            var draft = reading.result || emptyState();
+            var result = apply(draft);
+            store.put(draft, DOC_KEY);
+            done(result);
+          };
+        });
       }
     };
   }
@@ -863,7 +897,19 @@
     }
 
     function write(work) {
-      return serial(function () {
+      return serial(async function () {
+        if (typeof persist.update === 'function') {
+          var held = null;
+          var answer = await persist.update(function (draft) {
+            var out = work(draft);
+            held = draft;
+            return out;
+          });
+          state = held;
+          return answer;
+        }
+        /* A store that cannot do it in one go: hold the lock instead, and
+         * where there is no lock either, this is what it always was. */
         return guarded(async function () {
           var stored = await persist.load();
           var draft = clone(stored || state || emptyState());

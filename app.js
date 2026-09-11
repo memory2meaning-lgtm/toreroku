@@ -305,7 +305,7 @@
     } else {
       var source = menuOf(session.menu_id);
       if (!session.items.length) {
-        sub = session.video_url ? '動画だけ' : '記録のみ';
+        sub = session.video_url ? '種目情報なし' : '記録のみ';
       } else {
         sub = session.items.length + '種目'
           + (!source ? '' : session.items.length < source.items.length ? '（一部）' : 'すべて');
@@ -366,7 +366,7 @@
 
   function menuShape(menu) {
     var first = menu.items[0];
-    if (!first) return menu.video_url ? '動画だけ' : '種目なし';
+    if (!first) return '種目情報なし';
     var amount = first.sets + 'セット×' + (first.unit === 'sec' ? first.seconds + '秒' : first.reps + '回');
     return menu.items.length + '種目 ・ ' + amount + (menu.items.length > 1 ? ' ほか' : '');
   }
@@ -585,7 +585,7 @@
             h('div', { style: 'font-size:11px;color:var(--sub)',
               text: session.session_kind === 'manual' ? '手で選んだ記録'
                 : session.item_count ? session.item_count + '種目'
-                : session.video_url ? '動画だけ' : '記録のみ' })
+                : session.video_url ? '種目情報なし' : '記録のみ' })
           ])
         ]));
       });

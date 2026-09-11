@@ -491,6 +491,39 @@ async function main() {
     await rejects(400, () => orphanMenuItem.importDocument(b), 'menu item with no menu');
   });
 
+  await check('two tabs sharing one store do not write over each other', async () => {
+    /* Both apis hold the same persistence, which is what two tabs of the app
+     * have: one database, two copies of the code. Without a read and a write
+     * that cannot be split apart, the second save carries the first one's
+     * record away with it - shown by an audit, so it is tested. */
+    const shared = store.memoryPersist(null);
+    const tabA = store.createApi(shared);
+    const tabB = store.createApi(shared);
+    const ex = (await tabA.post('/api/library/save',
+      { name: 'スクワット', sets: 1, reps: 1, unit: 'reps' })).ex_id;
+    await Promise.all([
+      tabA.post('/api/log', { date: '2026-09-01', items: [{ ex_id: ex, sets: 1, reps: 1, unit: 'reps' }] }),
+      tabB.post('/api/log', { date: '2026-09-02', items: [{ ex_id: ex, sets: 1, reps: 1, unit: 'reps' }] })
+    ]);
+    const doc = await tabA.exportDocument();
+    equal(doc.sessions.map(s => s.date).sort(), ['2026-09-01', '2026-09-02'], 'both days kept');
+    equal(doc.items.length, 2, 'and both exercises with them');
+  });
+
+  await check('a store that can only load and save still works', async () => {
+    /* Older browsers, and some in-app ones, have neither the transaction nor
+     * the lock. The app has to keep working there - one tab at a time. */
+    const inner = store.memoryPersist(null);
+    const plain = { load: inner.load, save: inner.save };
+    const api = store.createApi(plain);
+    const ex = (await api.post('/api/library/save',
+      { name: 'プランク', sets: 2, seconds: 30, unit: 'sec' })).ex_id;
+    await api.post('/api/log', { date: '2026-09-03', items: [{ ex_id: ex, sets: 2, seconds: 30, unit: 'sec' }] });
+    const today = await api.get('/api/today?date=2026-09-03');
+    equal(today.sessions.length, 1, 'recorded');
+    equal(today.sessions[0].items[0].name, 'プランク');
+  });
+
   await check('an export made before companions existed still imports', async () => {
     const api = fresh();
     const old = store.emptyState();

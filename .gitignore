@@ -1,0 +1,12 @@
+# The drawings as they come out of image generation: about a megabyte each,
+# and thirty of them. tools/build_frames.py turns these into the small frames
+# in companions/frames/, and those are what the app loads and what ships.
+companions/masters/
+
+# Written by tools/check_silhouettes.py to be looked at, not shipped.
+companions/silhouettes/
+
+# Editors and operating systems leaving things behind.
+.DS_Store
+Thumbs.db
+*.swp

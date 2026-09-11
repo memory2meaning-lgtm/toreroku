@@ -1,0 +1,29 @@
+/* M2M ui_kit tokens (v1 snapshot bundled with Genkan project, saved 2026-07-08) */
+:root{
+  --ink:#1d2734; --body:#3c4a5c; --sub:#6a7a8e; --faint:#9aa8ba;
+  --line:#e7edf5; --line2:#eef2f8;
+  --blue:#2f6fed; --deep:#1f6fb2;
+  --good:#19b89a; --goodSoft:#e2f7f1;
+  --warn:#f4b740; --warnSoft:#fdf3da; --warnInk:#c98a1a;
+  --labelBg:#ece9fb; --labelInk:#6b5fc0;
+  --card:#fff;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic Medium",YuGothic,"Segoe UI",system-ui,sans-serif;
+  --color-text-strong:var(--ink);
+  --color-text:var(--body);
+  --color-text-muted:var(--sub);
+  --color-text-faint:var(--faint);
+  --color-border:var(--line);
+  --color-border-soft:var(--line2);
+  --color-action:var(--deep);
+  --color-accent:var(--blue);
+  --color-ok:var(--good); --color-ok-soft:var(--goodSoft);
+  --color-warn:var(--warn); --color-warn-soft:var(--warnSoft); --color-warn-ink:var(--warnInk);
+  --color-label-bg:var(--labelBg); --color-label-ink:var(--labelInk);
+  --color-surface:var(--card);
+  --font-mono:var(--mono);
+  --font-sans:var(--sans);
+  --radius-card:18px; --radius-control:16px; --radius-chip:11px;
+  --shadow-card:0 1px 2px rgba(31,55,92,.04),0 6px 22px rgba(31,55,92,.07);
+  --shadow-action:0 10px 22px rgba(31,111,178,.23);
+}

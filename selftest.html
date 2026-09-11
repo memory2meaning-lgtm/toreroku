@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>お家トレ 自己診断</title>
+<style>
+  body{font-family:system-ui,sans-serif;margin:0;padding:20px;line-height:1.7}
+  h1{font-size:18px}
+  #summary{font-weight:700;margin:12px 0}
+  li{margin:2px 0}
+  .ok::before{content:'OK  ';color:#1a6b34}
+  .ng::before{content:'NG  ';color:#a4434f}
+  .ng{color:#a4434f}
+  code{background:#f0efeb;padding:1px 4px;border-radius:3px}
+</style>
+</head>
+<body>
+<h1>お家トレ 自己診断</h1>
+<p>この端末のブラウザで、記録の保存と読み直しが本当に働くかを確かめます。<br>
+使うのは <code>ouchitore-selftest</code> という専用の保管場所で、実際の記録には触れません。</p>
+<div id="summary">実行中…</div>
+<ul id="results"></ul>
+<script src="./store.js"></script>
+<script>
+(async function(){
+  const results = document.getElementById('results');
+  const summary = document.getElementById('summary');
+  let passed = 0, failed = 0;
+
+  function report(name, error){
+    const li = document.createElement('li');
+    li.className = error ? 'ng' : 'ok';
+    li.textContent = name + (error ? ' — ' + error.message : '');
+    results.appendChild(li);
+    if (error) failed++; else passed++;
+  }
+
+  async function check(name, run){
+    try { await run(); report(name, null); }
+    catch (error) { report(name, error); }
+  }
+
+  function equal(actual, expected, message){
+    const a = JSON.stringify(actual), b = JSON.stringify(expected);
+    if (a !== b) throw new Error((message||'不一致') + ': ' + a + ' / ' + b);
+  }
+
+  const DB = 'ouchitore-selftest';
+  await new Promise(resolve => {
+    const request = indexedDB.deleteDatabase(DB);
+    request.onsuccess = request.onerror = request.onblocked = () => resolve();
+  });
+
+  const persist = workoutStore.indexedDbPersist(DB);
+  const api = workoutStore.createApi(persist);
+  const day = '2026-09-10';
+  let menuId = null;
+
+  await check('この端末で保存先（IndexedDB）が使える', async () => {
+    if (!window.indexedDB) throw new Error('IndexedDBがありません');
+    equal((await api.get('/api/library')).items, []);
+  });
+
+  await check('種目とメニューを登録できる', async () => {
+    const squat = await api.post('/api/library/save', {name:'スクワット', sets:3, reps:10, unit:'reps'});
+    const plank = await api.post('/api/library/save', {name:'プランク', sets:2, seconds:30, unit:'sec'});
+    const menu = await api.post('/api/menu/save', {menu_id:null, revision:null, name:'朝の3分',
+      video_url:'https://www.youtube.com/watch?v=abcdefghijk',
+      items:[{ex_id:squat.ex_id, sets:3, reps:10, unit:'reps'}, {ex_id:plank.ex_id, sets:2, seconds:30, unit:'sec'}]});
+    menuId = menu.menu_id;
+    equal((await api.get('/api/menus')).menus.length, 1);
+  });
+
+  await check('1タップで、その日の記録として残る', async () => {
+    await api.post('/api/menu/complete', {menu_id:menuId, date:day, request_id:'selftest-1', items:null, performed_time:'07:30'});
+    const today = await api.get('/api/today?date=' + day);
+    equal(today.sessions.length, 1);
+    equal(today.sessions[0].items.length, 2);
+    equal(today.this_week, 1);
+  });
+
+  await check('二重送信になっても、二重に記録されない', async () => {
+    await api.post('/api/menu/complete', {menu_id:menuId, date:day, request_id:'selftest-1', items:null, performed_time:'07:30'});
+    equal((await api.get('/api/today?date=' + day)).sessions.length, 1);
+  });
+
+  await check('アプリを閉じて開き直しても記録が残っている', async () => {
+    const reopened = workoutStore.createApi(workoutStore.indexedDbPersist(DB));
+    const today = await reopened.get('/api/today?date=' + day);
+    equal(today.sessions.length, 1);
+    equal(today.sessions[0].menu_name, '朝の3分');
+    equal(today.sessions[0].performed_time, '07:30');
+  });
+
+  await check('書き出して読み込むと、そのまま戻る', async () => {
+    const document = await api.exportDocument();
+    const other = workoutStore.createApi(workoutStore.memoryPersist(null));
+    await other.importDocument(JSON.parse(JSON.stringify(document)));
+    equal((await other.get('/api/today?date=' + day)).sessions.length, 1);
+  });
+
+  await check('サムネイルの置き場所はYouTube側', async () => {
+    const id = 'abcdefghijk';
+    const url = 'https://i.ytimg.com/vi/' + id + '/mqdefault.jpg';
+    if (!/^https:\/\/i\.ytimg\.com\//.test(url)) throw new Error('自前で配ろうとしています');
+  });
+
+  summary.textContent = passed + ' 件成功 / ' + failed + ' 件失敗';
+  document.title = (failed ? 'NG ' : 'OK ') + document.title;
+  window.__selftest = {passed, failed};
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>お家トレ</title>
+<meta name="theme-color" content="#f7f4ee">
+<meta name="apple-mobile-web-app-title" content="お家トレ">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+<!-- iPhone does not read the manifest when you add a page to the home screen;
+     it looks for this instead, and falls back to a screenshot without it. -->
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+<link rel="stylesheet" href="tokens.css">
+<style>
+  html, body { margin: 0; background: #eef1f6; }
+  body {
+    font-family: var(--sans);
+    color: var(--body);
+    -webkit-font-smoothing: antialiased;
+    /* The phone frame in the design is 390 wide; on a wider screen the app
+       keeps that width and sits in the middle rather than stretching. */
+    max-width: 430px;
+    margin: 0 auto;
+    background: var(--card);
+    min-height: 100vh;
+  }
+  * { box-sizing: border-box; }
+  button { font-family: inherit; }
+  button:active { transform: translateY(1px); }
+  a { color: var(--deep); }
+  /* Nothing here invents a look: the screens carry the design's own inline
+     styles, lifted from design/screens/*.html. */
+  #app { display: flex; flex-direction: column; min-height: 100vh; }
+  .boot {
+    padding: 40px 24px;
+    font-size: 13px;
+    color: var(--sub);
+    line-height: 1.7;
+  }
+</style>
+</head>
+<body>
+<div id="app"><div class="boot">読み込んでいます…</div></div>
+<!-- The query is bumped whenever these files change, so a phone that already
+     has the app picks up the new one instead of the copy in its cache. -->
+<script src="store.js?v=30"></script>
+<script src="app.js?v=30"></script>
+</body>
+</html>

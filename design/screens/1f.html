@@ -1,0 +1,41 @@
+<div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line)">
+          <div style="font-size:14px;color:var(--body);font-weight:700">戻る</div>
+          <div style="flex:1;text-align:center;font-size:14px;font-weight:800;color:var(--ink)">相棒</div>
+          <div style="width:34px"></div>
+        </div>
+
+        <div style="padding:14px 16px;border-bottom:1px solid var(--line2)">
+          <div style="font-size:12px;color:var(--sub);line-height:1.6">ホームの「きょう動いた分」のカードの中に小さく出ます。何もしません。既定は「選ばない」です。</div>
+        </div>
+
+        <div style="flex:1;padding:14px 16px 18px;display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;align-items:center;gap:12px;border:1px solid var(--line);border-radius:14px;padding:12px;background:#fafbfd">
+            <div style="width:44px;height:44px;border:1.5px dashed var(--faint);border-radius:11px;flex:none"></div>
+            <div style="flex:1">
+              <div style="font-size:14px;font-weight:800;color:var(--ink)">選ばない</div>
+              <div style="font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:2px">既定</div>
+            </div>
+            <div style="width:22px;height:22px;border-radius:11px;border:1.5px solid var(--faint);flex:none"></div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <sc-for list="{{ companions }}" as="c" hint-placeholder-count="10">
+              <div style="border:1px solid var(--line);border-radius:14px;padding:10px;display:flex;flex-direction:column;gap:8px;align-items:center;background:#fff">
+                <div style="width:100%;aspect-ratio:1;border-radius:10px;background:#fafbfd;border:1px solid var(--line2);display:flex;align-items:center;justify-content:center;overflow:hidden">
+                  <img src="companions/companion-{{ c.file }}.png" alt="{{ c.name }}" style="width:100%;height:100%;object-fit:contain">
+                  <div data-ph style="display:none;font-size:10px;color:var(--faint)">絵なし</div>
+                </div>
+                <div style="font-size:12px;font-weight:700;color:var(--body)">{{ c.name }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="border-top:1px solid var(--line);padding:12px 16px 22px;background:#fff;display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="width:22px;height:22px;border-radius:6px;background:var(--ink);color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;flex:none">✓</div>
+            <div style="font-size:13px;color:var(--body);flex:1">選択中：<span style="font-weight:800;color:var(--ink)">カピバラ</span></div>
+            <button style="border:1px solid var(--line);background:#fff;color:var(--body);font-family:inherit;font-size:12px;font-weight:700;border-radius:10px;min-height:38px;padding:0 12px;cursor:pointer">やめる</button>
+          </div>
+          <div style="font-size:11px;color:var(--faint);line-height:1.5">選択中は太い枠と ✓ で示します。絵が読み込めない場合は名前だけ出ます。</div>
+        </div>

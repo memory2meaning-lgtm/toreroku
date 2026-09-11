@@ -454,6 +454,14 @@ async function main() {
     equal(late.edited, true, 'but what is there is not what was sent');
   });
 
+  await check('a hand-edited file cannot reach the prototype', async () => {
+    const api = fresh();
+    const doc = store.emptyState();
+    doc.exercises.push(JSON.parse('{"ex_id":1,"name":"x","__proto__":{"polluted":true}}'));
+    await rejects(400, () => api.importDocument(doc), 'refused');
+    equal({}.polluted, undefined, 'and nothing was changed on the way');
+  });
+
   await check('an export made before companions existed still imports', async () => {
     const api = fresh();
     const old = store.emptyState();

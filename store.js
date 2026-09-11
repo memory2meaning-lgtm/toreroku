@@ -950,6 +950,20 @@
         if (typeof document.seq !== 'object' || Array.isArray(document.seq)) {
           throw ApiError(400, 'この書き出しファイルは読み込めません');
         }
+        /* A document is a file someone can edit by hand, and Object.assign
+         * would walk a __proto__ key straight onto every object in the page.
+         * Nothing legitimate carries these names. */
+        var dangerous = ['__proto__', 'constructor', 'prototype'];
+        var seek = function (value, depth) {
+          if (!value || typeof value !== 'object' || depth > 6) return false;
+          if (Array.isArray(value)) return value.some(function (one) { return seek(one, depth + 1); });
+          return Object.keys(value).some(function (key) {
+            return dangerous.indexOf(key) >= 0 || seek(value[key], depth + 1);
+          });
+        };
+        if (seek(document, 0) || Object.prototype.hasOwnProperty.call(document, '__proto__')) {
+          throw ApiError(400, 'この書き出しファイルは読み込めません');
+        }
         COUNTERS.forEach(function (name) {
           var held = document.seq[name];
           if (typeof held !== 'number' || !Number.isInteger(held) || held < 0) {

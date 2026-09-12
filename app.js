@@ -2646,6 +2646,7 @@
 
   async function openMenuEdit(menuId) {
     problem = null;
+    if (!state.menuEditFrom) state.menuEditFrom = 'menus';
     try {
       var menus = (await api.get('/api/menus')).menus;
       var menu = menus.filter(function (m) { return m.menu_id === menuId; })[0];
@@ -2665,8 +2666,13 @@
     draw();
   }
 
-  function newMenu() {
+  /* Where the editor was opened from is where it returns to: someone who
+   * came to record and had to make the menu first should land back on the
+   * record page with the circle in front of them, not on the training tab
+   * (the owner, 2026-09-12: "作業が途切れる"). */
+  function newMenu(from) {
     problem = null;
+    state.menuEditFrom = from || 'menus';
     state.menuEdit = { menu_id: null, revision: null, name: '', video_url: '', note: '', tag: '', items: [] };
     state.screen = { name: 'menuEdit' };
     draw();
@@ -2687,8 +2693,11 @@
       });
       edit.menu_id = saved.menu_id;
       edit.revision = saved.revision;
-      state.notice = edit.fromRecord ? 'トレーニングメニューに入れました。' : null;
-      state.screen = { name: 'menus' };
+      var back = state.menuEditFrom || 'menus';
+      state.menuEditFrom = null;
+      state.notice = edit.fromRecord ? 'トレーニングメニューに入れました。'
+        : back === 'record' ? 'トレーニングメニューができました。やったなら、行末の丸を押してください。' : null;
+      state.screen = { name: back };
     } catch (error) {
       problem = error && error.note ? error.note : '保存できませんでした。';
     }
@@ -2700,7 +2709,8 @@
     problem = null;
     try {
       await api.post('/api/menu/delete', { menu_id: edit.menu_id });
-      state.screen = { name: 'menus' };
+      state.screen = { name: state.menuEditFrom || 'menus' };
+      state.menuEditFrom = null;
     } catch (error) {
       problem = error && error.note ? error.note : '削除できませんでした。';
     }
@@ -2807,6 +2817,12 @@
   }
 
   function recordScreen(view) {
+    var page = recordPage(view);
+    state.notice = null;
+    return page;
+  }
+
+  function recordPage(view) {
     return h('div', { style: 'display:flex;flex-direction:column;min-height:100vh' }, [
       h('div', { style: 'display:flex;align-items:center;gap:12px;padding:10px 12px;min-height:64px;border-bottom:1px solid var(--line)' }, [
         h('button', { style: 'border:0;background:none;padding:0;font-size:14px;color:var(--body);'
@@ -2816,6 +2832,7 @@
         h('div', { style: 'width:52px' })
       ]),
       skipOfferBlock(view),
+      state.notice ? h('div', { style: 'padding:12px 18px 0;font-size:14px;color:var(--body);line-height:1.6', text: state.notice }) : null,
       view.menus.length ? searchBox(view.menus) : null,
       view.menus.length ? tagBar(view.menus) : null,
     h('div', { style: 'flex:1;padding:6px 18px 18px;display:flex;flex-direction:column;gap:' + (view.menus.length ? '2px' : '12px') }, [
@@ -2833,7 +2850,7 @@
         var id = videoId(url);
         if (!skipVideo && !id) {
           if (url.trim()) {
-            newMenu();
+            newMenu('record');
             state.menuEdit.video_url = url.trim();
             problem = 'YouTube の URL ではないようです。直すか、動画なしで作ってください。';
             draw();
@@ -2843,7 +2860,7 @@
           draw();
           return;
         }
-        newMenu();
+        newMenu('record');
         if (!skipVideo) {
           state.menuEdit.video_url = url.trim();
           fetchTitle(state.menuEdit);
@@ -2872,7 +2889,7 @@
            * ticked one by one - what used to be 一部だけ, off the row and
            * onto a screen of its own. A menu with nothing in it has
            * nothing to tick, so it opens for editing instead. */
-          if (!menu.items.length) { openMenuEdit(menu.menu_id); return; }
+          if (!menu.items.length) { state.menuEditFrom = 'record'; openMenuEdit(menu.menu_id); return; }
           state.draft = {
             date: view.today.date,
             time: pad(new Date().getHours()) + ':' + pad(new Date().getMinutes()),
@@ -3147,7 +3164,8 @@
     }
     if (state.screen.name === 'menuEdit') {
       root.replaceChildren(menuEditScreen(state.menuEdit, libraryNow, function () {
-        state.screen = { name: 'menus' };
+        state.screen = { name: state.menuEditFrom || 'menus' };
+        state.menuEditFrom = null;
         problem = null;
         draw();
       }));

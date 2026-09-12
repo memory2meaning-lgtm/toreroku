@@ -41,6 +41,8 @@
   }
   var ICON = {
     bin: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16"/><path d="M9.5 7V5.2A1.2 1.2 0 0 1 10.7 4h2.6a1.2 1.2 0 0 1 1.2 1.2V7"/><path d="M6.2 7l.9 12.1A2 2 0 0 0 9.1 21h5.8a2 2 0 0 0 2-1.9L17.8 7"/><path d="M10.4 11v6"/><path d="M13.6 11v6"/></svg>',
+    tick: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.6 9.6 17 19 7.4"/></svg>',
+    other: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.4 11.1V12a8.4 8.4 0 1 1-4.98-7.68"/><path d="M8.4 11.4 12 15l9-9.6"/></svg>',
     plus: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg>',
     home: ['<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round" aria-hidden="true"><path d="M2.8 11.1 12 3.3l9.2 7.8v8.1a1.6 1.6 0 0 1-1.6 1.6H4.4a1.6 1.6 0 0 1-1.6-1.6z"/></svg>',
            '<svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M2.8 11.1 12 3.3l9.2 7.8v8.1a1.6 1.6 0 0 1-1.6 1.6H4.4a1.6 1.6 0 0 1-1.6-1.6z"/></svg>'],
@@ -487,7 +489,7 @@
    * フォワード ME, Reminders, Todoist, Things 3) not one puts a filled button
    * inside a list row. Design settled on the circle.
    *
-   * Not yet done: white, a thin outline, a pale tick, and the word つける.
+   * Not yet done: white, a thin outline, no word under it (Design 2026-09-12).
    * Done: filled, a white tick, and the time underneath. Three things carry
    * it - the fill, the tick, and the time - so none of it rests on hue.
    */
@@ -557,15 +559,20 @@
 
   function menuRow(menu, first, date, doneAt, onDone, onOpen) {
     var done = !!doneAt;
-    var mark = h('div', {
-      style: 'width:44px;height:44px;border-radius:22px;display:flex;align-items:center;'
-        + 'justify-content:center;font-size:19px;font-weight:800;'
-        + (done ? 'background:var(--ink);border:1.5px solid var(--ink);color:#fff;'
-                : 'background:#fff;border:1.5px solid var(--sub);color:var(--sub);')
-    }, ['✓']);
+    /* Design (2026-09-12), after looking at Things, Streaks, Habitify,
+     * Strong: the circle is 28px and the finger gets 44 of clear space; an
+     * empty circle means not yet, a filled one with a white tick means
+     * done. No faint tick, no word under it - the time goes on the meta
+     * line where those apps put it. */
+    var mark = h('span', {
+      style: 'width:28px;height:28px;border-radius:50%;display:flex;align-items:center;'
+        + 'justify-content:center;box-sizing:border-box;'
+        + (done ? 'background:var(--ink);border:1.5px solid var(--ink);'
+                : 'background:#fff;border:1.5px solid var(--sub);')
+    }, [done ? svg(ICON.tick) : null]);
 
     return h('div', {
-      style: 'display:flex;gap:10px;align-items:flex-start;padding:12px 0;'
+      style: 'display:flex;gap:10px;align-items:center;padding:12px 0;'
         + (first ? '' : 'border-top:1px solid var(--line2);')
     }, [
       h('button', {
@@ -576,28 +583,47 @@
       }, [
         h('div', { style: 'font-size:15px;font-weight:800;color:var(--ink);line-height:1.35;' + TWO_LINES,
           text: menu.name }),
-        h('div', { style: 'font-family:var(--mono);font-size:11px;color:var(--sub)', text: menuShape(menu) })
+        h('div', { style: 'font-family:var(--mono);font-size:12px;color:var(--sub)',
+          text: (done ? doneAt + ' ・ ' : '') + menuShape(menu) })
       ]),
       menuThumb(menu.video_url),
       h('button', {
-        style: 'width:52px;flex:none;display:flex;flex-direction:column;align-items:center;gap:3px;'
-          + 'border:0;background:none;padding:0;font-family:inherit;cursor:pointer',
-        'aria-label': done ? menu.name + ' は ' + doneAt + ' につけました'
-                           : menu.name + ' をつける',
+        style: 'width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center;'
+          + 'border:0;background:none;padding:0;cursor:pointer',
+        'aria-label': done ? doneAt + ' に記録しました' : 'やったことを記録する',
+        'aria-pressed': done ? 'true' : 'false',
         /* aria-disabled rather than disabled: the native attribute takes the
          * button out of the focus order on some platforms, and then someone
          * listening to the screen can never reach the very sentence that says
          * it is done. It stays reachable and does nothing when pressed. */
         'aria-disabled': done ? 'true' : null,
         onclick: done ? null : onDone
-      }, [
-        mark,
-        h('div', {
-          style: done ? 'font-family:var(--mono);font-size:10px;color:var(--ink);font-weight:700'
-                      : 'font-size:10px;color:var(--sub);font-weight:700',
-          text: done ? doneAt : 'つける'
-        })
-      ])
+      }, [mark])
+    ]);
+  }
+
+  /* The row at the foot of a list that opens the exercise picker: for a day
+   * when what was done is not on any menu. */
+  function otherRow(onTap) {
+    return h('button', {
+      style: 'display:flex;align-items:center;gap:10px;width:100%;min-height:44px;padding:0 16px;'
+        + 'background:#fff;border:0;border-top:1px solid var(--line);font-family:inherit;'
+        + 'font-size:15px;color:var(--ink);text-align:left;cursor:pointer',
+      onclick: onTap
+    }, [svg(ICON.other), 'ここに無いものをやった']);
+  }
+
+  function addMenuRow(onTap) {
+    return h('button', {
+      style: 'margin-top:8px;display:flex;align-items:center;gap:10px;width:100%;min-height:44px;'
+        + 'padding:0 16px;background:#fff;border:0;border-top:1px solid var(--line);'
+        + 'font-family:inherit;font-size:15px;color:var(--ink);text-align:left;cursor:pointer',
+      onclick: onTap
+    }, [
+      h('span', { style: 'flex:none;width:24px;height:24px;display:flex;align-items:center;'
+        + 'justify-content:center;border:1px solid var(--sub);border-radius:50%;color:var(--ink)',
+        'aria-hidden': 'true' }, [svg(ICON.plus)]),
+      'メニューを追加する'
     ]);
   }
 
@@ -713,7 +739,7 @@
             + 'cursor:pointer;opacity:' + (chosen.length ? '1' : '.45'),
           disabled: chosen.length === 0,
           onclick: function () { savePartial(draft, menu); }
-        }, ['選んだ' + chosen.length + '種目をつける'])
+        }, ['選んだ' + chosen.length + '種目を記録する'])
       ])
     ]);
   }
@@ -2238,17 +2264,7 @@
           /* Design (2026-09-12): the way to add one is a row at the end of
            * the list, not a dashed button - dashes already mean "cannot be
            * pressed" on the week strip. */
-          h('button', {
-            style: 'margin-top:8px;display:flex;align-items:center;gap:10px;width:100%;min-height:44px;'
-              + 'padding:0 16px;background:#fff;border:0;border-top:1px solid var(--line);'
-              + 'font-family:inherit;font-size:15px;color:var(--ink);text-align:left;cursor:pointer',
-            onclick: onNew
-          }, [
-            h('span', { style: 'flex:none;width:24px;height:24px;display:flex;align-items:center;'
-              + 'justify-content:center;border:1px solid var(--sub);border-radius:50%;color:var(--ink)',
-              'aria-hidden': 'true' }, [svg(ICON.plus)]),
-            'メニューを追加する'
-          ])
+          addMenuRow(onNew)
         ])),
       navBar('menus')
     ]);
@@ -2540,7 +2556,7 @@
         style: 'flex:1;padding:14px 18px 18px;border-top:1px solid var(--line);'
           + 'display:flex;flex-direction:column;gap:18px'
       }, [
-        h('div', { style: 'display:flex;flex-direction:column;gap:2px' }, [
+        view.today.sessions.length ? h('div', { style: 'display:flex;flex-direction:column;gap:2px' }, [
           h('div', { style: 'display:flex;align-items:center;justify-content:space-between' }, [
             h('div', { style: 'font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.04em', text: '今日の記録' }),
             view.today.sessions.length ? h('button', {
@@ -2562,16 +2578,14 @@
             open[session.session_id] = !open[session.session_id];
             draw();
           });
-        })).concat([
-          h('button', {
-            style: 'border:1px dashed var(--faint);background:transparent;color:var(--body);'
-              + 'font-family:inherit;font-size:13px;font-weight:700;border-radius:13px;min-height:44px;'
-              + 'cursor:pointer;margin-top:4px',
-            onclick: function () { openManual(view.today.date); }
-          }, ['種目を選んで記録'])
-        ])),
+        }))) : null,
         h('div', { style: 'display:flex;flex-direction:column;gap:' + (view.menus.length ? '2px' : '12px') }, [
           h('div', { style: 'font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.04em', text: 'メニュー' }),
+          /* Said once, in place of a word under every circle: only while
+           * nothing has ever been recorded. */
+          view.menus.length && view.facts.first_ever ? h('div', {
+            style: 'font-size:14px;color:var(--body);padding:8px 0;line-height:1.6',
+            text: '右の丸を押すと、やった記録が残ります。' }) : null,
           view.menus.length ? null : firstMenuBox(async function (url, skipVideo) {
             problem = null;
             /* Made here rather than on another screen: the field is on this
@@ -2631,7 +2645,10 @@
               state.screen = { name: 'partial', menuId: menu.menu_id };
               draw();
             });
-        })))
+        })).concat([
+          otherRow(function () { openManual(view.today.date); }),
+          addMenuRow(function () { problem = null; newMenu(); })
+        ]))
       ]),
       problem ? warnBar(problem, null, null) : null,
       /* The reason differs by phone, so the warning cannot be one sentence.

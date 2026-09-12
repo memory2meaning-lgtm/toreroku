@@ -607,7 +607,7 @@
       aiKey() ? null : h('div', { style: 'display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line2);'
         + 'padding-top:12px' }, [
         h('div', { style: 'font-size:12px;color:var(--body);line-height:1.6',
-          text: '種目まで自動で入れたいなら、先に Google の Gemini のキーを入れておくと、貼ったあと一度で入ります（あなた自身のキー・無料枠あり）。' }),
+          text: 'Gemini のキーを作成して、このアプリに登録しておくと、URL を貼ったあと自動で種目も入ります。無料枠の範囲なら費用はかかりません。' }),
         h('button', { style: 'align-self:flex-start;border:1px solid var(--sub);background:#fff;color:var(--ink);'
           + 'font-family:inherit;font-size:13px;font-weight:700;border-radius:12px;min-height:44px;padding:0 14px;cursor:pointer',
           onclick: function () { problem = null; state.aikeyFrom = 'record'; state.screen = { name: 'aikey' }; draw(); } },

@@ -216,7 +216,7 @@
         return {
           menu_item_id: mi.menu_item_id, ex_id: mi.ex_id, name: ex ? ex.name : '',
           sets: mi.sets, reps: mi.reps, seconds: mi.seconds, unit: mi.unit, ord: mi.ord,
-          skip: mi.skip === true
+          skip: mi.skip === true, auto: mi.auto === true
         };
       });
   }
@@ -493,7 +493,13 @@
       if (item.skip !== undefined && item.skip !== null && typeof item.skip !== 'boolean') {
         throw ApiError(400, 'skipはtrueまたはfalseで指定してください');
       }
-      return [exId].concat(values(item, null)).concat([item.skip === true]);
+      if (item.auto !== undefined && item.auto !== null && typeof item.auto !== 'boolean') {
+        throw ApiError(400, 'autoはtrueまたはfalseで指定してください');
+      }
+      /* auto: it came in from the video (chapters or the AI reading), not
+       * from the owner's own hand - the screens only offer "usually left
+       * out" on those. */
+      return [exId].concat(values(item, null)).concat([item.skip === true, item.auto === true]);
     });
   }
 
@@ -536,7 +542,7 @@
     items.forEach(function (row, order) {
       state.menu_items.push({
         menu_item_id: nextId(state, 'menu_item'), menu_id: menuId, ex_id: row[0],
-        sets: row[1], reps: row[2], seconds: row[3], unit: row[4], ord: order, skip: row[5]
+        sets: row[1], reps: row[2], seconds: row[3], unit: row[4], ord: order, skip: row[5], auto: row[6]
       });
     });
     return { ok: true, menu_id: menuId, revision: nextRevision };

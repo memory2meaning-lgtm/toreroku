@@ -490,8 +490,8 @@
         items: menu.items.map(function (i) {
           var skip = ids.indexOf(i.menu_item_id) >= 0 ? flag : i.skip === true;
           return i.unit === 'sec'
-            ? { ex_id: i.ex_id, sets: i.sets, seconds: i.seconds, unit: 'sec', skip: skip }
-            : { ex_id: i.ex_id, sets: i.sets, reps: i.reps, unit: 'reps', skip: skip };
+            ? { ex_id: i.ex_id, sets: i.sets, seconds: i.seconds, unit: 'sec', skip: skip, auto: i.auto === true }
+            : { ex_id: i.ex_id, sets: i.sets, reps: i.reps, unit: 'reps', skip: skip, auto: i.auto === true };
         })
       });
       return true;
@@ -996,7 +996,10 @@
       /* Third tier (Design 2026-09-12): the exercise stays in the menu but
        * the one-tap record leaves it out, for a knee that does not do
        * squats. Ticked again, it comes back. */
-      withSkip ? h('label', { style: 'display:flex;align-items:center;gap:8px;min-height:44px;'
+      /* Only for what came in on its own (the owner: "it all got pulled in,
+       * but I don't do this one"). A row the owner typed is the owner's
+       * choice already; nothing to leave out. */
+      withSkip && (item.auto || item.skip) ? h('label', { style: 'display:flex;align-items:center;gap:8px;min-height:44px;'
         + 'margin-left:' + (handle ? '44px' : '0') + ';font-size:13px;color:var(--ink);cursor:pointer;'
         + (item.skip ? 'font-weight:700' : '') }, [
         h('input', { type: 'checkbox', checked: item.skip ? 'checked' : null,
@@ -1032,7 +1035,10 @@
     });
 
     return h('div', { style: 'display:flex;flex-direction:column;min-height:100vh' }, [
-      h('div', { style: 'display:flex;align-items:center;gap:12px;padding:10px 12px;min-height:64px;border-bottom:1px solid var(--line)' }, [
+      /* Stays at the top while the form scrolls: the owner lost 保存 after
+       * adding exercises far down the page (2026-09-12). */
+      h('div', { style: 'display:flex;align-items:center;gap:12px;padding:10px 12px;min-height:64px;border-bottom:1px solid var(--line);'
+        + 'position:sticky;top:0;background:#fff;z-index:3' }, [
         h('button', { style: 'border:0;background:none;padding:0;font-size:14px;color:var(--body);'
           + 'font-weight:700;font-family:inherit;cursor:pointer;min-height:44px;padding:0 4px', onclick: onCancel }, ['やめる']),
         h('div', { style: 'flex:1;text-align:center;font-size:14px;font-weight:800;color:var(--ink)', text: '記録を修正' }),
@@ -1466,6 +1472,57 @@
     ]);
   }
 
+  /* The owner's own Gemini key (measured 2026-09-11: the REST endpoint
+   * answers a browser directly, CORS allowed, and reads a YouTube URL as
+   * the video). Kept in localStorage on this phone only - never in the
+   * export, never in the records. */
+  var AI_KEY = 'ouchitore_gemini_key';
+  function aiKey() {
+    var held = remembered(AI_KEY);
+    return typeof held.key === 'string' ? held.key.trim() : '';
+  }
+
+  function aiKeyScreen(onBack, onSave) {
+    var draft = { value: aiKey() };
+    var field = h('input', {
+      type: 'text', value: draft.value, style: FIELD + ';font-family:var(--mono)',
+      placeholder: 'AIza… で始まる文字列', autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false',
+      oninput: function () { draft.value = this.value; }
+    });
+    return h('div', { style: 'display:flex;flex-direction:column;min-height:100vh' }, [
+      h('div', { style: 'display:flex;align-items:center;gap:12px;padding:10px 12px;min-height:64px;border-bottom:1px solid var(--line)' }, [
+        h('button', { style: 'border:0;background:none;padding:0;font-size:14px;color:var(--body);'
+          + 'font-weight:700;font-family:inherit;cursor:pointer;min-height:44px;padding:0 4px', onclick: onBack }, ['戻る']),
+        h('div', { style: 'flex:1;text-align:center;font-size:14px;font-weight:800;color:var(--ink)', text: '動画を読むキー' }),
+        h('div', { style: 'width:34px' })
+      ]),
+      h('div', { style: 'padding:14px 16px;border-bottom:1px solid var(--line2);display:flex;flex-direction:column;gap:10px' }, [
+        h('div', { style: 'font-size:13px;color:var(--body);line-height:1.7',
+          text: 'Google の Gemini に動画を読ませて、種目・回数・秒数を取り出します。そのために、あなた自身の Gemini の API キーが要ります。' }),
+        h('div', { style: 'font-size:13px;color:var(--body);line-height:1.7',
+          text: 'キーは Google AI Studio で無料で作れます（無料枠あり・Google アカウントが要ります）。作ったキーをここに貼ってください。' }),
+        h('a', { href: 'https://aistudio.google.com/apikey', target: '_blank', rel: 'noopener noreferrer',
+          style: 'font-size:14px;font-weight:700;color:var(--deep);text-decoration:underline;min-height:44px;display:inline-flex;align-items:center' },
+          ['Google AI Studio でキーを作る']),
+        h('div', { style: 'font-size:12px;color:var(--sub);line-height:1.7',
+          text: 'キーはこの端末の中だけに残り、書き出しファイルには入りません。動画を読ませるときに Google へ送るのは、動画の URL と読み取りの指示だけです。あなたの記録は送りません。' })
+      ]),
+      h('div', { style: 'padding:16px 18px 22px;display:flex;flex-direction:column;gap:6px' }, [
+        h('div', { style: 'font-size:12px;font-weight:800;color:var(--sub)', text: 'API キー' }),
+        field
+      ]),
+      h('div', { style: 'flex:1' }),
+      h('div', { style: 'border-top:1px solid var(--line);padding:12px 16px 22px;background:#fff;display:flex;gap:10px' }, [
+        h('button', { style: 'flex:1;border:1px solid var(--line);background:#fff;color:var(--body);'
+          + 'font-family:inherit;font-size:14px;font-weight:700;border-radius:12px;min-height:46px;cursor:pointer',
+          onclick: function () { onSave(''); } }, ['キーを消す']),
+        h('button', { style: 'flex:2;border:0;background:var(--ink);color:#fff;font-family:inherit;'
+          + 'font-size:14px;font-weight:800;border-radius:12px;min-height:46px;cursor:pointer',
+          onclick: function () { onSave(draft.value); } }, ['このキーにする'])
+      ])
+    ]);
+  }
+
   /* ---- 1g: keeping the records ---- */
 
   function exportScreen(settings, sessionCount, onBack, onA2hs) {
@@ -1642,7 +1699,8 @@
         row('相棒', 'ホームに小さく出ます。既定は選ばない。', 'companion'),
         row('記録を残す', '書き出し／読み込み。機種変更のときはここから。', 'export'),
         row('ホーム画面に追加', '記録が消えないための手順をもう一度見ます。', 'a2hs'),
-        row('種目の一覧', '名前や標準のセット数を直す。使っていない種目を消す。', 'library')
+        row('種目の一覧', '名前や標準のセット数を直す。使っていない種目を消す。', 'library'),
+        row('動画を読むキー', 'Google の Gemini のキーを入れると、動画の URL だけで種目を取れます。', 'aikey')
       ]),
       h('div', { style: 'flex:1' }),
       navBar('settings')
@@ -1678,7 +1736,10 @@
     }).slice(0, pick.showAll ? library.length : 4);
 
     return h('div', { style: 'display:flex;flex-direction:column;min-height:100vh' }, [
-      h('div', { style: 'display:flex;align-items:center;gap:12px;padding:10px 12px;min-height:64px;border-bottom:1px solid var(--line)' }, [
+      /* Stays at the top while the form scrolls: the owner lost 保存 after
+       * adding exercises far down the page (2026-09-12). */
+      h('div', { style: 'display:flex;align-items:center;gap:12px;padding:10px 12px;min-height:64px;border-bottom:1px solid var(--line);'
+        + 'position:sticky;top:0;background:#fff;z-index:3' }, [
         h('button', { style: 'border:0;background:none;padding:0;font-size:14px;color:var(--body);'
           + 'font-weight:700;font-family:inherit;cursor:pointer;min-height:44px;padding:0 4px', onclick: onCancel }, ['やめる']),
         h('div', { style: 'flex:1;text-align:center;font-size:14px;font-weight:800;color:var(--ink)',
@@ -2137,7 +2198,10 @@
     });
 
     return h('div', { style: 'display:flex;flex-direction:column;min-height:100vh' }, [
-      h('div', { style: 'display:flex;align-items:center;gap:12px;padding:10px 12px;min-height:64px;border-bottom:1px solid var(--line)' }, [
+      /* Stays at the top while the form scrolls: the owner lost 保存 after
+       * adding exercises far down the page (2026-09-12). */
+      h('div', { style: 'display:flex;align-items:center;gap:12px;padding:10px 12px;min-height:64px;border-bottom:1px solid var(--line);'
+        + 'position:sticky;top:0;background:#fff;z-index:3' }, [
         h('button', { style: 'border:0;background:none;padding:0;font-size:14px;color:var(--body);'
           + 'font-weight:700;font-family:inherit;cursor:pointer;min-height:44px;padding:0 4px', onclick: onCancel }, ['やめる']),
         h('div', { style: 'flex:1;text-align:center;font-size:14px;font-weight:800;color:var(--ink)',
@@ -2224,9 +2288,25 @@
          * way to put a single exercise into a menu at all. */
         h('div', { style: 'display:flex;flex-direction:column;gap:8px;border:1px solid var(--line);'
           + 'border-radius:12px;padding:12px' }, [
-          h('div', { style: 'font-size:13px;font-weight:700;color:var(--ink)', text: '動画の概要欄から種目を入れる' }),
+          h('div', { style: 'font-size:13px;font-weight:700;color:var(--ink)', text: '動画から種目を入れる' }),
+          videoId(edit.video_url) && aiKey() ? h('button', { type: 'button',
+            style: 'border:0;background:var(--ink);color:#fff;font-family:inherit;font-size:14px;font-weight:700;'
+              + 'border-radius:12px;min-height:44px;padding:0 14px;cursor:pointer;align-self:flex-start;'
+              + (edit.aiBusy ? 'opacity:.6' : ''),
+            'aria-disabled': edit.aiBusy ? 'true' : null,
+            onclick: function () { extractFromVideo(edit); }
+          }, [edit.aiBusy ? '動画を読んでいます（20秒ほど）' : '動画を AI に読ませて種目にする']) : null,
+          videoId(edit.video_url) && !aiKey() ? h('div', { style: 'display:flex;flex-direction:column;gap:8px' }, [
+            h('div', { style: 'font-size:12px;color:var(--sub);line-height:1.6',
+              text: 'Google の Gemini のキーを入れると、URL だけで種目を取れます（キーはあなた自身のもの・無料枠あり）。' }),
+            h('button', { type: 'button',
+              style: 'border:1px solid var(--sub);background:#fff;color:var(--ink);font-family:inherit;font-size:14px;'
+                + 'font-weight:700;border-radius:12px;min-height:44px;padding:0 14px;cursor:pointer;align-self:flex-start',
+              onclick: function () { problem = null; state.aikeyFrom = 'menuEdit'; state.screen = { name: 'aikey' }; draw(); }
+            }, ['動画を読むキーを入れる'])
+          ]) : null,
           h('div', { style: 'font-size:12px;color:var(--sub);line-height:1.6',
-            text: 'YouTube の概要欄（「…もっと見る」の中）を全部コピーして、ここに貼ります。「3:20 スクワット」のような時間の行を種目にし、次の行までの時間を秒数にします。' }),
+            text: 'もう一つの方法：YouTube の概要欄（「…もっと見る」の中）を全部コピーして貼ります。「3:20 スクワット」のような時間の行を種目にし、次の行までの時間を秒数にします。' }),
           edit.pasteOpen ? h('textarea', { style: FIELD + ';min-height:96px;line-height:1.6;resize:vertical',
             placeholder: '概要欄をここに貼る',
             oninput: function () { edit.pasted = this.value; } }, [edit.pasted || '']) : null,
@@ -2396,6 +2476,110 @@
     });
   }
 
+  /* The same request the PC version makes, from the phone with the owner's
+   * key. The model is told to leave out rests, intro and outro, and to mark
+   * guesses; the owner still checks the rows - the reading is an offer,
+   * not a record. */
+  var AI_MODEL = 'gemini-3.5-flash';
+  var AI_PROMPT = 'この動画は自宅トレーニング動画です。日本語で答えてください。\n'
+    + '動画の中で実際に行うトレーニング種目を、実施順にすべて列挙してください。\n'
+    + '各種目について: 種目名（動画内で呼ばれている日本語名。無ければ一般的な日本語名）、'
+    + '開始タイムスタンプ(mm:ss)、セット数、1セットあたりの実施時間(秒)または回数。\n'
+    + '時間制なら unit="sec" と seconds、回数制なら unit="reps" と reps を入れる。\n'
+    + '休憩(rest)・イントロ・アウトロは種目に含めない。推測した箇所は confidence を "low" にしてください。';
+  var AI_SCHEMA = {
+    type: 'OBJECT',
+    properties: {
+      exercises: {
+        type: 'ARRAY',
+        items: {
+          type: 'OBJECT',
+          properties: {
+            name_ja: { type: 'STRING' }, start: { type: 'STRING' }, sets: { type: 'INTEGER' },
+            unit: { type: 'STRING', enum: ['sec', 'reps'] }, seconds: { type: 'INTEGER' },
+            reps: { type: 'INTEGER' }, confidence: { type: 'STRING', enum: ['high', 'medium', 'low'] }
+          },
+          required: ['name_ja', 'sets', 'unit', 'confidence']
+        }
+      }
+    },
+    required: ['exercises']
+  };
+
+  async function extractFromVideo(edit) {
+    var id = videoId(edit.video_url);
+    var key = aiKey();
+    if (!id || !key || edit.aiBusy) return;
+    edit.aiBusy = true;
+    problem = null;
+    draw();
+    var found = null;
+    try {
+      var response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + AI_MODEL
+        + ':generateContent?key=' + encodeURIComponent(key), {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [
+            { file_data: { file_uri: 'https://www.youtube.com/watch?v=' + id, mime_type: 'video/*' } },
+            { text: AI_PROMPT }
+          ] }],
+          /* Thinking off and a wide output cap: with the defaults the JSON came
+           * back cut short (measured 2026-09-12); like this, 9 seconds. */
+          generationConfig: { temperature: 0, maxOutputTokens: 8192, mediaResolution: 'MEDIA_RESOLUTION_LOW',
+            responseMimeType: 'application/json', responseSchema: AI_SCHEMA, thinkingConfig: { thinkingBudget: 0 } }
+        })
+      });
+      if (!response.ok) {
+        problem = response.status === 400 || response.status === 403 ? 'キーが違うようです。設定の「動画を読むキー」を確かめてください。'
+          : response.status === 429 ? '無料枠を使い切ったようです。しばらくしてからもう一度。'
+          : '動画を読めませんでした（' + response.status + '）。';
+      } else {
+        var answer = await response.json();
+        var text = ((((answer.candidates || [])[0] || {}).content || {}).parts || [])
+          .filter(function (part) { return !part.thought; })
+          .map(function (part) { return part.text || ''; }).join('');
+        found = JSON.parse(text).exercises || [];
+      }
+    } catch (failed) {
+      problem = problem || '動画を読めませんでした。つながっているか確かめてください。';
+    }
+    edit.aiBusy = false;
+    if (!found) { draw(); return; }
+    var added = 0, guessed = 0;
+    try {
+      for (var i = 0; i < found.length; i++) {
+        var one = found[i];
+        var name = String(one.name_ja || '').trim().slice(0, 60);
+        if (!name) continue;
+        var unit = one.unit === 'reps' ? 'reps' : 'sec';
+        var sets = Math.max(1, Math.min(99, parseInt(one.sets, 10) || 1));
+        var reps = unit === 'reps' ? Math.max(1, Math.min(999, parseInt(one.reps, 10) || 10)) : null;
+        var seconds = unit === 'sec' ? Math.max(1, Math.min(3600, parseInt(one.seconds, 10) || 30)) : null;
+        var known = libraryNow.filter(function (e) { return e.name === name; })[0];
+        if (!known) {
+          var made = await api.post('/api/library/save', unit === 'reps'
+            ? { name: name, sets: sets, reps: reps, unit: 'reps' }
+            : { name: name, sets: sets, seconds: seconds, unit: 'sec' });
+          known = { ex_id: made.ex_id, name: name, unit: unit };
+          libraryNow = (await api.get('/api/library')).items;
+        }
+        if (edit.items.some(function (it) { return it.ex_id === known.ex_id; })) continue;
+        edit.items.push({ ex_id: known.ex_id, name: known.name, sets: sets, auto: true,
+          reps: known.unit === 'reps' ? (reps || known.reps || 10) : null,
+          seconds: known.unit === 'sec' ? (seconds || known.seconds || 30) : null, unit: known.unit });
+        added += 1;
+        if (one.confidence === 'low') guessed += 1;
+      }
+      state.notice = added
+        ? 'AI が動画を読んで ' + added + ' 種目を入れました。読み取りは推測です。名前・回数・秒数を上で確かめてください。'
+          + (guessed ? '（自信の低い読み取りが ' + guessed + ' 件）' : '')
+        : '動画から種目が読み取れませんでした。';
+    } catch (error) {
+      problem = error && error.note ? error.note : '種目にできませんでした。';
+    }
+    draw();
+  }
+
   async function importFromDescription(edit) {
     var chapters = chaptersFrom(edit.pasted);
     problem = null;
@@ -2423,7 +2607,7 @@
           libraryNow = (await api.get('/api/library')).items;
         }
         if (edit.items.some(function (it) { return it.ex_id === known.ex_id; })) continue;
-        edit.items.push({ ex_id: known.ex_id, name: known.name, sets: 1,
+        edit.items.push({ ex_id: known.ex_id, name: known.name, sets: 1, auto: true,
           reps: known.unit === 'sec' ? null : (one.reps || known.reps),
           seconds: known.unit === 'sec' ? seconds : null, unit: known.unit });
         added += 1;
@@ -2448,7 +2632,7 @@
         video_url: menu.video_url || '', note: menu.note || '', tag: menu.tag || '',
         items: menu.items.map(function (i) {
           return { ex_id: i.ex_id, name: i.name, sets: i.sets, reps: i.reps,
-            seconds: i.seconds, unit: i.unit, skip: i.skip === true };
+            seconds: i.seconds, unit: i.unit, skip: i.skip === true, auto: i.auto === true };
         })
       };
       state.screen = { name: 'menuEdit' };
@@ -2474,8 +2658,8 @@
         tag: edit.tag || null,
         items: edit.items.map(function (i) {
           return i.unit === 'sec'
-            ? { ex_id: i.ex_id, sets: i.sets, seconds: i.seconds, unit: 'sec', skip: i.skip === true }
-            : { ex_id: i.ex_id, sets: i.sets, reps: i.reps, unit: 'reps', skip: i.skip === true };
+            ? { ex_id: i.ex_id, sets: i.sets, seconds: i.seconds, unit: 'sec', skip: i.skip === true, auto: i.auto === true }
+            : { ex_id: i.ex_id, sets: i.sets, reps: i.reps, unit: 'reps', skip: i.skip === true, auto: i.auto === true };
         })
       });
       edit.menu_id = saved.menu_id;
@@ -2970,7 +3154,18 @@
           state.screen = { name: target === 'nickname' ? 'nickname'
             : target === 'companion' ? 'companion'
             : target === 'export' ? 'export'
-            : target === 'a2hs' ? 'a2hs' : 'library' };
+            : target === 'a2hs' ? 'a2hs'
+            : target === 'aikey' ? 'aikey' : 'library' };
+          draw();
+        }));
+      return;
+    }
+    if (state.screen.name === 'aikey') {
+      root.replaceChildren(aiKeyScreen(
+        function () { state.screen = { name: state.aikeyFrom || 'settings' }; state.aikeyFrom = null; draw(); },
+        function (value) {
+          remember(AI_KEY, { key: (value || '').trim() });
+          state.screen = { name: state.aikeyFrom || 'settings' }; state.aikeyFrom = null;
           draw();
         }));
       return;

@@ -787,6 +787,32 @@ async function main() {
     }));
   });
 
+  await check('menus keep a tag and the order the owner gave them', async () => {
+    const api = fresh();
+    const ex = await api.post('/api/library/save', { name: 'スクワット', sets: 1, reps: 10, unit: 'reps' });
+    const mk = (name, tag) => api.post('/api/menu/save', {
+      menu_id: null, revision: null, name, tag, items: [{ ex_id: ex.ex_id, sets: 1, reps: 10, unit: 'reps' }]
+    });
+    const a = await mk('いちばん', '下半身');
+    const b = await mk('あとから', null);
+    const c = await mk('さいご', '下半身');
+    let menus = (await api.get('/api/menus')).menus;
+    equal(menus.map(m => m.name), ['いちばん', 'あとから', 'さいご'], 'new ones go to the end, not alphabetical');
+    equal(menus.map(m => m.tag), ['下半身', null, '下半身'], 'the tag round-trips');
+    await api.post('/api/menu/reorder', { menu_ids: [c.menu_id, a.menu_id, b.menu_id] });
+    menus = (await api.get('/api/menus')).menus;
+    equal(menus.map(m => m.name), ['さいご', 'いちばん', 'あとから'], 'the dragged order sticks');
+    await rejects(409, () => api.post('/api/menu/reorder', { menu_ids: [a.menu_id] }));
+    await rejects(400, () => api.post('/api/menu/reorder', { menu_ids: [a.menu_id, a.menu_id, b.menu_id] }));
+    await rejects(400, () => api.post('/api/menu/save', {
+      menu_id: null, revision: null, name: '札が長い', tag: 'x'.repeat(31), items: []
+    }));
+    const other = store.createApi(store.memoryPersist(null));
+    await other.importDocument(await api.exportDocument());
+    equal((await other.get('/api/menus')).menus.map(m => m.name), ['さいご', 'いちばん', 'あとから'],
+      'the order survives the move to another phone');
+  });
+
   console.log(passed + ' passed, ' + failures.length + ' failed');
   failures.forEach(line => console.log('  FAIL ' + line));
   process.exit(failures.length ? 1 : 0);

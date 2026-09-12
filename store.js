@@ -146,7 +146,7 @@
       v: SCHEMA,
       seq: { ex: 0, menu: 0, menu_item: 0, session: 0, item: 0 },
       exercises: [],   // ex_id name sets reps seconds unit use_count last_used created
-      menus: [],       // menu_id name video_url note revision created updated
+      menus: [],       // menu_id name video_url note tag ord revision created updated
       menu_items: [],  // menu_item_id menu_id ex_id sets reps seconds unit ord
       sessions: [],    // session_id date ts note session_kind menu_id menu_name video_url request_id request_hash performed_time
       items: [],       // item_id session_id ex_id name sets reps seconds unit ord
@@ -221,10 +221,40 @@
       });
   }
 
+  /* In the order the owner gave them (ord), and by name among those that
+   * were never dragged - a document from before ord existed keeps its old
+   * alphabetical order until the owner moves something. */
   function menusList(state) {
-    var menus = state.menus.slice().sort(function (a, b) { return a.name.localeCompare(b.name); })
-      .map(function (m) { return Object.assign({}, m, { items: menuItemRows(state, m.menu_id) }); });
+    var menus = state.menus.slice().sort(function (a, b) {
+      return ((a.ord || 0) - (b.ord || 0)) || a.name.localeCompare(b.name);
+    }).map(function (m) {
+      return Object.assign({ tag: null, ord: 0 }, m, { items: menuItemRows(state, m.menu_id) });
+    });
     return { ok: true, menus: menus };
+  }
+
+  /* The whole order at once, from the screen that was dragged on. Every
+   * menu has to be named, so a stale screen cannot silently drop one. */
+  function menuReorder(state, payload) {
+    var ids = payload && payload.menu_ids;
+    if (!Array.isArray(ids)) throw ApiError(400, 'menu_idsを配列で指定してください');
+    var seen = {};
+    ids.forEach(function (raw) {
+      var id = anId(raw, 'menu_id');
+      if (seen[id]) throw ApiError(400, '同じmenu_idが2回あります');
+      seen[id] = true;
+      if (!byId(state.menus, 'menu_id', id)) throw ApiError(404, 'トレーニングメニューが見つかりません', { menu_id: id });
+    });
+    if (ids.length !== state.menus.length) {
+      throw ApiError(409, 'トレーニングメニューが他で変更されています。再読込してください', { conflict: 'count' });
+    }
+    var now = nowIso();
+    ids.forEach(function (raw, position) {
+      var menu = byId(state.menus, 'menu_id', anId(raw, 'menu_id'));
+      menu.ord = position + 1;
+      menu.updated = now;
+    });
+    return { ok: true, count: ids.length };
   }
 
   function sessionRows(state, date) {
@@ -471,6 +501,7 @@
     var name = aName(payload.name);
     var videoUrl = aUrl(payload.video_url);
     var note = aText(payload.note, 'メモ', 5000);
+    var tag = aText(payload.tag, '札', 30);
     var menuId = payload.menu_id === null || payload.menu_id === undefined ? null : payload.menu_id;
     var revision = payload.revision === null || payload.revision === undefined ? null : payload.revision;
     if (menuId === null) {
@@ -487,8 +518,9 @@
     if (menuId === null) {
       menuId = nextId(state, 'menu');
       nextRevision = 1;
+      var last = state.menus.reduce(function (n, m) { return Math.max(n, m.ord || 0); }, 0);
       state.menus.push({
-        menu_id: menuId, name: name, video_url: videoUrl, note: note,
+        menu_id: menuId, name: name, video_url: videoUrl, note: note, tag: tag, ord: last + 1,
         revision: 1, created: now, updated: now
       });
     } else {
@@ -498,7 +530,7 @@
         throw ApiError(409, 'メニューが他で変更されています。再読込してください', { conflict: 'revision' });
       }
       nextRevision = revision + 1;
-      Object.assign(menu, { name: name, video_url: videoUrl, note: note, revision: nextRevision, updated: now });
+      Object.assign(menu, { name: name, video_url: videoUrl, note: note, tag: tag, revision: nextRevision, updated: now });
       state.menu_items = state.menu_items.filter(function (mi) { return mi.menu_id !== menuId; });
     }
     items.forEach(function (row, order) {
@@ -974,6 +1006,7 @@
             case '/api/library/delete': return libraryDelete(s, payload.ex_id);
             case '/api/menu/save': return menuSave(s, payload);
             case '/api/menu/delete': return menuDelete(s, payload.menu_id);
+            case '/api/menu/reorder': return menuReorder(s, payload);
             case '/api/session/delete': return sessionDelete(s, payload.session_id);
             case '/api/session/update': return sessionUpdate(s, payload);
             case '/api/settings/save': return settingsSave(s, payload);

@@ -486,7 +486,7 @@
     try {
       await api.post('/api/menu/save', {
         menu_id: menu.menu_id, revision: menu.revision,
-        name: menu.name, video_url: menu.video_url || null, note: menu.note || null,
+        name: menu.name, video_url: menu.video_url || null, note: menu.note || null, tag: menu.tag || null,
         items: menu.items.map(function (i) {
           var skip = ids.indexOf(i.menu_item_id) >= 0 ? flag : i.skip === true;
           return i.unit === 'sec'
@@ -1157,7 +1157,7 @@
     offerTaken(edit);
     problem = null;
     state.menuEdit = {
-      menu_id: null, revision: null, video_url: '', note: '', fromRecord: true,
+      menu_id: null, revision: null, video_url: '', note: '', tag: '', fromRecord: true,
       name: edit.items.map(function (i) { return i.name; }).join('・').slice(0, 100),
       items: edit.items.map(function (i) {
         return { ex_id: i.ex_id, name: i.name, sets: i.sets, reps: i.reps, seconds: i.seconds, unit: i.unit };
@@ -2006,7 +2006,7 @@
    * the point of it is to keep two of them from acting at once. */
   var dragging = null;
 
-  function grabHandle(items, index, name) {
+  function grabHandle(items, index, name, onMoved) {
     var handle = h('div', {
       style: 'width:44px;height:44px;flex:none;font-size:15px;color:var(--faint);'
         + 'display:flex;align-items:center;justify-content:center;margin-left:-13px;'
@@ -2018,7 +2018,7 @@
     var move = function (to) {
       if (to < 0 || to >= items.length || to === index) return;
       items.splice(to, 0, items.splice(index, 1)[0]);
-      draw();
+      if (onMoved) onMoved(); else draw();
     };
 
     handle.onkeydown = function (event) {
@@ -2065,6 +2065,65 @@
       handle.onpointercancel = finish;
     };
     return handle;
+  }
+
+  function usedTags() {
+    var seen = {};
+    menusNow.forEach(function (m) { if (m.tag) seen[m.tag] = true; });
+    return Object.keys(seen).sort(function (a, b) { return a.localeCompare(b); });
+  }
+
+  /* The tag bar (Design 2026-09-12): only once a tag exists. すべて first,
+   * the tags, then 札なし when something has none. The choice is kept so
+   * the list opens where it was left. Selected = filled and bold. */
+  var TAG_KEY = 'ouchitore_tag';
+  function chosenTag() {
+    var held = remembered(TAG_KEY);
+    return typeof held.tag === 'string' ? held.tag : '';
+  }
+  function tagBar(menus) {
+    var tags = usedTags();
+    if (!tags.length) return null;
+    var untagged = menus.some(function (m) { return !m.tag; });
+    var current = chosenTag();
+    if (current && current !== '__none__' && tags.indexOf(current) < 0) current = '';
+    if (current === '__none__' && !untagged) current = '';
+    var chips = [['', 'すべて']].concat(tags.map(function (tag) { return [tag, tag]; }));
+    if (untagged) chips.push(['__none__', '札なし']);
+    return h('div', { style: 'display:flex;gap:8px;overflow-x:auto;padding:8px 18px;-webkit-overflow-scrolling:touch' },
+      chips.map(function (chip) {
+        var on = chip[0] === current;
+        return h('button', {
+          style: 'flex:none;min-height:36px;padding:0 14px;border-radius:18px;font-family:inherit;font-size:14px;'
+            + 'cursor:pointer;' + (on ? 'background:var(--ink);border:1px solid var(--ink);color:#fff;font-weight:700'
+                                     : 'background:#fff;border:1px solid var(--sub);color:var(--ink)'),
+          'aria-pressed': on ? 'true' : 'false',
+          onclick: function () { remember(TAG_KEY, { tag: chip[0] }); draw(); }
+        }, [chip[1]]);
+      }));
+  }
+
+  /* A search field only once the list is long (twenty or more): an empty
+   * field on a short list is a question nobody asked. */
+  function searchBox(menus) {
+    if (menus.length < 20) return null;
+    return h('div', { style: 'padding:8px 18px 0' }, [
+      h('input', { type: 'search', value: state.menuSearch || '', placeholder: 'トレーニングメニューの名前',
+        'aria-label': 'トレーニングメニューを名前で探す',
+        style: FIELD + ';min-height:44px;border-color:var(--sub);border-radius:8px',
+        oninput: function () { state.menuSearch = this.value; draw(); } })
+    ]);
+  }
+
+  function filteredMenus(menus) {
+    var tag = usedTags().length ? chosenTag() : '';
+    var text = (menus.length >= 20 ? (state.menuSearch || '') : '').trim().toLowerCase();
+    return menus.filter(function (m) {
+      if (tag === '__none__' && m.tag) return false;
+      if (tag && tag !== '__none__' && m.tag !== tag) return false;
+      if (text && m.name.toLowerCase().indexOf(text) < 0) return false;
+      return true;
+    });
   }
 
   function menuEditScreen(edit, library, onCancel) {
@@ -2131,6 +2190,24 @@
         labelled('3. メモ', '（任意）', null,
           h('textarea', { style: FIELD + ';min-height:66px;line-height:1.6;resize:vertical',
             oninput: function () { edit.note = this.value; } }, [edit.note || ''])),
+        /* Design (2026-09-12, after Hevy's folders and Habitify's areas): one
+         * tag per menu, typed or picked from the ones already in use. A
+         * list that has grown long is split by these, never by how often
+         * something was used. */
+        labelled('4. 札', '（任意）', null,
+          h('div', { style: 'display:flex;flex-direction:column;gap:8px' }, [
+            h('input', { type: 'text', value: edit.tag || '', maxlength: '30', style: FIELD,
+              placeholder: '例：下半身、ストレッチ',
+              oninput: function () { edit.tag = this.value; } })
+          ].concat(usedTags().filter(function (tag) { return tag !== (edit.tag || '').trim(); }).length
+            ? [h('div', { style: 'display:flex;gap:8px;flex-wrap:wrap' }, usedTags().map(function (tag) {
+                return h('button', {
+                  style: 'min-height:44px;padding:0 14px;border-radius:22px;border:1px solid var(--sub);'
+                    + 'background:#fff;color:var(--ink);font-family:inherit;font-size:14px;cursor:pointer',
+                  onclick: function () { edit.tag = tag; draw(); }
+                }, [tag]);
+              }))]
+            : []))),
         h('div', { style: 'display:flex;flex-direction:column;gap:2px' }, [
           h('div', { style: 'display:flex;align-items:baseline;justify-content:space-between;padding-bottom:6px' }, [
             h('div', { style: 'font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.04em' }, [
@@ -2279,7 +2356,7 @@
       if (!menu) { problem = 'トレーニングメニューが見つかりません'; draw(); return; }
       state.menuEdit = {
         menu_id: menu.menu_id, revision: menu.revision, name: menu.name,
-        video_url: menu.video_url || '', note: menu.note || '',
+        video_url: menu.video_url || '', note: menu.note || '', tag: menu.tag || '',
         items: menu.items.map(function (i) {
           return { ex_id: i.ex_id, name: i.name, sets: i.sets, reps: i.reps,
             seconds: i.seconds, unit: i.unit, skip: i.skip === true };
@@ -2294,7 +2371,7 @@
 
   function newMenu() {
     problem = null;
-    state.menuEdit = { menu_id: null, revision: null, name: '', video_url: '', note: '', items: [] };
+    state.menuEdit = { menu_id: null, revision: null, name: '', video_url: '', note: '', tag: '', items: [] };
     state.screen = { name: 'menuEdit' };
     draw();
   }
@@ -2305,6 +2382,7 @@
       var saved = await api.post('/api/menu/save', {
         menu_id: edit.menu_id, revision: edit.revision,
         name: edit.name, video_url: edit.video_url || null, note: edit.note || null,
+        tag: edit.tag || null,
         items: edit.items.map(function (i) {
           return i.unit === 'sec'
             ? { ex_id: i.ex_id, sets: i.sets, seconds: i.seconds, unit: 'sec', skip: i.skip === true }
@@ -2442,6 +2520,8 @@
         h('div', { style: 'width:52px' })
       ]),
       skipOfferBlock(view),
+      view.menus.length ? searchBox(view.menus) : null,
+      view.menus.length ? tagBar(view.menus) : null,
     h('div', { style: 'flex:1;padding:6px 18px 18px;display:flex;flex-direction:column;gap:' + (view.menus.length ? '2px' : '12px') }, [
       /* Said once, in place of a word under every circle: only while
        * nothing has ever been recorded. */
@@ -2474,7 +2554,7 @@
         }
         draw();
       })
-    ].concat(view.menus.map(function (menu, i) {
+    ].concat(filteredMenus(view.menus).map(function (menu, i) {
       /* Already put down today, and at what time. The first one is
        * enough: the circle says it happened, and the day's own list
        * below has every record with its time. */
@@ -2522,31 +2602,58 @@
   }
 
   function menuListPage(menus, onNew, onOpen) {
+    var shown = filteredMenus(menus);
+    /* Dragging is only offered on the whole list: an order made inside a
+     * filtered view would be a guess about the rows that are not there. */
+    var whole = shown.length === menus.length;
+    var order = menus.slice();
+    var saveOrder = async function () {
+      problem = null;
+      try {
+        await api.post('/api/menu/reorder', { menu_ids: order.map(function (m) { return m.menu_id; }) });
+      } catch (error) {
+        problem = error && error.note ? error.note : '並び順を保存できませんでした。';
+      }
+      draw();
+    };
     return h('div', { style: 'display:flex;flex-direction:column;min-height:100vh' }, [
       h('div', { style: 'display:flex;flex-direction:column;gap:3px;padding:18px 18px 12px' }, [
         h('div', { style: 'font-size:19px;font-weight:800;color:var(--ink);line-height:1.1', text: 'トレーニングメニュー' }),
         /* Said once; the next drawing of anything forgets it. */
         state.notice ? h('div', { style: 'font-size:14px;color:var(--body);padding-top:6px', text: state.notice }) : null
       ]),
+      menus.length ? searchBox(menus) : null,
+      menus.length ? tagBar(menus) : null,
       h('div', { style: 'flex:1;padding:0 18px 18px;display:flex;flex-direction:column;gap:2px' },
-        (menus.length ? menus.map(function (menu, i) {
-          return h('button', {
-            style: 'display:flex;gap:12px;align-items:flex-start;padding:12px 0;width:100%;'
-              + 'background:none;border:0;' + (i ? 'border-top:1px solid var(--line2);' : '')
-              + 'text-align:left;font-family:inherit;cursor:pointer',
-            onclick: onOpen.bind(null, menu.menu_id)
+        (menus.length ? shown.map(function (menu, i) {
+          return h('div', {
+            style: 'display:flex;gap:8px;align-items:center;padding:6px 0;'
+              + (i ? 'border-top:1px solid var(--line2);' : '')
           }, [
-            h('div', { style: 'flex:1;min-width:0;display:flex;flex-direction:column;gap:3px' }, [
-              h('div', { style: 'font-size:15px;font-weight:800;color:var(--ink);line-height:1.3;' + TWO_LINES,
-                text: menu.name }),
-              h('div', { style: 'font-family:var(--mono);font-size:11px;color:var(--sub)', text: menuShape(menu) })
-            ]),
-            menuThumb(menu.video_url)
+            whole ? grabHandle(order, i, menu.name, saveOrder) : null,
+            h('button', {
+              style: 'flex:1;min-width:0;display:flex;gap:12px;align-items:flex-start;padding:6px 0;'
+                + 'background:none;border:0;text-align:left;font-family:inherit;cursor:pointer',
+              'aria-label': menu.name + ' を編集する',
+              onclick: onOpen.bind(null, menu.menu_id)
+            }, [
+              h('div', { style: 'flex:1;min-width:0;display:flex;flex-direction:column;gap:3px' }, [
+                h('div', { style: 'font-size:15px;font-weight:800;color:var(--ink);line-height:1.3;' + TWO_LINES,
+                  text: menu.name }),
+                h('div', { style: 'font-family:var(--mono);font-size:11px;color:var(--sub)',
+                  text: menuShape(menu) + (menu.tag ? ' ・ ' + menu.tag : '') })
+              ]),
+              menuThumb(menu.video_url),
+              h('span', { style: 'flex:none;align-self:center;color:var(--sub);display:flex' }, [svg(ICON.chevron)])
+            ])
           ]);
         }) : [
           h('div', { style: 'padding:22px 0;font-size:13px;color:var(--sub);line-height:1.7',
             text: 'トレーニングメニューがありません。トレーニングメニューは、動画のURLと種目をまとめたものです。1つ作ると、やった日に丸を押すだけで残ります。' })
-        ]).concat([
+        ]).concat(menus.length && !shown.length ? [
+          h('div', { style: 'padding:22px 0;font-size:14px;color:var(--body);line-height:1.7',
+            text: 'この札・この名前のトレーニングメニューはありません。' })
+        ] : []).concat([
           /* Design (2026-09-12): the way to add one is a row at the end of
            * the list, not a dashed button - dashes already mean "cannot be
            * pressed" on the week strip. */

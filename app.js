@@ -601,6 +601,18 @@
         numbered(2, '上の欄に貼る。題名が入るので、長ければ短くする'),
         numbered(3, 'やった日は、行末の丸を押す')
       ]),
+      /* Said before the URL goes in, not after: without a key the title
+       * arrives alone and the exercises have to wait for a detour through
+       * 設定 (the owner hit exactly that, 2026-09-12). */
+      aiKey() ? null : h('div', { style: 'display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line2);'
+        + 'padding-top:12px' }, [
+        h('div', { style: 'font-size:12px;color:var(--body);line-height:1.6',
+          text: '種目まで自動で入れたいなら、先に Google の Gemini のキーを入れておくと、貼ったあと一度で入ります（あなた自身のキー・無料枠あり）。' }),
+        h('button', { style: 'align-self:flex-start;border:1px solid var(--sub);background:#fff;color:var(--ink);'
+          + 'font-family:inherit;font-size:13px;font-weight:700;border-radius:12px;min-height:44px;padding:0 14px;cursor:pointer',
+          onclick: function () { problem = null; state.aikeyFrom = 'record'; state.screen = { name: 'aikey' }; draw(); } },
+          ['先に動画を読むキーを入れる'])
+      ]),
       h('div', { style: 'display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--line2);'
         + 'padding-top:12px' }, [
         h('button', { style: 'align-self:flex-start;border:0;background:none;padding:0;font-size:12px;'

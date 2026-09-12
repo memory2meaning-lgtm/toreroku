@@ -31,6 +31,25 @@
     return el;
   }
 
+  /* An SVG drawn from markup. Design hands these over as paths; the app
+   * never draws a picture out of CSS boxes again (the owner's phone showed
+   * what that looks like). */
+  function svg(markup) {
+    var box = document.createElement('template');
+    box.innerHTML = markup.trim();
+    return box.content.firstChild;
+  }
+  var ICON = {
+    bin: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16"/><path d="M9.5 7V5.2A1.2 1.2 0 0 1 10.7 4h2.6a1.2 1.2 0 0 1 1.2 1.2V7"/><path d="M6.2 7l.9 12.1A2 2 0 0 0 9.1 21h5.8a2 2 0 0 0 2-1.9L17.8 7"/><path d="M10.4 11v6"/><path d="M13.6 11v6"/></svg>',
+    plus: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg>',
+    home: ['<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round" aria-hidden="true"><path d="M2.8 11.1 12 3.3l9.2 7.8v8.1a1.6 1.6 0 0 1-1.6 1.6H4.4a1.6 1.6 0 0 1-1.6-1.6z"/></svg>',
+           '<svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M2.8 11.1 12 3.3l9.2 7.8v8.1a1.6 1.6 0 0 1-1.6 1.6H4.4a1.6 1.6 0 0 1-1.6-1.6z"/></svg>'],
+    menus: ['<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round" aria-hidden="true"><path d="M4.4 4.9h15.2a1.8 1.8 0 0 1 1.8 1.8v10.6a1.8 1.8 0 0 1-1.8 1.8H4.4a1.8 1.8 0 0 1-1.8-1.8V6.7a1.8 1.8 0 0 1 1.8-1.8z"/><path d="M10.1 8.7 15.9 12 10.1 15.3z"/></svg>',
+            '<svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M4.4 4.9h15.2a1.8 1.8 0 0 1 1.8 1.8v10.6a1.8 1.8 0 0 1-1.8 1.8H4.4a1.8 1.8 0 0 1-1.8-1.8V6.7a1.8 1.8 0 0 1 1.8-1.8zM10.1 8.7 15.9 12 10.1 15.3z"/></svg>'],
+    settings: ['<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round" aria-hidden="true"><path d="M9.88 2.02H14.12L14.29 4.96L15.36 5.41L17.56 3.45L20.55 6.44L18.59 8.64L19.04 9.71L21.98 9.88V14.12L19.04 14.29L18.59 15.36L20.55 17.56L17.56 20.55L15.36 18.59L14.29 19.04L14.12 21.98H9.88L9.71 19.04L8.64 18.59L6.44 20.55L3.45 17.56L5.41 15.36L4.96 14.29L2.02 14.12V9.88L4.96 9.71L5.41 8.64L3.45 6.44L6.44 3.45L8.64 5.41L9.71 4.96Z"/><circle cx="12" cy="12" r="3.1"/></svg>',
+               '<svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M9.88 2.02H14.12L14.29 4.96L15.36 5.41L17.56 3.45L20.55 6.44L18.59 8.64L19.04 9.71L21.98 9.88V14.12L19.04 14.29L18.59 15.36L20.55 17.56L17.56 20.55L15.36 18.59L14.29 19.04L14.12 21.98H9.88L9.71 19.04L8.64 18.59L6.44 20.55L3.45 17.56L5.41 15.36L4.96 14.29L2.02 14.12V9.88L4.96 9.71L5.41 8.64L3.45 6.44L6.44 3.45L8.64 5.41L9.71 4.96ZM15.1 12A3.1 3.1 0 1 1 8.9 12A3.1 3.1 0 1 1 15.1 12Z"/></svg>']
+  };
+
   function videoId(url) {
     var m = /(?:v=|youtu\.be\/|\/embed\/|\/shorts\/)([A-Za-z0-9_-]{11})/.exec(url || '');
     return m ? m[1] : null;
@@ -176,9 +195,12 @@
       var count = counts[date] || 0;
       var step = count > 0 ? Math.min(count, INK_STEPS.length) - 1 : -1;
       var style = 'flex:1;height:44px;border-radius:8px;'
+        /* Design (2026-09-12): a past day that was checked and had nothing
+         * is not left white - white is what "not drawn" looks like. It gets
+         * the faintest ground, a solid edge, and a short dash. */
         + (future ? 'border:1px dashed var(--faint);background:#fff;'
-                  : 'border:1px solid var(--line);background:' + (step < 0 ? '#fff' : INK_STEPS[step]) + ';'
-                    + 'color:' + (step < 0 ? 'var(--faint)' : INK_TEXT[step]) + ';')
+                  : step < 0 ? 'border:1px solid #b3c0d1;background:#f2f5f9;color:var(--sub);'
+                  : 'border:1px solid var(--line);background:' + INK_STEPS[step] + ';color:' + INK_TEXT[step] + ';')
         + (isToday ? 'box-shadow:0 0 0 2px var(--card),0 0 0 3.5px var(--ink);' : '')
         + 'display:flex;align-items:center;justify-content:center;'
         + 'font-family:var(--mono);font-size:13px;font-weight:700;padding:0;';
@@ -188,7 +210,8 @@
         'aria-label': (day.getMonth() + 1) + '月' + day.getDate() + '日'
           + (count ? 'の記録を見る' : '（記録なし）'),
         onclick: future ? null : onPick.bind(null, date)
-      }, [count ? String(count) : '']));
+      }, [count ? String(count) : (future ? '' : h('span', { style: 'display:block;width:10px;height:1.5px;'
+        + 'background:var(--sub);border-radius:1px' }))]));
       labels.push(h('div', { style: 'flex:1;text-align:center', text: WEEKDAYS[i] }));
     }
 
@@ -200,7 +223,7 @@
       ]),
       h('div', { style: 'display:flex;gap:5px' }, cells),
       h('div', { style: 'display:flex;gap:5px;font-family:var(--mono);font-size:10px;color:var(--faint)' }, labels),
-      h('div', { style: 'font-size:11px;color:var(--faint)', text: '数字は記録の件数。押すとその日を開きます。' })
+      h('div', { style: 'font-size:11px;color:var(--faint)', text: '数字は記録の件数。横線は記録の無かった日。押すとその日を開きます。' })
     ]);
   }
 
@@ -783,35 +806,65 @@
 
   /* ---- 2b-2: correcting one record ---- */
 
-  function binIcon(w, hgt) {
-    return h('span', {
-      style: 'width:' + w + 'px;height:' + hgt + 'px;border:1.5px solid var(--sub);border-top:0;'
-        + 'border-radius:0 0 3px 3px;position:relative;display:inline-block'
-    }, [h('span', { style: 'position:absolute;left:-2.5px;right:-2.5px;top:-4px;height:1.5px;'
-      + 'background:var(--sub);display:block' })]);
+  function binIcon() {
+    var icon = svg(ICON.bin);
+    icon.setAttribute('width', '16'); icon.setAttribute('height', '16');
+    return icon;
   }
 
+  /* The 44-square delete at the end of a row: outline, a 24px drawing, no
+   * word under it (the picture says it; aria-label says it aloud). */
+  function deleteButton(label, onTap) {
+    return h('button', {
+      style: 'width:44px;height:44px;flex:none;border:1px solid var(--sub);border-radius:8px;'
+        + 'display:flex;align-items:center;justify-content:center;background:#fff;cursor:pointer;'
+        + 'padding:0;color:var(--ink)',
+      'aria-label': label, onclick: onTap
+    }, [svg(ICON.bin)]);
+  }
+
+  /* A box for a count, with its unit outside where two digits cannot push
+   * it out. Digits only: type=number put a spinner in the box on Android
+   * Chrome and "10" read as ":" (owner's phone, 2026-09-12). */
   function numberBox(value, unitLabel, onChange) {
-    /* A text field that only takes digits. type=number on Android Chrome
-     * squeezes its spinner into the box, hiding the value (seen on the
-     * owner's phone 2026-09-12: "10" showed as ":" and "1("). */
-    return h('div', {
-      style: 'border:1px solid var(--line);border-radius:9px;padding:7px 9px;min-height:36px;'
-        + 'display:flex;align-items:center;gap:3px;background:#fff'
-    }, [
+    return h('div', { style: 'display:flex;align-items:center;gap:4px' }, [
       h('input', {
-        type: 'text', value: String(value), inputmode: 'numeric', pattern: '[0-9]*',
+        type: 'text', value: String(value), inputmode: 'numeric', pattern: '[0-9]*', maxlength: '3',
         'aria-label': unitLabel,
-        style: 'font-family:var(--mono);font-size:13px;font-weight:700;color:var(--ink);'
-          + 'border:0;background:none;padding:0;width:3.5ch;min-width:3.5ch;'
-          + 'text-align:right;-webkit-appearance:none;appearance:none',
+        style: 'width:64px;height:44px;box-sizing:border-box;border:1px solid var(--sub);border-radius:6px;'
+          + 'background:#fff;padding:0 8px;text-align:center;font-family:var(--mono);font-size:17px;'
+          + 'font-weight:700;color:var(--ink);-webkit-appearance:none;appearance:none',
         onchange: function () {
           var n = parseInt(this.value, 10);
           if (!(n >= 1)) { this.value = String(value); return; }
           onChange(n);
         }
       }),
-      h('span', { style: 'font-size:11px;color:var(--sub)', text: unitLabel })
+      h('span', { style: 'font-size:14px;color:var(--body)', text: unitLabel })
+    ]);
+  }
+
+  /* One exercise in a list being edited. Two tiers (Design 2026-09-12):
+   * the name and the delete on top, the numbers underneath, indented past
+   * the handle so they line up with the name. */
+  function exerciseRow(handle, item, deleteLabel, onDelete, extraStyle) {
+    var counts = h('div', { style: 'display:flex;align-items:center;margin-top:4px;'
+      + 'margin-left:' + (handle ? '44px' : '0') }, [
+      numberBox(item.sets, 'セット', function (v) { item.sets = v; }),
+      h('span', { style: 'font-size:14px;color:var(--sub);padding:0 12px', 'aria-hidden': 'true', text: '×' }),
+      item.unit === 'sec'
+        ? numberBox(item.seconds, '秒', function (v) { item.seconds = v; })
+        : numberBox(item.reps, '回', function (v) { item.reps = v; })
+    ]);
+    return h('div', { style: 'display:flex;flex-direction:column;padding:6px 0;border-top:1px solid var(--line2);'
+      + (extraStyle || '') }, [
+      h('div', { style: 'display:flex;align-items:center;min-height:44px' }, [
+        handle,
+        h('div', { style: 'flex:1;min-width:0;font-size:15px;font-weight:700;color:var(--ink);'
+          + 'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-right:8px', text: item.name }),
+        deleteButton(deleteLabel, onDelete)
+      ]),
+      counts
     ]);
   }
 
@@ -829,32 +882,14 @@
 
   function editScreen(edit, onCancel) {
     var rows = edit.items.map(function (item, index) {
-      return h('div', {
-        style: 'display:flex;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line2);'
-          + (index === edit.items.length - 1 ? 'border-bottom:1px solid var(--line2);' : '')
-      }, [
-        h('div', { style: 'flex:1;min-width:0;font-size:14px;font-weight:700;color:var(--ink)', text: item.name }),
-        h('div', { style: 'display:flex;align-items:center;gap:6px;flex:none' }, [
-          numberBox(item.sets, 'セット', function (v) { item.sets = v; }),
-          h('div', { style: 'font-size:12px;color:var(--faint)', text: '×' }),
-          item.unit === 'sec'
-            ? numberBox(item.seconds, '秒', function (v) { item.seconds = v; })
-            : numberBox(item.reps, '回', function (v) { item.reps = v; })
-        ]),
-        h('button', {
-          style: 'width:44px;height:44px;flex:none;border:1px solid var(--line);border-radius:9px;'
-            + 'display:flex;align-items:center;justify-content:center;background:#fff;cursor:pointer;padding:0',
-          'aria-label': item.name + ' をこの記録から外す',
-          onclick: function () {
-            if (edit.items.length === 1) {
-              problem = '1件以上の種目を指定してください';
-            } else {
-              edit.items.splice(index, 1);
-            }
-            draw();
-          }
-        }, [binIcon(11, 13)])
-      ]);
+      return exerciseRow(null, item, item.name + ' をこの記録から外す', function () {
+        if (edit.items.length === 1) {
+          problem = '1件以上の種目を指定してください';
+        } else {
+          edit.items.splice(index, 1);
+        }
+        draw();
+      }, index === edit.items.length - 1 ? 'border-bottom:1px solid var(--line2);' : '');
     });
 
     return h('div', { style: 'display:flex;flex-direction:column;min-height:100vh' }, [
@@ -931,7 +966,7 @@
               + 'font-size:14px;font-weight:700;border-radius:13px;min-height:46px;cursor:pointer;'
               + 'display:flex;align-items:center;justify-content:center;gap:8px',
             onclick: function () { removeRecord(edit); }
-          }, [binIcon(12, 14), 'この記録を削除']),
+          }, [binIcon(), 'この記録を削除']),
           h('div', { style: 'font-size:11px;color:var(--faint);line-height:1.6',
             text: '削除は確認ダイアログを出してから実行します。' })
         ])
@@ -1441,12 +1476,7 @@
             'aria-label': 'セットを増やす',
             onclick: function () { if (item.sets < 99) { item.sets += 1; draw(); } } }, ['＋'])
         ]),
-        h('button', {
-          style: 'width:44px;height:44px;flex:none;border:1px solid var(--line);border-radius:9px;'
-            + 'display:flex;align-items:center;justify-content:center;background:#fff;cursor:pointer;padding:0',
-          'aria-label': item.name + ' を外す',
-          onclick: function () { pick.items.splice(index, 1); draw(); }
-        }, [binIcon(11, 13)])
+        deleteButton(item.name + ' を外す', function () { pick.items.splice(index, 1); draw(); })
       ]);
     });
 
@@ -1846,24 +1876,8 @@
 
   function menuEditScreen(edit, library, onCancel) {
     var rows = edit.items.map(function (item, index) {
-      return h('div', { style: 'display:flex;gap:8px;align-items:center;padding:6px 0;'
-        + 'border-top:1px solid var(--line2)' }, [
-        grabHandle(edit.items, index, item.name),
-        h('div', { style: 'flex:1;min-width:0;font-size:14px;font-weight:700;color:var(--ink)', text: item.name }),
-        h('div', { style: 'display:flex;align-items:center;gap:6px;flex:none' }, [
-          numberBox(item.sets, 'セット', function (v) { item.sets = v; }),
-          h('div', { style: 'font-size:12px;color:var(--faint)', text: '×' }),
-          item.unit === 'sec'
-            ? numberBox(item.seconds, '秒', function (v) { item.seconds = v; })
-            : numberBox(item.reps, '回', function (v) { item.reps = v; })
-        ]),
-        h('button', {
-          style: 'width:44px;height:44px;flex:none;border:1px solid var(--line);border-radius:9px;'
-            + 'display:flex;align-items:center;justify-content:center;background:#fff;cursor:pointer;padding:0',
-          'aria-label': item.name + ' をメニューから外す',
-          onclick: function () { edit.items.splice(index, 1); draw(); }
-        }, [binIcon(11, 13)])
-      ]);
+      return exerciseRow(grabHandle(edit.items, index, item.name), item, item.name + ' をメニューから外す',
+        function () { edit.items.splice(index, 1); draw(); });
     });
 
     var addable = library.filter(function (e) {
@@ -1985,7 +1999,7 @@
               + 'font-size:14px;font-weight:700;border-radius:13px;min-height:46px;cursor:pointer;'
               + 'display:flex;align-items:center;justify-content:center;gap:8px',
             onclick: function () { removeMenu(edit); }
-          }, [binIcon(12, 14), 'このメニューを削除']),
+          }, [binIcon(), 'このメニューを削除']),
           h('div', { style: 'font-size:11px;color:var(--faint);line-height:1.6',
             text: 'メニューを消しても、これまでの記録は残ります。' })
         ]) : null
@@ -2162,12 +2176,7 @@
             ]),
             h('div', { style: 'font-family:var(--mono);font-size:12px;color:var(--sub);flex:none',
               text: amountLabel(e.unit, e.sets, e.reps, e.seconds) }),
-            h('button', {
-              style: 'width:44px;height:44px;flex:none;border:1px solid var(--line);border-radius:9px;'
-                + 'display:flex;align-items:center;justify-content:center;background:#fff;cursor:pointer;padding:0',
-              'aria-label': e.name + ' を一覧から消す',
-              onclick: function () { removeExercise(e); }
-            }, [binIcon(11, 13)])
+            deleteButton(e.name + ' を一覧から消す', function () { removeExercise(e); })
           ]);
         }))
     ]);
@@ -2226,11 +2235,20 @@
           h('div', { style: 'padding:22px 0;font-size:13px;color:var(--sub);line-height:1.7',
             text: 'メニューがありません。メニューは、動画のURLと種目をまとめたものです。1つ作ると、やった日に丸を押すだけで残ります。' })
         ]).concat([
+          /* Design (2026-09-12): the way to add one is a row at the end of
+           * the list, not a dashed button - dashes already mean "cannot be
+           * pressed" on the week strip. */
           h('button', {
-            style: 'margin-top:12px;border:1px dashed var(--faint);background:transparent;color:var(--body);'
-              + 'font-family:inherit;font-size:13px;font-weight:700;border-radius:13px;min-height:46px;cursor:pointer',
+            style: 'margin-top:8px;display:flex;align-items:center;gap:10px;width:100%;min-height:44px;'
+              + 'padding:0 16px;background:#fff;border:0;border-top:1px solid var(--line);'
+              + 'font-family:inherit;font-size:15px;color:var(--ink);text-align:left;cursor:pointer',
             onclick: onNew
-          }, ['メニューを作る'])
+          }, [
+            h('span', { style: 'flex:none;width:24px;height:24px;display:flex;align-items:center;'
+              + 'justify-content:center;border:1px solid var(--sub);border-radius:50%;color:var(--ink)',
+              'aria-hidden': 'true' }, [svg(ICON.plus)]),
+            'メニューを追加する'
+          ])
         ])),
       navBar('menus')
     ]);
@@ -2274,13 +2292,19 @@
   }
 
   function navBar(here) {
-    var tabs = [['記録', 'home', '4px'], ['メニュー', 'menus', '4px'], ['設定', 'settings', '8px']];
-    return h('div', { style: 'display:flex;border-top:1px solid var(--line);background:#fff' },
+    /* Design (2026-09-12): home / training / settings, drawn with the
+     * pictures everyone knows. Selected = filled + bold + a 2px band on
+     * top; nothing rests on hue. */
+    var tabs = [['ホーム', 'home'], ['トレーニング', 'menus'], ['設定', 'settings']];
+    return h('div', { style: 'display:flex;height:56px;border-top:1px solid var(--line);background:#fff;'
+      + 'padding-bottom:env(safe-area-inset-bottom)' },
       tabs.map(function (tab) {
         var on = tab[1] === here;
         return h('button', {
-          style: 'flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;'
-            + 'padding:10px 0 16px;border:0;background:none;font-family:inherit;cursor:pointer',
+          style: 'flex:1;min-height:44px;display:flex;flex-direction:column;align-items:center;'
+            + 'justify-content:center;gap:2px;border:0;background:none;font-family:inherit;cursor:pointer;'
+            + 'position:relative;padding:0;color:var(--' + (on ? 'ink' : 'sub') + ')',
+          'aria-current': on ? 'page' : null,
           onclick: function () {
             problem = null;
             /* So that 戻る in the settings header goes back to the tab you
@@ -2290,10 +2314,10 @@
             draw();
           }
         }, [
-          h('div', { style: 'width:16px;height:16px;border-radius:' + tab[2] + ';'
-            + (on ? 'background:var(--ink)' : 'border:1.5px solid var(--faint)') }),
-          h('div', { style: 'font-size:11px;font-weight:' + (on ? '800' : '700')
-            + ';color:var(--' + (on ? 'ink' : 'sub') + ')', text: tab[0] })
+          on ? h('span', { style: 'position:absolute;top:0;left:50%;transform:translateX(-50%);'
+            + 'width:28px;height:2px;background:var(--ink)' }) : null,
+          svg(ICON[tab[1]][on ? 1 : 0]),
+          h('div', { style: 'font-size:11px;font-weight:' + (on ? '700' : '400'), text: tab[0] })
         ]);
       }));
   }

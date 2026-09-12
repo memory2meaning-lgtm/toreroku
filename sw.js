@@ -51,8 +51,15 @@ function isTheAppPage(url) {
 function takeIn(html, pageResponseA, pageResponseB) {
   return caches.open(VERSION).then(cache => {
     const wanted = wantedFrom(html).filter(one => one !== './' && one !== './index.html');
+    /* A script that cannot be had (404, 503, anything not ok) stops the
+     * whole take-in: the old page and its scripts stay, and nothing is
+     * swept. A page whose scripts are missing is a dead app, not a stale
+     * one (Codex review, third pass). */
     return Promise.all(wanted.map(one => cache.match(one).then(hit => hit ? null
-      : fetch(one, { cache: 'no-store' }).then(r => { if (r && r.ok) return cache.put(one, r); }))))
+      : fetch(one, { cache: 'no-store' }).then(r => {
+        if (!r || !r.ok) throw new Error('could not fetch ' + one + (r ? ' (' + r.status + ')' : ''));
+        return cache.put(one, r);
+      }))))
       .then(() => Promise.all([
         cache.put(new Request(new URL('./', self.location.href).href), pageResponseA),
         cache.put(new Request(new URL('./index.html', self.location.href).href), pageResponseB)
@@ -87,6 +94,8 @@ self.addEventListener('activate', event => {
        * nothing would ever ask for them again. The cache name only changes
        * when this file changes, so without this they pile up for good. */
       .then(() => fetch('./index.html', { cache: 'no-store' }).then(page => {
+        /* An error page is not the app; the stored start page stays. */
+        if (!page || !page.ok) throw new Error('index.html ' + (page ? page.status : 'unreachable'));
         const a = page.clone(), b = page.clone();
         return page.text().then(html => { updating = updating.then(() => takeIn(html, a, b)).catch(() => { }); return updating; });
       }).catch(() => { }))

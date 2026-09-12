@@ -1476,6 +1476,10 @@
    * answers a browser directly, CORS allowed, and reads a YouTube URL as
    * the video). Kept in localStorage on this phone only - never in the
    * export, never in the records. */
+  /* The owner said they added the app to the home screen; believed, and
+   * not asked again. display-mode alone cannot tell, because an "add to
+   * home screen" that Chrome treated as a shortcut still opens as a tab. */
+  var A2HS_KEY = 'ouchitore_a2hs';
   var AI_KEY = 'ouchitore_gemini_key';
   function aiKey() {
     var held = remembered(AI_KEY);
@@ -1976,7 +1980,7 @@
             + 'font-weight:700;border-radius:16px;min-height:48px;cursor:pointer'
           : 'border:0;background:var(--deep);color:#fff;font-family:inherit;font-size:15px;'
             + 'font-weight:800;border-radius:16px;min-height:50px;box-shadow:var(--shadow-action);cursor:pointer',
-          onclick: onClose }, ['追加しました']),
+          onclick: function () { remember(A2HS_KEY, { added: true, on: new Date().toISOString() }); onClose(); } }, ['追加しました']),
         h('button', { style: 'border:0;background:none;color:var(--sub);font-family:inherit;font-size:13px;'
           + 'font-weight:700;min-height:44px;cursor:pointer', onclick: onClose },
           ['あとで（設定からいつでも見られます）'])
@@ -3274,7 +3278,7 @@
       /* The reason differs by phone, so the warning cannot be one sentence.
        * On iOS the records really are thrown away after seven idle days; on
        * Android they are not, and saying so would be scaremongering. */
-      installed() ? null : warnBar(whichPhone() === 'ios'
+      installed() || remembered(A2HS_KEY).added ? null : warnBar(whichPhone() === 'ios'
         ? 'ホーム画面に追加していません。記録が消えることがあります。'
         : 'ホーム画面に追加していません。追加すると、次からすぐ開けます。', '手順', function () {
         state.a2hsFrom = 'home';

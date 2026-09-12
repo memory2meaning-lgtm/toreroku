@@ -2535,13 +2535,21 @@
           : '動画を読めませんでした（' + response.status + '）。';
       } else {
         var answer = await response.json();
-        var text = ((((answer.candidates || [])[0] || {}).content || {}).parts || [])
+        var candidate = (answer.candidates || [])[0] || {};
+        var text = (((candidate.content || {}).parts) || [])
           .filter(function (part) { return !part.thought; })
           .map(function (part) { return part.text || ''; }).join('');
-        found = JSON.parse(text).exercises || [];
+        /* Say which step failed: an empty answer (the model declined or was
+         * cut off) reads differently from a phone with no connection. */
+        if (!text.trim()) {
+          problem = '動画は届きましたが、読み取りが返りませんでした（' + (candidate.finishReason || answer.promptFeedback && answer.promptFeedback.blockReason || '理由不明') + '）。';
+        } else {
+          try { found = JSON.parse(text).exercises || []; }
+          catch (broken) { problem = '読み取りの返事を解釈できませんでした（' + (candidate.finishReason || '') + '・' + text.length + '文字）。'; }
+        }
       }
     } catch (failed) {
-      problem = problem || '動画を読めませんでした。つながっているか確かめてください。';
+      problem = problem || '動画を読めませんでした。つながっているか確かめてください（' + String(failed && failed.message || failed).slice(0, 80) + '）。';
     }
     edit.aiBusy = false;
     if (!found) { draw(); return; }

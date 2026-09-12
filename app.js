@@ -1877,7 +1877,10 @@
             : { ex_id: i.ex_id, name: i.name, sets: i.sets, reps: i.reps, unit: 'reps' };
         })
       });
-      state.screen = { name: 'record' };
+      /* A record made by hand has no row on the record page to show it
+       * landed; home does (きょうの記録), so that is where this returns
+       * (the owner, 2026-09-12). */
+      state.screen = { name: 'home' };
     } catch (error) {
       problem = error && error.note ? error.note : '記録できませんでした。';
     }

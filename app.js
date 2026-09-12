@@ -2838,7 +2838,7 @@
     h('div', { style: 'flex:1;padding:6px 18px 18px;display:flex;flex-direction:column;gap:' + (view.menus.length ? '2px' : '12px') }, [
       /* Said once, in place of a word under every circle: only while
        * nothing has ever been recorded. */
-      view.menus.length && view.facts.first_ever ? h('div', {
+      view.menus.length && view.facts.first_ever && !state.notice ? h('div', {
         style: 'font-size:14px;color:var(--body);padding:8px 0;line-height:1.6',
         text: '右の丸を押すと、やった記録が残ります。' }) : null,
       view.menus.length ? null : firstMenuBox(async function (url, skipVideo) {

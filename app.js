@@ -607,15 +607,18 @@
     }, [svg(ICON.other), 'メニューに無いものをやった']);
   }
 
+  /* Design (2026-09-12, revised): adding a menu is not a daily act, so
+   * this row stands 12px below the list, in the smaller quieter type, so
+   * the record rows read as the one everyday path. */
   function addMenuRow(onTap) {
     return h('button', {
-      style: 'margin-top:8px;display:flex;align-items:center;gap:10px;width:100%;min-height:44px;'
-        + 'padding:0 16px;background:#fff;border:0;border-top:1px solid var(--line);'
-        + 'font-family:inherit;font-size:15px;color:var(--ink);text-align:left;cursor:pointer',
+      style: 'margin-top:12px;display:flex;align-items:center;gap:10px;width:100%;min-height:44px;'
+        + 'padding:0 16px;background:none;border:0;'
+        + 'font-family:inherit;font-size:14px;color:var(--sub);text-align:left;cursor:pointer',
       onclick: onTap
     }, [
       h('span', { style: 'flex:none;width:24px;height:24px;display:flex;align-items:center;'
-        + 'justify-content:center;border:1px solid var(--sub);border-radius:50%;color:var(--ink)',
+        + 'justify-content:center;border:1px solid var(--sub);border-radius:50%;color:var(--sub)',
         'aria-hidden': 'true' }, [svg(ICON.plus)]),
       'メニューを追加する'
     ]);
@@ -979,6 +982,17 @@
             onchange: function () { edit.note = this.value; }
           }, [edit.note || ''])
         ]),
+        offerOpen(edit) ? h('div', { style: 'border-top:1px solid var(--line);padding-top:14px;display:flex;'
+          + 'flex-direction:column;gap:12px' }, [
+          h('div', { style: 'font-size:14px;color:var(--body);line-height:1.6',
+            text: 'これを次もやるなら、メニューに入れておけます。' }),
+          h('button', {
+            style: 'border:1px solid var(--sub);background:#fff;color:var(--ink);font-family:inherit;'
+              + 'font-size:15px;font-weight:700;border-radius:12px;min-height:44px;cursor:pointer;'
+              + 'align-self:flex-start;padding:0 16px',
+            onclick: function () { menuFromRecord(edit); }
+          }, ['メニューに入れる'])
+        ]) : null,
         h('div', { style: 'border-top:1px solid var(--line);padding-top:14px;display:flex;'
           + 'flex-direction:column;gap:8px' }, [
           h('button', {
@@ -996,6 +1010,47 @@
 
   /* The history list carries no exercises, so the day is read again to get
    * them - and that read is what the editor is filled from, not the list. */
+  /* Design (2026-09-12), after Strong and Hevy: a one-off record can be
+   * turned into a menu, but nobody is asked. The offer sits on the record's
+   * own screen, and after being shown three times for the same set of
+   * exercises without being taken, it stops appearing for that set. Kept in
+   * localStorage; not part of the records, not exported. */
+  var OFFER_KEY = 'ouchitore_menu_offers';
+  function offerId(edit) {
+    return edit.items.map(function (i) { return i.ex_id; }).sort().join(',');
+  }
+  function offerSeen(edit) {
+    if (!edit.items.length) return;
+    var all = remembered(OFFER_KEY);
+    var one = all[offerId(edit)] || { shown: 0, taken: false };
+    one.shown += 1;
+    all[offerId(edit)] = one;
+    remember(OFFER_KEY, all);
+  }
+  function offerOpen(edit) {
+    if (edit.kind !== 'manual' || !edit.items.length) return false;
+    var one = remembered(OFFER_KEY)[offerId(edit)] || { shown: 0, taken: false };
+    return !one.taken && one.shown <= 3;
+  }
+  function offerTaken(edit) {
+    var all = remembered(OFFER_KEY);
+    all[offerId(edit)] = { shown: 99, taken: true };
+    remember(OFFER_KEY, all);
+  }
+  function menuFromRecord(edit) {
+    offerTaken(edit);
+    problem = null;
+    state.menuEdit = {
+      menu_id: null, revision: null, video_url: '', note: '', fromRecord: true,
+      name: edit.items.map(function (i) { return i.name; }).join('・').slice(0, 100),
+      items: edit.items.map(function (i) {
+        return { ex_id: i.ex_id, name: i.name, sets: i.sets, reps: i.reps, seconds: i.seconds, unit: i.unit };
+      })
+    };
+    state.screen = { name: 'menuEdit' };
+    draw();
+  }
+
   async function openEdit(sessionId, date) {
     problem = null;
     try {
@@ -1004,6 +1059,7 @@
       if (!session) { problem = 'この記録は見つかりませんでした。'; draw(); return; }
       state.edit = {
         session_id: session.session_id,
+        kind: session.session_kind,
         date: date,
         time: session.performed_time || '',
         note: session.note || '',
@@ -1013,6 +1069,7 @@
         })
       };
       state.screen = { name: 'edit' };
+      if (session.session_kind === 'manual') offerSeen(state.edit);
     } catch (error) {
       problem = error && error.note ? error.note : 'この記録を開けませんでした。';
     }
@@ -1509,7 +1566,7 @@
         h('button', { style: 'border:0;background:none;padding:0;font-size:14px;color:var(--body);'
           + 'font-weight:700;font-family:inherit;cursor:pointer;min-height:44px;padding:0 4px', onclick: onCancel }, ['やめる']),
         h('div', { style: 'flex:1;text-align:center;font-size:14px;font-weight:800;color:var(--ink)',
-          text: '種目を選んで記録' }),
+          text: 'メニューに無いものをやった' }),
         h('div', { style: 'width:34px' })
       ]),
       h('div', { style: 'padding:11px 18px;border-bottom:1px solid var(--line2);background:#fafbfd' }, [
@@ -2140,6 +2197,7 @@
       });
       edit.menu_id = saved.menu_id;
       edit.revision = saved.revision;
+      if (edit.fromRecord) state.notice = 'メニューに入れました。';
       state.screen = { name: 'menus' };
     } catch (error) {
       problem = error && error.note ? error.note : '保存できませんでした。';
@@ -2232,9 +2290,17 @@
   /* ---- the menu list tab ---- */
 
   function menuListScreen(menus, onNew, onOpen) {
+    var page = menuListPage(menus, onNew, onOpen);
+    state.notice = null;
+    return page;
+  }
+
+  function menuListPage(menus, onNew, onOpen) {
     return h('div', { style: 'display:flex;flex-direction:column;min-height:100vh' }, [
       h('div', { style: 'display:flex;flex-direction:column;gap:3px;padding:18px 18px 12px' }, [
-        h('div', { style: 'font-size:19px;font-weight:800;color:var(--ink);line-height:1.1', text: 'メニュー' })
+        h('div', { style: 'font-size:19px;font-weight:800;color:var(--ink);line-height:1.1', text: 'メニュー' }),
+        /* Said once; the next drawing of anything forgets it. */
+        state.notice ? h('div', { style: 'font-size:14px;color:var(--body);padding-top:6px', text: state.notice }) : null
       ]),
       h('div', { style: 'flex:1;padding:0 18px 18px;display:flex;flex-direction:column;gap:2px' },
         (menus.length ? menus.map(function (menu, i) {

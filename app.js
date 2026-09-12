@@ -43,6 +43,7 @@
     bin: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16"/><path d="M9.5 7V5.2A1.2 1.2 0 0 1 10.7 4h2.6a1.2 1.2 0 0 1 1.2 1.2V7"/><path d="M6.2 7l.9 12.1A2 2 0 0 0 9.1 21h5.8a2 2 0 0 0 2-1.9L17.8 7"/><path d="M10.4 11v6"/><path d="M13.6 11v6"/></svg>',
     tick: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.6 9.6 17 19 7.4"/></svg>',
     other: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.4 11.1V12a8.4 8.4 0 1 1-4.98-7.68"/><path d="M8.4 11.4 12 15l9-9.6"/></svg>',
+    chevron: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5.5 16 12l-7 6.5"/></svg>',
     plus: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg>',
     home: ['<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round" aria-hidden="true"><path d="M2.8 11.1 12 3.3l9.2 7.8v8.1a1.6 1.6 0 0 1-1.6 1.6H4.4a1.6 1.6 0 0 1-1.6-1.6z"/></svg>',
            '<svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M2.8 11.1 12 3.3l9.2 7.8v8.1a1.6 1.6 0 0 1-1.6 1.6H4.4a1.6 1.6 0 0 1-1.6-1.6z"/></svg>'],
@@ -121,6 +122,8 @@
     return Math.round((parseYmd(to) - parseYmd(from)) / 86400000);
   }
 
+  var FIRST_LINE = 'はじめまして。やった日と、やったことが、ここに残ります。';
+
   function greetingLine(facts, nickname, todayCount) {
     var hello = facts.part_of_day === 'morning' ? 'おはようございます'
       : facts.part_of_day === 'afternoon' ? 'こんにちは' : 'こんばんは';
@@ -145,6 +148,9 @@
         remember(LINE_KEY, { date: facts.date, kind: 'none', text: '' });
         return hello;
       }
+      /* The wording of the first-day line is the app's, not the day's:
+       * if it has been rewritten since this morning, the new words win. */
+      if (held.kind === 'first') return hello + FIRST_LINE;
       if (held.text) return hello + held.text;
       if (held.kind) return hello;
     }
@@ -154,7 +160,7 @@
 
     /* In Design's order, and only one of them. */
     var candidates = [];
-    if (facts.first_ever) candidates.push(['first', 'はじめまして。ここに書いていきます。']);
+    if (facts.first_ever) candidates.push(['first', FIRST_LINE]);
     if (facts.days_since !== null && facts.days_since >= 3) {
       candidates.push(['gap', '前に書いたのは' + facts.days_since + '日前です。']);
     }
@@ -312,18 +318,22 @@
     /* Only what the day holds, and a zero is never written: a day spent on one
      * video used to read 0種目, which told someone who had just trained that
      * they had done nothing. */
-    var figure = function (count, unit) {
-      return h('div', { style: 'display:flex;align-items:baseline;gap:2px' }, [
-        h('span', { style: 'font-family:var(--mono);font-size:28px;font-weight:800;color:var(--ink);line-height:1.05', text: String(count) }),
-        h('span', { style: 'font-size:13px;font-weight:700;color:var(--sub)', text: unit })
+    /* Design (2026-09-12): a number is never shown bare - each one has its
+     * name under it, the way Apple's totals and Hevy's summary do. The
+     * minutes come from what the owner entered for timed exercises, so the
+     * name is やった時間, not anything the app did not measure. */
+    var figure = function (count, name) {
+      return h('div', { style: 'display:flex;flex-direction:column;align-items:center;gap:2px' }, [
+        h('span', { style: 'font-family:var(--mono);font-size:20px;font-weight:800;color:var(--ink);line-height:1.1', text: count }),
+        h('span', { style: 'font-size:12px;color:var(--sub)', text: name })
       ]);
     };
     var figures = [];
-    [[items, '種目'], [minutes, '分'], [videos, '本の動画']].forEach(function (pair) {
-      if (pair[0] <= 0) return;
-      if (figures.length) figures.push(h('div', { style: 'width:1px;height:18px;background:var(--line)' }));
-      figures.push(figure(pair[0], pair[1]));
+    [[items, String(items), '種目'], [minutes, minutes + '分', 'やった時間'], [videos, String(videos), '動画']].forEach(function (three) {
+      if (three[0] <= 0) return;
+      figures.push(figure(three[1], three[2]));
     });
+    var last = times.length ? times[times.length - 1].replace(/^0/, '') : '';
 
     return h('div', { style: 'padding:0 18px 14px;display:flex;flex-direction:column;gap:8px' }, [
       h('div', { style: 'font-size:13px;color:var(--body);line-height:1.5;min-height:20px', text: greetingLine(facts, settings.nickname, sessions.length) }),
@@ -334,10 +344,10 @@
         companionBox(companion),
         h('div', { style: 'flex:1;min-width:0;display:flex;flex-direction:column;gap:4px' }, [
           h('div', { style: 'font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.04em',
-            text: has ? 'きょう動いた分' : 'きょうはこれから' }),
-          has ? h('div', { style: 'display:flex;align-items:baseline;gap:8px;flex-wrap:wrap' }, figures) : null,
-          h('div', { style: 'font-family:var(--mono);font-size:11px;color:var(--faint)',
-            text: has ? sessions.length + '件' + (span ? ' ／ ' + span : '') : '' }),
+            text: has ? 'きょうの合計' : 'きょうはこれから' }),
+          has ? h('div', { style: 'display:grid;grid-template-columns:repeat(' + figures.length + ',1fr);gap:8px;padding:4px 0' }, figures) : null,
+          h('div', { style: 'font-family:var(--mono);font-size:12px;color:var(--sub)',
+            text: has ? '記録 ' + sessions.length + '件' + (last ? ' ・ 最後は ' + last : '') : '' }),
           has ? null : h('div', { style: 'font-size:13px;color:var(--body);line-height:1.55',
             text: '下のボタンから記録できます。' })
         ])
@@ -372,21 +382,7 @@
       style: box + 'cursor:pointer', title: 'YouTubeで動画をひらく' }, inner);
   }
 
-  function sessionRow(session, first, open, toggle) {
-    var detail = [];
-    if (open) {
-      detail.push(h('div', {
-        style: 'display:flex;flex-direction:column;gap:3px;border-left:2px solid var(--line);'
-          + 'padding:2px 0 2px 10px;margin-top:2px'
-      }, session.items.map(function (item) {
-        return h('div', { style: 'display:flex;justify-content:space-between;gap:10px;font-size:12px;color:var(--body)' }, [
-          h('span', { text: item.name }),
-          h('span', { style: 'font-family:var(--mono);color:var(--sub)',
-            text: item.sets + '×' + (item.unit === 'sec' ? item.seconds + '秒' : item.reps + '回') })
-        ]);
-      })));
-    }
-
+  function sessionRow(session, first, onOpen) {
     var name = session.menu_name
       || (session.items.length === 1 ? session.items[0].name : '種目 ' + session.items.length + '件');
     /* "すべて" is a claim about this record against the menu it came from, so
@@ -399,35 +395,33 @@
     } else {
       var source = menuOf(session.menu_id);
       if (!session.items.length) {
-        sub = session.video_url ? '種目情報なし' : '記録のみ';
+        sub = session.video_url ? '種目なし' : '記録のみ';
       } else {
         sub = session.items.length + '種目'
           + (!source ? '' : session.items.length < source.items.length ? '（一部）' : 'すべて');
       }
     }
+    var time = session.performed_time || '';
+    var spoken = time ? time.replace(/^0/, '').replace(':', '時') + '分の記録を開く' : 'この記録を開く';
 
-    var body = [
-      h('div', { style: 'font-size:14px;font-weight:800;color:var(--ink);line-height:1.25;' + TWO_LINES, text: name }),
-      h('div', { style: 'font-size:11px;color:var(--sub)', text: sub })
-    ];
-    detail.forEach(function (d) { body.push(d); });
-    if (session.items.length) body.push(h('button', {
-      style: 'border:0;background:none;padding:0;text-align:left;font-size:12px;font-weight:700;'
-        + 'color:var(--deep);text-decoration:underline;cursor:pointer;min-height:34px;'
-        + (open ? 'margin-top:2px;' : ''),
-      onclick: toggle
-    }, [open ? 'とじる' : '種目を見る']));
-
-    var right = [h('div', { style: 'flex:1;min-width:0;display:flex;flex-direction:column;gap:4px' }, body)];
-    if (session.video_url) right.push(thumb(session.video_url));
-
-    return h('div', {
-      style: 'padding:11px 0;' + (first ? '' : 'border-top:1px solid var(--line2);')
-        + 'display:flex;gap:12px;align-items:flex-start'
+    /* Design (2026-09-12), after Hevy and Apple Health: the list you read
+     * has no edit button on it. The row itself opens the record, where
+     * correcting and deleting live; the chevron is the one sign iOS uses
+     * for "this row goes somewhere". */
+    return h('button', {
+      style: 'display:flex;align-items:flex-start;gap:10px;width:100%;min-height:44px;'
+        + 'padding:12px 0;background:none;border:0;font-family:inherit;text-align:left;cursor:pointer;'
+        + (first ? '' : 'border-top:1px solid var(--line2);'),
+      'aria-label': spoken, onclick: onOpen
     }, [
-      h('div', { style: 'font-family:var(--mono);font-size:14px;font-weight:700;color:var(--ink);'
-        + 'flex:none;width:44px;padding-top:1px', text: session.performed_time || '' }),
-      h('div', { style: 'flex:1;min-width:0;display:flex;gap:12px;align-items:flex-start' }, right)
+      h('span', { style: 'font-family:var(--mono);font-size:12px;color:var(--sub);flex:none;width:38px;'
+        + 'padding-top:2px;font-variant-numeric:tabular-nums', text: time.replace(/^0/, '') }),
+      h('span', { style: 'flex:1;min-width:0;display:flex;flex-direction:column;gap:4px' }, [
+        h('span', { style: 'font-size:15px;font-weight:700;color:var(--ink);line-height:1.3;' + TWO_LINES, text: name }),
+        h('span', { style: 'font-size:12px;color:var(--sub)', text: sub })
+      ]),
+      session.video_url ? thumb(session.video_url) : null,
+      h('span', { style: 'flex:none;align-self:center;margin-left:2px;color:var(--sub);display:flex' }, [svg(ICON.chevron)])
     ]);
   }
 
@@ -1165,7 +1159,7 @@
     ['goat', 'ヤギ'], ['tanuki', 'タヌキ'], ['otter', 'カワウソ'], ['alpaca', 'アルパカ']
   ];
 
-  var COMPANION_NOTE = 'ホームの「きょう動いた分」のところに小さく出ます。トレーニングをそっと見守ります。'
+  var COMPANION_NOTE = 'ホームの「きょうの合計」のところに小さく出ます。トレーニングをそっと見守ります。'
     + '励ましたり煽ったりはしません。既定は「選ばない」です。';
 
   /* The pictures and the "選ばない" row, without a screen around them: the
@@ -2280,7 +2274,6 @@
     if (menuId === null || menuId === undefined) return null;
     return menusNow.filter(function (m) { return m.menu_id === menuId; })[0] || null;
   }
-  var open = {};        // session_id -> exercises shown
   var problem = null;   // the store's own sentence, shown unchanged
 
   function warnBar(text, actionLabel, onAction) {
@@ -2557,26 +2550,11 @@
           + 'display:flex;flex-direction:column;gap:18px'
       }, [
         view.today.sessions.length ? h('div', { style: 'display:flex;flex-direction:column;gap:2px' }, [
-          h('div', { style: 'display:flex;align-items:center;justify-content:space-between' }, [
-            h('div', { style: 'font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.04em', text: '今日の記録' }),
-            view.today.sessions.length ? h('button', {
-              style: 'border:1px solid var(--line);background:#fff;color:var(--body);font-family:inherit;'
-                + 'font-size:12px;font-weight:700;border-radius:10px;min-height:34px;padding:0 12px;cursor:pointer',
-              /* Correcting and deleting live in one place, and that place is
-                 the list a record is opened from. */
-              onclick: function () {
-                problem = null;
-                state.historyEnd = view.today.date;
-                state.days = 30;
-                state.screen = { name: 'history' };
-                draw();
-              }
-            }, ['編集']) : null
-          ])
+          h('div', { style: 'font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.04em', text: 'きょうの記録' })
         ].concat(view.today.sessions.map(function (session, i) {
-          return sessionRow(session, i === 0, !!open[session.session_id], function () {
-            open[session.session_id] = !open[session.session_id];
-            draw();
+          return sessionRow(session, i === 0, function () {
+            problem = null;
+            openEdit(session.session_id, view.today.date);
           });
         }))) : null,
         h('div', { style: 'display:flex;flex-direction:column;gap:' + (view.menus.length ? '2px' : '12px') }, [

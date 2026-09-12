@@ -858,7 +858,7 @@
       });
       token.clear();
       noteExclusion(menu, draft);
-      state.screen = { name: 'record' };
+      state.screen = { name: 'home' };
     } catch (error) {
       problem = error && error.note ? error.note : '記録できませんでした。';
     }
@@ -3057,6 +3057,10 @@
         performed_time: pad(new Date().getHours()) + ':' + pad(new Date().getMinutes())
       });
       token.clear();
+      /* The owner's call (2026-09-12): after any record, home - where the
+       * day's list shows what just landed. Someone recording several in a
+       * row presses 記録する again. */
+      state.screen = { name: 'home' };
     } catch (error) {
       problem = error && error.note ? error.note : '記録できませんでした。';
     }

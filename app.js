@@ -468,10 +468,62 @@
   }
 
   function menuShape(menu) {
-    var first = menu.items[0];
-    if (!first) return '種目情報なし';
+    var usual = menu.items.filter(function (i) { return !i.skip; });
+    var first = usual[0] || menu.items[0];
+    if (!first) return '種目なし';
     var amount = first.sets + 'セット×' + (first.unit === 'sec' ? first.seconds + '秒' : first.reps + '回');
-    return menu.items.length + '種目 ・ ' + amount + (menu.items.length > 1 ? ' ほか' : '');
+    var count = usual.length === menu.items.length
+      ? menu.items.length + '種目'
+      : menu.items.length + '種目のうち' + usual.length + '種目';
+    return count + ' ・ ' + amount + (menu.items.length > 1 ? ' ほか' : '');
+  }
+
+  /* Flip "usually left out" on some of a menu's exercises and save the menu
+   * as it stands. Used by the badge on the partial screen and by the offer
+   * on the record screen. */
+  async function setSkip(menu, ids, flag) {
+    problem = null;
+    try {
+      await api.post('/api/menu/save', {
+        menu_id: menu.menu_id, revision: menu.revision,
+        name: menu.name, video_url: menu.video_url || null, note: menu.note || null,
+        items: menu.items.map(function (i) {
+          var skip = ids.indexOf(i.menu_item_id) >= 0 ? flag : i.skip === true;
+          return i.unit === 'sec'
+            ? { ex_id: i.ex_id, sets: i.sets, seconds: i.seconds, unit: 'sec', skip: skip }
+            : { ex_id: i.ex_id, sets: i.sets, reps: i.reps, unit: 'reps', skip: skip };
+        })
+      });
+      return true;
+    } catch (error) {
+      problem = error && error.note ? error.note : '保存できませんでした。';
+      return false;
+    }
+  }
+
+  /* The offer to keep leaving something out (Design 2026-09-12, after
+   * Hevy's one-time question): only after the same exercises were left out
+   * twice running, and then only once. Counted in localStorage. */
+  var SKIP_OFFER_KEY = 'ouchitore_skip_offers';
+  function noteExclusion(menu, draft) {
+    var left = draft.items.filter(function (i) {
+      var source = menu.items.filter(function (m) { return m.menu_item_id === i.menu_item_id; })[0];
+      return !i.include && source && !source.skip;
+    }).map(function (i) { return i.menu_item_id; }).sort();
+    var all = remembered(SKIP_OFFER_KEY);
+    var mine = all[String(menu.menu_id)] || { last: '', runs: 0, done: {} };
+    var key = left.join(',');
+    if (!left.length) { mine.last = ''; mine.runs = 0; }
+    else {
+      mine.runs = mine.last === key ? mine.runs + 1 : 1;
+      mine.last = key;
+      if (mine.runs >= 2 && !mine.done[key]) {
+        mine.done[key] = true;
+        state.skipOffer = { menuId: menu.menu_id, ids: left };
+      }
+    }
+    all[String(menu.menu_id)] = mine;
+    remember(SKIP_OFFER_KEY, all);
   }
 
   /* One tap records the whole menu.  The id is kept until the send succeeds, so
@@ -684,10 +736,12 @@
           text: amountLabel(source.unit, source.sets, source.reps, source.seconds) });
       }
 
+      var usuallyOut = source.skip && !(draft.brought && draft.brought[item.menu_item_id]);
       return h('div', {
+        'data-skip': usuallyOut ? '1' : null,
         style: 'display:flex;gap:12px;align-items:center;border-radius:14px;padding:11px 12px;'
           + (item.include ? 'border:1.5px solid var(--ink);background:#fff'
-                          : 'border:1px solid var(--line);background:#fafbfd')
+                          : 'border:1px solid var(--line);background:' + (usuallyOut ? '#f2f5f9' : '#fafbfd'))
       }, [
         h('button', {
           style: 'width:24px;height:24px;border-radius:7px;flex:none;padding:0;cursor:pointer;'
@@ -698,9 +752,30 @@
           onclick: function () { item.include = !item.include; draw(); }
         }, [item.include ? '✓' : '']),
         h('div', { style: 'flex:1;min-width:0' }, left),
+        /* The badge is the way back: press it and the exercise is usual
+         * again. The row stays down here until the screen is next opened,
+         * so nothing jumps under the finger. */
+        usuallyOut ? skipBadge(async function () {
+          if (!(await setSkip(menu, [item.menu_item_id], false))) { draw(); return; }
+          draft.brought = draft.brought || {};
+          draft.brought[item.menu_item_id] = true;
+          state.notice = '毎回やる種目に戻しました。次に開いたときは、上の並びに戻ります。';
+          draw();
+          setTimeout(function () { state.notice = null; draw(); }, 5000);
+        }) : null,
         right
       ]);
     });
+    /* Design (2026-09-12): the ones usually left out sit below a line with
+     * their own heading, on a fainter ground, in the ordinary text colour. */
+    var usual = rows.filter(function (r) { return !r.getAttribute('data-skip'); });
+    var out = rows.filter(function (r) { return r.getAttribute('data-skip'); });
+    var laidOut = usual.slice();
+    if (out.length) {
+      laidOut.push(h('div', { style: 'border-top:1px solid var(--line);margin-top:6px;padding-top:10px;'
+        + 'font-size:13px;color:var(--sub)', text: 'ふだんは外している種目' }));
+      out.forEach(function (r) { laidOut.push(r); });
+    }
 
     return h('div', { style: 'display:flex;flex-direction:column;min-height:100vh' }, [
       h('div', { style: 'display:flex;align-items:center;gap:12px;padding:10px 12px;min-height:64px;border-bottom:1px solid var(--line)' }, [
@@ -728,8 +803,10 @@
               onclick: function () { draft.items.forEach(function (i) { i.include = false; }); draw(); } }, ['すべて外す'])
           ])
         ]),
-        h('div', { style: 'display:flex;flex-direction:column;gap:8px;padding:0 16px' }, rows)
+        h('div', { style: 'display:flex;flex-direction:column;gap:8px;padding:0 16px' }, laidOut)
       ]),
+      state.notice ? h('div', { style: 'font-size:14px;color:var(--body);padding:0 16px 10px;line-height:1.6',
+        text: state.notice }) : null,
       problem ? warnBar(problem, null, null) : null,
       h('div', {
         style: 'border-top:1px solid var(--line);padding:12px 16px 22px;display:flex;'
@@ -768,6 +845,7 @@
         })
       });
       token.clear();
+      noteExclusion(menu, draft);
       state.screen = { name: 'record' };
     } catch (error) {
       problem = error && error.note ? error.note : '記録できませんでした。';
@@ -885,7 +963,17 @@
   /* One exercise in a list being edited. Two tiers (Design 2026-09-12):
    * the name and the delete on top, the numbers underneath, indented past
    * the handle so they line up with the name. */
-  function exerciseRow(handle, item, deleteLabel, onDelete, extraStyle) {
+  /* "Usually left out" - the words on a small framed badge (Design
+   * 2026-09-12). A frame and a word, never a colour alone. */
+  function skipBadge(onTap) {
+    var style = 'font-size:11px;line-height:1;padding:4px 6px;border:1px solid var(--sub);border-radius:4px;'
+      + 'color:var(--ink);background:#fff;flex:none;font-family:inherit';
+    if (!onTap) return h('span', { style: style, text: 'ふだんは外す' });
+    return h('button', { style: style + ';min-height:44px;cursor:pointer', 'aria-label': 'ふだんは外すのをやめる',
+      onclick: onTap }, ['ふだんは外す']);
+  }
+
+  function exerciseRow(handle, item, deleteLabel, onDelete, extraStyle, withSkip) {
     var counts = h('div', { style: 'display:flex;align-items:center;margin-top:4px;'
       + 'margin-left:' + (handle ? '44px' : '0') }, [
       numberBox(item.sets, 'セット', function (v) { item.sets = v; }),
@@ -900,9 +988,22 @@
         handle,
         h('div', { style: 'flex:1;min-width:0;font-size:15px;font-weight:700;color:var(--ink);'
           + 'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-right:8px', text: item.name }),
+        withSkip && item.skip ? skipBadge(null) : null,
+        withSkip && item.skip ? h('span', { style: 'width:8px;flex:none' }) : null,
         deleteButton(deleteLabel, onDelete)
       ]),
-      counts
+      counts,
+      /* Third tier (Design 2026-09-12): the exercise stays in the menu but
+       * the one-tap record leaves it out, for a knee that does not do
+       * squats. Ticked again, it comes back. */
+      withSkip ? h('label', { style: 'display:flex;align-items:center;gap:8px;min-height:44px;'
+        + 'margin-left:' + (handle ? '44px' : '0') + ';font-size:13px;color:var(--ink);cursor:pointer;'
+        + (item.skip ? 'font-weight:700' : '') }, [
+        h('input', { type: 'checkbox', checked: item.skip ? 'checked' : null,
+          style: 'width:20px;height:20px;margin:0;accent-color:var(--ink)',
+          onchange: function () { item.skip = this.checked; draw(); } }),
+        'ふだんは外す'
+      ]) : null
     ]);
   }
 
@@ -1969,7 +2070,7 @@
   function menuEditScreen(edit, library, onCancel) {
     var rows = edit.items.map(function (item, index) {
       return exerciseRow(grabHandle(edit.items, index, item.name), item, item.name + ' をトレーニングメニューから外す',
-        function () { edit.items.splice(index, 1); draw(); });
+        function () { edit.items.splice(index, 1); draw(); }, '', true);
     });
 
     var addable = library.filter(function (e) {
@@ -2181,7 +2282,7 @@
         video_url: menu.video_url || '', note: menu.note || '',
         items: menu.items.map(function (i) {
           return { ex_id: i.ex_id, name: i.name, sets: i.sets, reps: i.reps,
-            seconds: i.seconds, unit: i.unit };
+            seconds: i.seconds, unit: i.unit, skip: i.skip === true };
         })
       };
       state.screen = { name: 'menuEdit' };
@@ -2206,8 +2307,8 @@
         name: edit.name, video_url: edit.video_url || null, note: edit.note || null,
         items: edit.items.map(function (i) {
           return i.unit === 'sec'
-            ? { ex_id: i.ex_id, sets: i.sets, seconds: i.seconds, unit: 'sec' }
-            : { ex_id: i.ex_id, sets: i.sets, reps: i.reps, unit: 'reps' };
+            ? { ex_id: i.ex_id, sets: i.sets, seconds: i.seconds, unit: 'sec', skip: i.skip === true }
+            : { ex_id: i.ex_id, sets: i.sets, reps: i.reps, unit: 'reps', skip: i.skip === true };
         })
       });
       edit.menu_id = saved.menu_id;
@@ -2309,15 +2410,38 @@
    * Recording leaves you here - two or three in a day is normal and there
    * is no "end of session" to return from. Adding and editing menus live
    * on the training tab, not here. */
+  function skipOfferBlock(view) {
+    var offer = state.skipOffer;
+    if (!offer) return null;
+    var menu = view.menus.filter(function (m) { return m.menu_id === offer.menuId; })[0];
+    if (!menu) { state.skipOffer = null; return null; }
+    return h('div', { style: 'padding:14px 18px;border-bottom:1px solid var(--line);display:flex;'
+      + 'flex-direction:column;gap:12px' }, [
+      h('div', { style: 'font-size:14px;color:var(--body);line-height:1.6',
+        text: '外した種目を、次回からも外しておけます。' }),
+      h('button', {
+        style: 'border:1px solid var(--sub);background:#fff;color:var(--ink);font-family:inherit;'
+          + 'font-size:15px;font-weight:700;border-radius:12px;min-height:44px;cursor:pointer;'
+          + 'align-self:flex-start;padding:0 16px',
+        onclick: async function () {
+          state.skipOffer = null;
+          await setSkip(menu, offer.ids, true);
+          draw();
+        }
+      }, ['ふだんは外す'])
+    ]);
+  }
+
   function recordScreen(view) {
     return h('div', { style: 'display:flex;flex-direction:column;min-height:100vh' }, [
       h('div', { style: 'display:flex;align-items:center;gap:12px;padding:10px 12px;min-height:64px;border-bottom:1px solid var(--line)' }, [
         h('button', { style: 'border:0;background:none;padding:0;font-size:14px;color:var(--body);'
           + 'font-weight:700;font-family:inherit;cursor:pointer;min-height:44px;padding:0 4px',
-          onclick: function () { problem = null; state.screen = { name: 'home' }; draw(); } }, ['‹ 戻る']),
+          onclick: function () { problem = null; state.skipOffer = null; state.screen = { name: 'home' }; draw(); } }, ['‹ 戻る']),
         h('div', { style: 'flex:1;text-align:center;font-size:14px;font-weight:800;color:var(--ink)', text: '記録する' }),
         h('div', { style: 'width:52px' })
       ]),
+      skipOfferBlock(view),
     h('div', { style: 'flex:1;padding:6px 18px 18px;display:flex;flex-direction:column;gap:' + (view.menus.length ? '2px' : '12px') }, [
       /* Said once, in place of a word under every circle: only while
        * nothing has ever been recorded. */
@@ -2377,7 +2501,7 @@
             date: view.today.date,
             time: pad(new Date().getHours()) + ':' + pad(new Date().getMinutes()),
             items: menu.items.map(function (m) {
-              return { menu_item_id: m.menu_item_id, include: true, sets: m.sets };
+              return { menu_item_id: m.menu_item_id, include: !m.skip, sets: m.sets };
             })
           };
           state.screen = { name: 'partial', menuId: menu.menu_id };
@@ -2484,6 +2608,8 @@
           'aria-current': on ? 'page' : null,
           onclick: function () {
             problem = null;
+            state.skipOffer = null;
+            state.notice = null;
             /* So that 戻る in the settings header goes back to the tab you
              * came from, rather than always to the first one. */
             if (tab[1] === 'settings' && here !== 'settings') state.settingsFrom = here;

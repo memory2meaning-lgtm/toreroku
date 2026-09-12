@@ -501,7 +501,7 @@
     var name = aName(payload.name);
     var videoUrl = aUrl(payload.video_url);
     var note = aText(payload.note, 'メモ', 5000);
-    var tag = aText(payload.tag, '札', 30);
+    var tag = aText(payload.tag, '分類', 30);
     var menuId = payload.menu_id === null || payload.menu_id === undefined ? null : payload.menu_id;
     var revision = payload.revision === null || payload.revision === undefined ? null : payload.revision;
     if (menuId === null) {

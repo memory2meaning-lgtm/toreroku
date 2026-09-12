@@ -593,7 +593,7 @@
         field,
         h('button', { style: 'border:0;background:var(--deep);color:#fff;font-family:inherit;font-size:15px;'
           + 'font-weight:800;border-radius:14px;min-height:50px;box-shadow:var(--shadow-action);cursor:pointer',
-          onclick: function () { onPasted(field.value, false); } }, ['貼り付けて作る'])
+          onclick: function () { onPasted(field.value, false); } }, ['URL から題名を取って作る'])
       ]),
       h('div', { style: 'display:flex;flex-direction:column;gap:6px;border-top:1px solid var(--line2);'
         + 'padding-top:12px' }, [
@@ -2074,7 +2074,7 @@
   }
 
   /* The tag bar (Design 2026-09-12): only once a tag exists. すべて first,
-   * the tags, then 札なし when something has none. The choice is kept so
+   * the tags, then 分類なし when something has none. The choice is kept so
    * the list opens where it was left. Selected = filled and bold. */
   var TAG_KEY = 'ouchitore_tag';
   function chosenTag() {
@@ -2089,7 +2089,7 @@
     if (current && current !== '__none__' && tags.indexOf(current) < 0) current = '';
     if (current === '__none__' && !untagged) current = '';
     var chips = [['', 'すべて']].concat(tags.map(function (tag) { return [tag, tag]; }));
-    if (untagged) chips.push(['__none__', '札なし']);
+    if (untagged) chips.push(['__none__', '分類なし']);
     return h('div', { style: 'display:flex;gap:8px;overflow-x:auto;padding:8px 18px;-webkit-overflow-scrolling:touch' },
       chips.map(function (chip) {
         var on = chip[0] === current;
@@ -2194,7 +2194,7 @@
          * tag per menu, typed or picked from the ones already in use. A
          * list that has grown long is split by these, never by how often
          * something was used. */
-        labelled('4. 札', '（任意）', null,
+        labelled('4. 分類', '（任意）', null,
           h('div', { style: 'display:flex;flex-direction:column;gap:8px' }, [
             h('input', { type: 'text', value: edit.tag || '', maxlength: '30', style: FIELD,
               placeholder: '例：下半身、ストレッチ',
@@ -2222,6 +2222,25 @@
         /* Typing a name has to come first: on a phone that has just installed
          * the app the library is empty, and with only "一覧から足す" there was no
          * way to put a single exercise into a menu at all. */
+        h('div', { style: 'display:flex;flex-direction:column;gap:8px;border:1px solid var(--line);'
+          + 'border-radius:12px;padding:12px' }, [
+          h('div', { style: 'font-size:13px;font-weight:700;color:var(--ink)', text: '動画の概要欄から種目を入れる' }),
+          h('div', { style: 'font-size:12px;color:var(--sub);line-height:1.6',
+            text: 'YouTube の概要欄（「…もっと見る」の中）を全部コピーして、ここに貼ります。「3:20 スクワット」のような時間の行を種目にし、次の行までの時間を秒数にします。' }),
+          edit.pasteOpen ? h('textarea', { style: FIELD + ';min-height:96px;line-height:1.6;resize:vertical',
+            placeholder: '概要欄をここに貼る',
+            oninput: function () { edit.pasted = this.value; } }, [edit.pasted || '']) : null,
+          h('div', { style: 'display:flex;gap:8px' }, [
+            h('button', { type: 'button',
+              style: 'border:1px solid var(--sub);background:#fff;color:var(--ink);font-family:inherit;'
+                + 'font-size:14px;font-weight:700;border-radius:12px;min-height:44px;padding:0 14px;cursor:pointer',
+              onclick: function () {
+                if (edit.pasteOpen && (edit.pasted || '').trim()) { importFromDescription(edit); return; }
+                edit.pasteOpen = !edit.pasteOpen; draw();
+              } }, [edit.pasteOpen ? '貼った文から種目にする' : '概要欄を貼る'])
+          ]),
+          state.notice ? h('div', { style: 'font-size:13px;color:var(--body);line-height:1.6', text: state.notice }) : null
+        ]),
         h('div', { style: 'display:flex;flex-direction:column;gap:8px' }, [
           h('div', { style: 'font-size:11px;font-weight:800;color:var(--sub)', text: '種目を足す' }),
           h('div', { style: 'display:flex;gap:8px' }, [
@@ -2348,6 +2367,76 @@
     draw();
   }
 
+  /* What a YouTube page will not hand a browser on another site (the
+   * description and its chapters) the owner can copy out of the YouTube
+   * app and paste here. Lines like "3:20 スクワット" become exercises; the
+   * gap to the next line is the length in seconds. No request leaves the
+   * phone for this. */
+  var CHAPTER = /^\s*[\[\(（]?((?:\d{1,2}:)?\d{1,2}:\d{2})[\]\)）]?\s*[-–—:：・~〜]?\s*(.+?)\s*$/;
+  var NOT_EXERCISE = /^(intro|outro|opening|ending|イントロ|オープニング|エンディング|はじめに|おわりに|まとめ|終わり|挨拶|自己紹介|説明|注意|準備|告知|お知らせ)/i;
+  function chaptersFrom(text) {
+    var found = [];
+    String(text || '').split(/\r?\n/).forEach(function (line) {
+      var m = CHAPTER.exec(line);
+      if (!m) return;
+      var parts = m[1].split(':').map(Number);
+      var at = parts.length === 3 ? parts[0] * 3600 + parts[1] * 60 + parts[2] : parts[0] * 60 + parts[1];
+      var name = m[2].replace(/[|｜【\[].*$/, '').trim();
+      if (!name || NOT_EXERCISE.test(name)) return;
+      /* "スクワット 15回" - the count is part of the line, not of the name. */
+      var reps = /(\d+)\s*回\s*$/.exec(name);
+      if (reps) name = name.replace(/[\s×x]*\d+\s*回\s*$/, '').trim();
+      found.push({ at: at, name: name.slice(0, 60), reps: reps ? parseInt(reps[1], 10) : null });
+    });
+    found.sort(function (a, b) { return a.at - b.at; });
+    return found.map(function (one, i) {
+      var next = found[i + 1];
+      var length = next ? next.at - one.at : 0;
+      return { name: one.name, reps: one.reps, seconds: length > 0 && length <= 1800 ? length : null };
+    });
+  }
+
+  async function importFromDescription(edit) {
+    var chapters = chaptersFrom(edit.pasted);
+    problem = null;
+    if (!chapters.length) {
+      problem = '「3:20 スクワット」のような、時間ではじまる行が見つかりませんでした。';
+      draw();
+      return;
+    }
+    var typical = chapters.filter(function (c) { return c.seconds; }).map(function (c) { return c.seconds; })
+      .sort(function (a, b) { return a - b; });
+    var fallback = typical.length ? typical[Math.floor(typical.length / 2)] : 30;
+    var added = 0;
+    try {
+      for (var i = 0; i < chapters.length; i++) {
+        var one = chapters[i];
+        var known = libraryNow.filter(function (e) { return e.name === one.name; })[0];
+        var seconds = one.seconds || fallback;
+        var unit = one.reps ? 'reps' : 'sec';
+        if (!known) {
+          var made = await api.post('/api/library/save', unit === 'reps'
+            ? { name: one.name, sets: 1, reps: one.reps, unit: 'reps' }
+            : { name: one.name, sets: 1, seconds: seconds, unit: 'sec' });
+          known = { ex_id: made.ex_id, name: one.name, sets: 1, reps: one.reps || null,
+            seconds: unit === 'sec' ? seconds : null, unit: unit };
+          libraryNow = (await api.get('/api/library')).items;
+        }
+        if (edit.items.some(function (it) { return it.ex_id === known.ex_id; })) continue;
+        edit.items.push({ ex_id: known.ex_id, name: known.name, sets: 1,
+          reps: known.unit === 'sec' ? null : (one.reps || known.reps),
+          seconds: known.unit === 'sec' ? seconds : null, unit: known.unit });
+        added += 1;
+      }
+      edit.pasted = '';
+      edit.pasteOpen = false;
+      state.notice = added ? added + '種目を入れました。秒数と順番は上で直せます。' : 'すべて入っている種目でした。';
+    } catch (error) {
+      problem = error && error.note ? error.note : '種目にできませんでした。';
+    }
+    draw();
+  }
+
   async function openMenuEdit(menuId) {
     problem = null;
     try {
@@ -2391,7 +2480,7 @@
       });
       edit.menu_id = saved.menu_id;
       edit.revision = saved.revision;
-      if (edit.fromRecord) state.notice = 'トレーニングメニューに入れました。';
+      state.notice = edit.fromRecord ? 'トレーニングメニューに入れました。' : null;
       state.screen = { name: 'menus' };
     } catch (error) {
       problem = error && error.note ? error.note : '保存できませんでした。';
@@ -2652,7 +2741,7 @@
             text: 'トレーニングメニューがありません。トレーニングメニューは、動画のURLと種目をまとめたものです。1つ作ると、やった日に丸を押すだけで残ります。' })
         ]).concat(menus.length && !shown.length ? [
           h('div', { style: 'padding:22px 0;font-size:14px;color:var(--body);line-height:1.7',
-            text: 'この札・この名前のトレーニングメニューはありません。' })
+            text: 'この分類・この名前のトレーニングメニューはありません。' })
         ] : []).concat([
           /* Design (2026-09-12): the way to add one is a row at the end of
            * the list, not a dashed button - dashes already mean "cannot be

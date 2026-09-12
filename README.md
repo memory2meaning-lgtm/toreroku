@@ -1,10 +1,10 @@
-# トレ録（公開版・製作中）
+# トレ録
 
 自宅でやったトレーニングを、その場で残しておくための記録帳です。
 **スマホのブラウザで開いて、ホーム画面に追加すれば、それがインストールです。**
 アカウント登録はありません。サーバーもありません。記録はその端末の中だけに残ります。
 
-> 状態：**まだ公開していません。** 画面はひととおり動いていて、手元の端末で確かめている最中です。
+> **公開中：https://memory2meaning-lgtm.github.io/toreroku/**（GitHub Pages）。スマホのブラウザで開いて、ホーム画面に追加してください。
 > 決まっていること（見た目・言葉づかい）は `design/SETTLED.md`、このリポジトリの決まりは `CLAUDE.md`。
 
 ---
@@ -94,7 +94,7 @@ document still the same after being carried to another phone.
 
 ## 入れ方（配る相手に見せる想定の手順）
 
-サーバーに置いたあと、**スマホのブラウザでその URL を開く**だけです。
+**スマホのブラウザで https://memory2meaning-lgtm.github.io/toreroku/ を開く**だけです。
 
 - **iPhone（Safari）**：画面下の 共有 → ホーム画面に追加 → 追加
 - **Android（Chrome）**：右上の ⋮ → アプリをインストール（またはホーム画面に追加）
@@ -103,10 +103,9 @@ document still the same after being carried to another phone.
 
 ホーム画面に追加すると、Android では YouTube の共有先に「トレ録」が出るようになり、動画から直接メニューを作れます。
 
-## 残っていること
+## 更新のしかた（作者向け）
 
-1. **実機での確認**。手元の Android で一通り触るところまで。
-2. **公開の場所**（GitHub Pages）と、そこへ置く手順。
+`main` に push すると、数分で上の URL に反映されます。`index.html` の `?v=NN` を上げないと、ホーム画面に追加した端末は古い版を持ち続けます。
 
 ---
 

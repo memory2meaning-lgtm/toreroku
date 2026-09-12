@@ -892,6 +892,18 @@ async function main() {
     equal(day.sessions[0].items.map(i => i.name), ['腕立て', 'スクワット']);
   });
 
+  await check('a document at the id ceiling cannot be pushed past what the import would read back', async () => {
+    const api = fresh();
+    const ex = await api.post('/api/library/save', { name: 'スクワット', sets: 1, reps: 10, unit: 'reps' });
+    const doc = await api.exportDocument();
+    doc.seq.menu = Number.MAX_SAFE_INTEGER - 1000000;
+    const other = store.createApi(store.memoryPersist(null));
+    await other.importDocument(doc);
+    await rejects(500, () => other.post('/api/menu/save', { menu_id: null, revision: null, name: '上限',
+      items: [{ ex_id: ex.ex_id, sets: 1, reps: 10, unit: 'reps' }] }));
+    await store.createApi(store.memoryPersist(null)).importDocument(await other.exportDocument());
+  });
+
   console.log(passed + ' passed, ' + failures.length + ' failed');
   failures.forEach(line => console.log('  FAIL ' + line));
   process.exit(failures.length ? 1 : 0);

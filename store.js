@@ -160,7 +160,14 @@
 
   function clone(state) { return JSON.parse(JSON.stringify(state)); }
 
-  function nextId(state, key) { state.seq[key] += 1; return state.seq[key]; }
+  /* The same ceiling the import enforces, so a document the store wrote is
+   * always one it will read back (Codex review, third pass). */
+  var ID_CEILING = Number.MAX_SAFE_INTEGER - 1000000;
+  function nextId(state, key) {
+    if (state.seq[key] >= ID_CEILING) throw ApiError(500, 'これ以上は作れません（番号が上限に達しました）');
+    state.seq[key] += 1;
+    return state.seq[key];
+  }
 
   function byId(rows, key, id) {
     for (var i = 0; i < rows.length; i++) if (rows[i][key] === id) return rows[i];

@@ -524,9 +524,9 @@
     return h('div', { style: 'border:1px dashed var(--faint);border-radius:16px;padding:16px;'
       + 'display:flex;flex-direction:column;gap:12px' }, [
       h('div', { style: 'display:flex;flex-direction:column;gap:5px' }, [
-        h('div', { style: 'font-size:15px;font-weight:800;color:var(--ink)', text: 'まだメニューがありません' }),
+        h('div', { style: 'font-size:15px;font-weight:800;color:var(--ink)', text: 'まだトレーニングメニューがありません' }),
         h('div', { style: 'font-size:12px;color:var(--sub);line-height:1.65',
-          text: 'ふだん見ている YouTube の運動動画の URL を貼ると、そのままメニューになります。'
+          text: 'ふだん見ている YouTube の運動動画の URL を貼ると、そのままトレーニングメニューになります。'
             + '題名は動画から入ります。種目は無くてもかまいません。' })
       ]),
       h('div', { style: 'display:flex;flex-direction:column;gap:8px' }, [
@@ -611,7 +611,7 @@
         + 'background:#fff;border:0;border-top:1px solid var(--line);font-family:inherit;'
         + 'font-size:15px;color:var(--ink);text-align:left;cursor:pointer',
       onclick: onTap
-    }, [svg(ICON.other), 'メニューに無いものをやった']);
+    }, [svg(ICON.other), 'トレーニングメニューに無いものをやった']);
   }
 
   /* Design (2026-09-12, revised): adding a menu is not a daily act, so
@@ -627,7 +627,7 @@
       h('span', { style: 'flex:none;width:24px;height:24px;display:flex;align-items:center;'
         + 'justify-content:center;border:1px solid var(--sub);border-radius:50%;color:var(--sub)',
         'aria-hidden': 'true' }, [svg(ICON.plus)]),
-      'メニューを追加する'
+      'トレーニングメニューを追加する'
     ]);
   }
 
@@ -703,7 +703,7 @@
       ]),
       h('div', { style: 'padding:12px 16px;border-bottom:1px solid var(--line2);background:#fafbfd' }, [
         h('div', { style: 'font-size:12px;color:var(--sub);line-height:1.55',
-          text: 'やった種目だけ選びます。メニューそのものは変わりません。' })
+          text: 'やった種目だけ選びます。トレーニングメニューそのものは変わりません。' })
       ]),
       h('div', { style: 'flex:1;display:flex;flex-direction:column;padding-bottom:16px' }, [
         h('div', { style: 'display:flex;align-items:center;justify-content:space-between;padding:12px 16px 8px' }, [
@@ -992,13 +992,13 @@
         offerOpen(edit) ? h('div', { style: 'border-top:1px solid var(--line);padding-top:14px;display:flex;'
           + 'flex-direction:column;gap:12px' }, [
           h('div', { style: 'font-size:14px;color:var(--body);line-height:1.6',
-            text: 'これを次もやるなら、メニューに入れておけます。' }),
+            text: 'これを次もやるなら、トレーニングメニューに入れておけます。' }),
           h('button', {
             style: 'border:1px solid var(--sub);background:#fff;color:var(--ink);font-family:inherit;'
               + 'font-size:15px;font-weight:700;border-radius:12px;min-height:44px;cursor:pointer;'
               + 'align-self:flex-start;padding:0 16px',
             onclick: function () { menuFromRecord(edit); }
-          }, ['メニューに入れる'])
+          }, ['トレーニングメニューに入れる'])
         ]) : null,
         h('div', { style: 'border-top:1px solid var(--line);padding-top:14px;display:flex;'
           + 'flex-direction:column;gap:8px' }, [
@@ -1392,7 +1392,7 @@
           h('div', { style: 'border:1px solid var(--line);border-radius:16px;padding:14px;'
             + 'display:flex;flex-direction:column;gap:10px' }, [
             h('div', { style: 'font-size:12px;color:var(--body);line-height:1.6',
-              text: 'メニューと記録をまとめて1つの JSON ファイルにします。機種変更のときは、このファイルを新しい端末で読み込みます。' }),
+              text: 'トレーニングメニューと記録をまとめて1つの JSON ファイルにします。機種変更のときは、このファイルを新しい端末で読み込みます。' }),
             h('div', { style: 'border-top:1px solid var(--line2);padding-top:10px' },
               [fileRow('前回の書き出し', settings.last_export || 'まだありません')]),
             fileRow('記録の件数', sessionCount + '件'),
@@ -1573,7 +1573,7 @@
         h('button', { style: 'border:0;background:none;padding:0;font-size:14px;color:var(--body);'
           + 'font-weight:700;font-family:inherit;cursor:pointer;min-height:44px;padding:0 4px', onclick: onCancel }, ['やめる']),
         h('div', { style: 'flex:1;text-align:center;font-size:14px;font-weight:800;color:var(--ink)',
-          text: 'メニューに無いものをやった' }),
+          text: 'トレーニングメニューに無いものをやった' }),
         h('div', { style: 'width:34px' })
       ]),
       h('div', { style: 'padding:11px 18px;border-bottom:1px solid var(--line2);background:#fafbfd' }, [
@@ -1960,7 +1960,7 @@
 
   function menuEditScreen(edit, library, onCancel) {
     var rows = edit.items.map(function (item, index) {
-      return exerciseRow(grabHandle(edit.items, index, item.name), item, item.name + ' をメニューから外す',
+      return exerciseRow(grabHandle(edit.items, index, item.name), item, item.name + ' をトレーニングメニューから外す',
         function () { edit.items.splice(index, 1); draw(); });
     });
 
@@ -1973,7 +1973,7 @@
         h('button', { style: 'border:0;background:none;padding:0;font-size:14px;color:var(--body);'
           + 'font-weight:700;font-family:inherit;cursor:pointer;min-height:44px;padding:0 4px', onclick: onCancel }, ['やめる']),
         h('div', { style: 'flex:1;text-align:center;font-size:14px;font-weight:800;color:var(--ink)',
-          text: edit.menu_id ? 'メニューを編集' : 'メニューを追加' }),
+          text: edit.menu_id ? 'トレーニングメニューを編集' : 'トレーニングメニューを追加' }),
         h('button', { style: 'border:0;background:none;padding:0;font-size:14px;color:var(--deep);'
           + 'font-weight:800;font-family:inherit;cursor:pointer;min-height:44px;padding:0 4px',
           onclick: function () { saveMenu(edit); } }, ['保存'])
@@ -2006,9 +2006,9 @@
               setTimeout(function () { edit.video_url = field.value; fetchTitle(edit); }, 0);
             } })),
         h('div', { style: 'font-size:11px;color:var(--faint);line-height:1.6;margin-top:-10px',
-          text: '貼ると、下のメニュー名に動画の題名が入ります。動画を使わないメニューは、空のままで先へ進めます。' }),
+          text: '貼ると、下のトレーニングメニュー名に動画の題名が入ります。動画を使わないトレーニングメニューは、空のままで先へ進めます。' }),
 
-        labelled('2. メニュー名', '（必須）', edit.name.length + ' / 100',
+        labelled('2. トレーニングメニュー名', '（必須）', edit.name.length + ' / 100',
           h('input', { type: 'text', value: edit.name, maxlength: '100', style: FIELD,
             'data-field': 'menu-name',
             oninput: function () {
@@ -2031,7 +2031,7 @@
           ])
         ].concat(rows.length ? rows : [
           h('div', { style: 'padding:10px 0 16px;border-top:1px solid var(--line2);font-size:14px;color:var(--body);line-height:1.6',
-            text: '動画の中でやった種目を、名前と回数で書いておけます。書かなくても、メニューは作れます。' })
+            text: '動画の中でやった種目を、名前と回数で書いておけます。書かなくても、トレーニングメニューは作れます。' })
         ])),
         /* Typing a name has to come first: on a phone that has just installed
          * the app the library is empty, and with only "一覧から足す" there was no
@@ -2083,9 +2083,9 @@
               + 'font-size:14px;font-weight:700;border-radius:13px;min-height:46px;cursor:pointer;'
               + 'display:flex;align-items:center;justify-content:center;gap:8px',
             onclick: function () { removeMenu(edit); }
-          }, [binIcon(), 'このメニューを削除']),
+          }, [binIcon(), 'このトレーニングメニューを削除']),
           h('div', { style: 'font-size:11px;color:var(--faint);line-height:1.6',
-            text: 'メニューを消しても、これまでの記録は残ります。' })
+            text: 'トレーニングメニューを消しても、これまでの記録は残ります。' })
         ]) : null
       ])
     ]);
@@ -2167,7 +2167,7 @@
     try {
       var menus = (await api.get('/api/menus')).menus;
       var menu = menus.filter(function (m) { return m.menu_id === menuId; })[0];
-      if (!menu) { problem = 'メニューが見つかりません'; draw(); return; }
+      if (!menu) { problem = 'トレーニングメニューが見つかりません'; draw(); return; }
       state.menuEdit = {
         menu_id: menu.menu_id, revision: menu.revision, name: menu.name,
         video_url: menu.video_url || '', note: menu.note || '',
@@ -2178,7 +2178,7 @@
       };
       state.screen = { name: 'menuEdit' };
     } catch (error) {
-      problem = error && error.note ? error.note : 'メニューを開けませんでした。';
+      problem = error && error.note ? error.note : 'トレーニングメニューを開けませんでした。';
     }
     draw();
   }
@@ -2204,7 +2204,7 @@
       });
       edit.menu_id = saved.menu_id;
       edit.revision = saved.revision;
-      if (edit.fromRecord) state.notice = 'メニューに入れました。';
+      if (edit.fromRecord) state.notice = 'トレーニングメニューに入れました。';
       state.screen = { name: 'menus' };
     } catch (error) {
       problem = error && error.note ? error.note : '保存できませんでした。';
@@ -2213,7 +2213,7 @@
   }
 
   async function removeMenu(edit) {
-    if (!window.confirm('このメニューを削除します。これまでの記録は残ります。')) return;
+    if (!window.confirm('このトレーニングメニューを削除します。これまでの記録は残ります。')) return;
     problem = null;
     try {
       await api.post('/api/menu/delete', { menu_id: edit.menu_id });
@@ -2305,7 +2305,7 @@
   function menuListPage(menus, onNew, onOpen) {
     return h('div', { style: 'display:flex;flex-direction:column;min-height:100vh' }, [
       h('div', { style: 'display:flex;flex-direction:column;gap:3px;padding:18px 18px 12px' }, [
-        h('div', { style: 'font-size:19px;font-weight:800;color:var(--ink);line-height:1.1', text: 'メニュー' }),
+        h('div', { style: 'font-size:19px;font-weight:800;color:var(--ink);line-height:1.1', text: 'トレーニングメニュー' }),
         /* Said once; the next drawing of anything forgets it. */
         state.notice ? h('div', { style: 'font-size:14px;color:var(--body);padding-top:6px', text: state.notice }) : null
       ]),
@@ -2326,7 +2326,7 @@
           ]);
         }) : [
           h('div', { style: 'padding:22px 0;font-size:13px;color:var(--sub);line-height:1.7',
-            text: 'メニューがありません。メニューは、動画のURLと種目をまとめたものです。1つ作ると、やった日に丸を押すだけで残ります。' })
+            text: 'トレーニングメニューがありません。トレーニングメニューは、動画のURLと種目をまとめたものです。1つ作ると、やった日に丸を押すだけで残ります。' })
         ]).concat([
           /* Design (2026-09-12): the way to add one is a row at the end of
            * the list, not a dashed button - dashes already mean "cannot be
@@ -2634,7 +2634,7 @@
           });
         }))) : null,
         h('div', { style: 'display:flex;flex-direction:column;gap:' + (view.menus.length ? '2px' : '12px') }, [
-          h('div', { style: 'font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.04em', text: 'メニュー' }),
+          h('div', { style: 'font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.04em', text: 'トレーニングメニュー' }),
           /* Said once, in place of a word under every circle: only while
            * nothing has ever been recorded. */
           view.menus.length && view.facts.first_ever ? h('div', {

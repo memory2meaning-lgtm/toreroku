@@ -10,3 +10,6 @@ companions/silhouettes/
 .DS_Store
 Thumbs.db
 *.swp
+
+# Local helper for the owner to push; not part of the app.
+push.cmd

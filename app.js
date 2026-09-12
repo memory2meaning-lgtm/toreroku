@@ -1867,8 +1867,11 @@
     state.pick = {
       date: date,
       time: (existing && existing.performed_time) || (pad(new Date().getHours()) + ':' + pad(new Date().getMinutes())),
+      /* By name, not by id: an exercise removed from the library since the
+       * morning still has its name on the record, and by name it comes
+       * back rather than failing with 404 (Codex review, second pass). */
       items: existing ? existing.items.map(function (i) {
-        return { ex_id: i.ex_id, name: i.name, sets: i.sets, reps: i.reps, seconds: i.seconds, unit: i.unit };
+        return { name: i.name, sets: i.sets, reps: i.reps, seconds: i.seconds, unit: i.unit };
       }) : [],
       typed: '', showAll: false, joining: !!existing
     };
@@ -2650,9 +2653,11 @@
           libraryNow = (await api.get('/api/library')).items;
         }
         if (edit.items.some(function (it) { return it.ex_id === known.ex_id; })) continue;
+        /* This menu's row takes what the pasted lines said, not what the
+         * library happens to hold for the same name. */
         edit.items.push({ ex_id: known.ex_id, name: known.name, sets: 1, auto: true,
-          reps: known.unit === 'sec' ? null : (one.reps || known.reps),
-          seconds: known.unit === 'sec' ? seconds : null, unit: known.unit });
+          reps: unit === 'reps' ? one.reps : null,
+          seconds: unit === 'sec' ? seconds : null, unit: unit });
         added += 1;
       }
       edit.pasted = '';
@@ -3381,7 +3386,13 @@
 
   function giveTheKeyboardBack(held) {
     if (!held) return;
-    var again = root.querySelector('[data-field="' + held.field + '"]');
+    /* Compared as a value, not spliced into a selector: a name with a
+     * quotation mark in it is still a name. */
+    var again = null;
+    var all = root.querySelectorAll('[data-field]');
+    for (var i = 0; i < all.length; i++) {
+      if (all[i].getAttribute('data-field') === held.field) { again = all[i]; break; }
+    }
     if (!again) return;
     again.focus();
     if (held.at !== null && again.setSelectionRange) {

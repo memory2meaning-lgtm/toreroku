@@ -832,7 +832,23 @@ async function main() {
     await attempt(d => { d.sessions[0].date = '2026-99-99'; });
     await attempt(d => { d.items[0].unit = null; d.items[0].sets = null; });
     await attempt(d => { d.seq.menu = 9007199254740992; });
-    await attempt(d => { d.sessions.push(Object.assign({}, d.sessions[0], { session_id: 99 })); });
+    await attempt(d => { d.sessions.push(Object.assign({}, d.sessions[0], { session_id: 99 })); d.seq.session = 99; });
+    await attempt(d => { d.menus[0].revision = null; });
+    await attempt(d => { d.settings = { nickname: { x: 1 } }; });
+    await attempt(d => {
+      d.sessions.push({ session_id: 98, date: '2026-09-12', ts: d.sessions[0].ts, note: null, session_kind: 'manual',
+        menu_id: null, menu_name: null, video_url: null, request_id: null, request_hash: null, performed_time: null });
+      d.sessions.push({ session_id: 99, date: '2026-09-12', ts: d.sessions[0].ts, note: null, session_kind: 'manual',
+        menu_id: null, menu_name: null, video_url: null, request_id: null, request_hash: null, performed_time: null });
+      d.seq.session = 99;
+    });
+    const quirky = fresh();
+    const qx = await quirky.post('/api/library/save', { name: 'スクワット', sets: 1, reps: 10, unit: 'reps' });
+    const qm = await quirky.post('/api/menu/save', { menu_id: null, revision: null, name: '朝',
+      items: [{ ex_id: qx.ex_id, sets: 1, reps: 10, unit: 'reps' }] });
+    await quirky.post('/api/menu/complete', { menu_id: qm.menu_id, date: '2026-09-12', request_id: 'toString', items: null });
+    const quirkyDoc = await quirky.exportDocument();
+    await store.createApi(store.memoryPersist(null)).importDocument(quirkyDoc);
     const clean = store.createApi(store.memoryPersist(null));
     await clean.importDocument(good);
     equal((await clean.get('/api/today?date=2026-09-12')).sessions.length, 1, 'the untouched file still loads');
@@ -861,6 +877,19 @@ async function main() {
     await rejects(409, () => api.post('/api/menu/reorder', { menu_ids: [a.menu_id, c.menu_id, b.menu_id],
       expected_menu_ids: [a.menu_id, b.menu_id, c.menu_id] }));
     equal((await api.get('/api/menus')).menus.map(m => m.name), ['b', 'a', 'c']);
+  });
+
+  await check('the second by-hand record of a day keeps the note on the first', async () => {
+    const api = fresh();
+    const first = await api.post('/api/log', { date: '2026-09-12', items: [{ name: '腕立て', sets: 2, reps: 10, unit: 'reps' }] });
+    await api.post('/api/session/update', { session_id: first.session_id, note: '朝はきつかった',
+      items: [{ name: '腕立て', sets: 2, reps: 10, unit: 'reps' }] });
+    await api.post('/api/log', { date: '2026-09-12',
+      items: [{ name: '腕立て', sets: 2, reps: 10, unit: 'reps' }, { name: 'スクワット', sets: 1, reps: 10, unit: 'reps' }] });
+    const day = await api.get('/api/today?date=2026-09-12');
+    equal(day.sessions.length, 1);
+    equal(day.sessions[0].note, '朝はきつかった');
+    equal(day.sessions[0].items.map(i => i.name), ['腕立て', 'スクワット']);
   });
 
   console.log(passed + ' passed, ' + failures.length + ' failed');

@@ -33,6 +33,34 @@ function wantedFrom(html) {
   return ALWAYS.concat(found);
 }
 
+/* Every change to the stored page goes through one chain, so two
+ * navigations (or a navigation and an activate) never interleave their
+ * store-and-sweep and leave a page whose scripts are gone (Codex review,
+ * second pass). */
+let updating = Promise.resolve();
+
+const ROOT_PATH = new URL('./', self.location.href).pathname;
+function isTheAppPage(url) {
+  return url.pathname === ROOT_PATH || url.pathname === ROOT_PATH + 'index.html';
+}
+
+/* Take a fetched page in, in the only safe order: first make sure every
+ * script it names is stored, then store the page under both of its
+ * addresses, and only then throw away scripts nothing names any more. A
+ * phone that goes offline in the middle keeps a page whose scripts exist. */
+function takeIn(html, pageResponseA, pageResponseB) {
+  return caches.open(VERSION).then(cache => {
+    const wanted = wantedFrom(html).filter(one => one !== './' && one !== './index.html');
+    return Promise.all(wanted.map(one => cache.match(one).then(hit => hit ? null
+      : fetch(one, { cache: 'no-store' }).then(r => { if (r && r.ok) return cache.put(one, r); }))))
+      .then(() => Promise.all([
+        cache.put(new Request(new URL('./', self.location.href).href), pageResponseA),
+        cache.put(new Request(new URL('./index.html', self.location.href).href), pageResponseB)
+      ]))
+      .then(() => sweepHtml(html));
+  });
+}
+
 function whatThePageNeeds() {
   return fetch('./index.html', { cache: 'no-store' })
     .then(page => page.text())
@@ -58,14 +86,21 @@ self.addEventListener('activate', event => {
       /* Yesterday's scripts are still in here under yesterday's ?v=, and
        * nothing would ever ask for them again. The cache name only changes
        * when this file changes, so without this they pile up for good. */
-      .then(() => fetch('./index.html', { cache: 'no-store' }).then(sweep).catch(() => { }))
+      .then(() => fetch('./index.html', { cache: 'no-store' }).then(page => {
+        const a = page.clone(), b = page.clone();
+        return page.text().then(html => { updating = updating.then(() => takeIn(html, a, b)).catch(() => { }); return updating; });
+      }).catch(() => { }))
       .then(() => self.clients.claim())
   );
 });
 
 /* Throw away the versioned copies of files this page no longer names. */
 function sweep(page) {
-  return page.text().then(html => {
+  return page.text().then(sweepHtml);
+}
+
+function sweepHtml(html) {
+  return Promise.resolve().then(() => {
     const keep = wantedFrom(html).map(one => new URL(one, self.location.href).href);
     return caches.open(VERSION).then(cache => cache.keys().then(held => Promise.all(
       held.map(request => {
@@ -99,27 +134,25 @@ self.addEventListener('fetch', event => {
        * happening locally: a plain reload showed the previous version while
        * the same URL with a query on the end showed the new one. */
       fetch(request.url, { cache: 'no-store', credentials: 'same-origin' }).then(fresh => {
-        if (fresh && fresh.ok) {
-          /* The page is stored under both of its addresses, "./" and
-           * "./index.html", so whichever one the home-screen icon or a
-           * typed URL asks for, it is the same version - the one whose
-           * scripts are kept. Storing only the address that was fetched
-           * left the other one pointing at scripts the sweep had removed
-           * (Codex review 2026-09-12). The sweep waits for both writes. */
+        /* Only the app's own page is taken in; selftest.html and the
+         * design boards are navigations too, and must never become the
+         * stored start page (Codex review, second pass). */
+        if (fresh && fresh.ok && isTheAppPage(url)) {
           const a = fresh.clone(), b = fresh.clone(), c = fresh.clone();
-          event.waitUntil(caches.open(VERSION).then(cache => Promise.all([
-            cache.put(new Request(new URL('./', self.location.href).href), a),
-            cache.put(new Request(new URL('./index.html', self.location.href).href), b)
-          ])).then(() => sweep(c)));
+          event.waitUntil(c.text().then(html => {
+            updating = updating.then(() => takeIn(html, a, b)).catch(() => { });
+            return updating;
+          }));
         }
         return fresh;
-      }).catch(() => caches.match(request).then(hit => hit || caches.match('./index.html')))
+      }).catch(() => caches.open(VERSION).then(cache =>
+        cache.match(request).then(hit => hit || cache.match('./index.html'))))
     );
     return;
   }
 
   event.respondWith(
-    caches.match(request).then(hit => {
+    caches.open(VERSION).then(cache => cache.match(request)).then(hit => {
       if (hit) {
         /* Refresh in the background so an update lands on the next open;
          * the worker is kept alive until the write is done. */

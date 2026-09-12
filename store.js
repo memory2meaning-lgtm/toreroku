@@ -734,10 +734,14 @@
     var sid;
     if (old) {
       sid = old.session_id;
+      /* The note stays unless one was sent: the second by-hand record of a
+       * day joins the first, it does not wipe what was written on it
+       * (Codex review, second pass). */
       Object.assign(old, {
-        ts: nowIso(), note: note, menu_id: null, menu_name: null, video_url: null,
+        ts: nowIso(), menu_id: null, menu_name: null, video_url: null,
         request_id: null, request_hash: null
       });
+      if ('note' in payload) old.note = note;
       if (hasTime) old.performed_time = performed;
     } else {
       sid = nextId(state, 'session');
@@ -782,7 +786,8 @@
      * its time must not demand lines it never had (Codex review). */
     var bare = row.session_kind === 'menu'
       && !state.items.some(function (i) { return i.session_id === sessionId; })
-      && (!Array.isArray(payload.items) || payload.items.length === 0);
+      && (payload.items === undefined || payload.items === null
+        || (Array.isArray(payload.items) && payload.items.length === 0));
     var rows = bare ? [] : manualItems(state, payload.items);
     replaceItems(state, sessionId, rows);
     row.date = date;
@@ -1100,7 +1105,7 @@
         ];
         behind.forEach(function (one) {
           var highest = 0;
-          var seenIds = {};
+          var seenIds = Object.create(null);
           document[one[1]].forEach(function (row) {
             var id = row && row[one[2]];
             if (typeof id !== 'number' || !Number.isSafeInteger(id) || id < 1) {
@@ -1176,19 +1181,26 @@
           var hm = value.split(':').map(Number);
           return hm[0] <= 23 && hm[1] <= 59;
         };
-        var seenRequests = {};
+        var seenRequests = Object.create(null);
+        var manualDays = Object.create(null);
         var wrong =
           document.exercises.some(function (e) { return !named(e.name, 100) || !counted(e); })
           || document.menus.some(function (m) {
             return !named(m.name, 100) || !textOrNone(m.tag, 30) || !urlOrNone(m.video_url)
               || !textOrNone(m.note, 5000) || !(m.ord === undefined || m.ord === null || whole(m.ord, 0, 1000000))
-              || !(m.revision === undefined || whole(m.revision, 1, 1000000000));
+              || !(m.revision === undefined || (m.revision !== null && whole(m.revision, 1, 1000000000)));
           })
           || document.menu_items.some(function (mi) { return !counted(mi) || !flag(mi.skip) || !flag(mi.auto); })
           || document.items.some(function (i) { return !named(i.name, 100) || !counted(i); })
           || document.sessions.some(function (ss) {
             if (!realDate(ss.date) || !timeOrNone(ss.performed_time) || !textOrNone(ss.note, 5000)
               || !urlOrNone(ss.video_url) || !(ss.session_kind === 'manual' || ss.session_kind === 'menu')) return true;
+            /* One by-hand record a day is what the store enforces on the way
+             * in; a file saying otherwise did not come from it. */
+            if (ss.session_kind === 'manual') {
+              if (manualDays[ss.date]) return true;
+              manualDays[ss.date] = true;
+            }
             if (ss.request_id !== null && ss.request_id !== undefined) {
               if (typeof ss.request_id !== 'string' || ss.request_id.length > 200 || seenRequests[ss.request_id]) return true;
               seenRequests[ss.request_id] = true;
@@ -1196,6 +1208,18 @@
             return false;
           });
         if (wrong) throw ApiError(400, 'この書き出しファイルは読み込めません');
+        /* The settings block, when there is one, holds three small values. */
+        if (document.settings !== undefined && document.settings !== null) {
+          var st = document.settings;
+          var okSettings = st && typeof st === 'object' && !Array.isArray(st)
+            && (st.companion === undefined || st.companion === null
+              || (typeof st.companion === 'string' && /^[a-z][a-z0-9-]{0,39}$/.test(st.companion)))
+            && (st.nickname === undefined || st.nickname === null
+              || (typeof st.nickname === 'string' && st.nickname.length <= 40))
+            && (st.setup_done === undefined || st.setup_done === null || typeof st.setup_done === 'boolean'
+              || (typeof st.setup_done === 'string' && st.setup_done.length <= 40));
+          if (!okSettings) throw ApiError(400, 'この書き出しファイルは読み込めません');
+        }
 
         var dangling =
           document.items.some(function (i) { return !sessions[i.session_id]; })

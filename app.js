@@ -301,7 +301,7 @@
   var TWO_LINES = 'display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;'
     + 'overflow:hidden;word-break:break-word';
 
-  function amountCard(today, facts, settings) {
+  function amountCard(today, facts, settings, onOpen) {
     var companion = settings.companion;
     var sessions = today.sessions || [];
     var items = sessions.reduce(function (n, s) { return n + s.items.length; }, 0);
@@ -343,21 +343,29 @@
     return h('div', { style: 'display:flex;flex-direction:column' }, [
       h('div', { style: 'padding:0 18px 12px;font-size:13px;color:var(--body);line-height:1.5;min-height:20px',
         text: greetingLine(facts, settings.nickname, sessions.length) }),
-      h('div', {
-        style: 'background:#fff;padding:18px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);'
-          + 'display:flex;gap:12px;align-items:flex-end'
+      /* Design (2026-09-12, home as a reference page): the band opens the
+       * day's records when it has any; with none it says so and cannot be
+       * pressed - it is still drawn, so an empty day is not mistaken for a
+       * page that failed to load. */
+      h(has ? 'button' : 'div', {
+        style: 'width:100%;background:#fff;padding:18px;border:0;border-top:1px solid var(--line);'
+          + 'border-bottom:1px solid var(--line);display:flex;gap:12px;align-items:flex-end;'
+          + 'font-family:inherit;text-align:left;color:var(--ink);' + (has ? 'cursor:pointer' : ''),
+        'aria-label': has ? 'きょうの記録を見る' : null,
+        'aria-disabled': has ? null : 'true',
+        onclick: has ? onOpen : null
       }, [
         h('div', { style: 'flex:1;min-width:0;display:flex;flex-direction:column;gap:4px' }, [
-          h('div', { style: 'font-size:13px;color:var(--sub);margin-bottom:6px',
-            text: has ? 'きょうの合計' : 'きょうはこれから' }),
+          has ? h('div', { style: 'font-size:13px;color:var(--sub);margin-bottom:6px', text: 'きょうの合計' }) : null,
           has ? h('div', { style: 'display:grid;grid-template-columns:repeat(' + figures.length + ',auto);'
             + 'justify-content:start;column-gap:22px' }, figures) : null,
-          h('div', { style: 'font-family:var(--mono);font-size:12px;color:var(--sub);margin-top:6px',
-            text: has ? '記録 ' + sessions.length + '件' + (last ? ' ・ 最後は ' + last : '') : '' }),
-          has ? null : h('div', { style: 'font-size:13px;color:var(--body);line-height:1.55',
-            text: '右の丸を押すと記録できます。' })
+          has ? h('div', { style: 'font-family:var(--mono);font-size:12px;color:var(--sub);margin-top:6px',
+            text: '記録 ' + sessions.length + '件' + (last ? ' ・ 最後は ' + last : '') }) : null,
+          has ? null : h('div', { style: 'font-size:14px;color:var(--body);line-height:1.6',
+            text: 'きょうはまだ記録がありません。' })
         ]),
-        companionBox(companion)
+        companionBox(companion),
+        has ? h('span', { style: 'flex:none;align-self:center;color:var(--sub);display:flex' }, [svg(ICON.chevron)]) : null
       ])
     ]);
   }
@@ -611,7 +619,7 @@
         + 'background:#fff;border:0;border-top:1px solid var(--line);font-family:inherit;'
         + 'font-size:15px;color:var(--ink);text-align:left;cursor:pointer',
       onclick: onTap
-    }, [svg(ICON.other), 'トレーニングメニューに無いものをやった']);
+    }, [svg(ICON.other), 'トレーニングメニュー以外をやった']);
   }
 
   /* Design (2026-09-12, revised): adding a menu is not a daily act, so
@@ -760,7 +768,7 @@
         })
       });
       token.clear();
-      state.screen = { name: 'home' };
+      state.screen = { name: 'record' };
     } catch (error) {
       problem = error && error.note ? error.note : '記録できませんでした。';
     }
@@ -1573,7 +1581,7 @@
         h('button', { style: 'border:0;background:none;padding:0;font-size:14px;color:var(--body);'
           + 'font-weight:700;font-family:inherit;cursor:pointer;min-height:44px;padding:0 4px', onclick: onCancel }, ['やめる']),
         h('div', { style: 'flex:1;text-align:center;font-size:14px;font-weight:800;color:var(--ink)',
-          text: 'トレーニングメニューに無いものをやった' }),
+          text: 'トレーニングメニュー以外をやった' }),
         h('div', { style: 'width:34px' })
       ]),
       h('div', { style: 'padding:11px 18px;border-bottom:1px solid var(--line2);background:#fafbfd' }, [
@@ -1691,7 +1699,7 @@
             : { ex_id: i.ex_id, name: i.name, sets: i.sets, reps: i.reps, unit: 'reps' };
         })
       });
-      state.screen = { name: 'home' };
+      state.screen = { name: 'record' };
     } catch (error) {
       problem = error && error.note ? error.note : '記録できませんでした。';
     }
@@ -2296,6 +2304,93 @@
 
   /* ---- the menu list tab ---- */
 
+  /* The page for doing (Design 2026-09-12, after Strong and Hevy): every
+   * menu with its circle, and the row for a day that was not on any menu.
+   * Recording leaves you here - two or three in a day is normal and there
+   * is no "end of session" to return from. Adding and editing menus live
+   * on the training tab, not here. */
+  function recordScreen(view) {
+    return h('div', { style: 'display:flex;flex-direction:column;min-height:100vh' }, [
+      h('div', { style: 'display:flex;align-items:center;gap:12px;padding:10px 12px;min-height:64px;border-bottom:1px solid var(--line)' }, [
+        h('button', { style: 'border:0;background:none;padding:0;font-size:14px;color:var(--body);'
+          + 'font-weight:700;font-family:inherit;cursor:pointer;min-height:44px;padding:0 4px',
+          onclick: function () { problem = null; state.screen = { name: 'home' }; draw(); } }, ['‹ 戻る']),
+        h('div', { style: 'flex:1;text-align:center;font-size:14px;font-weight:800;color:var(--ink)', text: '記録する' }),
+        h('div', { style: 'width:52px' })
+      ]),
+    h('div', { style: 'flex:1;padding:6px 18px 18px;display:flex;flex-direction:column;gap:' + (view.menus.length ? '2px' : '12px') }, [
+      /* Said once, in place of a word under every circle: only while
+       * nothing has ever been recorded. */
+      view.menus.length && view.facts.first_ever ? h('div', {
+        style: 'font-size:14px;color:var(--body);padding:8px 0;line-height:1.6',
+        text: '右の丸を押すと、やった記録が残ります。' }) : null,
+      view.menus.length ? null : firstMenuBox(async function (url, skipVideo) {
+        problem = null;
+        /* Made here rather than on another screen: the field is on this
+         * one because that is the whole of it. An address that is not a
+         * video goes to the editor with what was typed, so nothing that
+         * was written is thrown away. */
+        var id = videoId(url);
+        if (!skipVideo && !id) {
+          if (url.trim()) {
+            newMenu();
+            state.menuEdit.video_url = url.trim();
+            problem = 'YouTube の URL ではないようです。直すか、動画なしで作ってください。';
+            draw();
+            return;
+          }
+          problem = 'URL を貼るか、動画を使わずに作ってください。';
+          draw();
+          return;
+        }
+        newMenu();
+        if (!skipVideo) {
+          state.menuEdit.video_url = url.trim();
+          fetchTitle(state.menuEdit);
+        }
+        draw();
+      })
+    ].concat(view.menus.map(function (menu, i) {
+      /* Already put down today, and at what time. The first one is
+       * enough: the circle says it happened, and the day's own list
+       * below has every record with its time. */
+      /* Sorted by when it was done rather than when it was written down:
+       * someone who records the evening session first and the morning one
+       * afterwards should see the morning time under the tick, not the
+       * order they happened to type them in. */
+      var already = (view.today.sessions || []).filter(function (s) {
+        return s.menu_id === menu.menu_id;
+      }).sort(function (a, b) {
+        return String(a.performed_time || '99:99').localeCompare(String(b.performed_time || '99:99'));
+      })[0];
+      return menuRow(menu, i === 0, view.today.date,
+        already ? (already.performed_time || '記録済み') : null,
+        complete.bind(null, menu, view.today.date),
+        function () {
+          problem = null;
+          /* Pressing the row opens the menu, where the exercises can be
+           * ticked one by one - what used to be 一部だけ, off the row and
+           * onto a screen of its own. A menu with nothing in it has
+           * nothing to tick, so it opens for editing instead. */
+          if (!menu.items.length) { openMenuEdit(menu.menu_id); return; }
+          state.draft = {
+            date: view.today.date,
+            time: pad(new Date().getHours()) + ':' + pad(new Date().getMinutes()),
+            items: menu.items.map(function (m) {
+              return { menu_item_id: m.menu_item_id, include: true, sets: m.sets };
+            })
+          };
+          state.screen = { name: 'partial', menuId: menu.menu_id };
+          draw();
+        });
+    })).concat([
+      otherRow(function () { openManual(view.today.date); })
+    ]))
+      ,
+      problem ? warnBar(problem, null, null) : null
+    ]);
+  }
+
   function menuListScreen(menus, onNew, onOpen) {
     var page = menuListPage(menus, onNew, onOpen);
     state.notice = null;
@@ -2517,6 +2612,10 @@
       root.replaceChildren(menuListScreen(view.menus, newMenu, openMenuEdit));
       return;
     }
+    if (state.screen.name === 'record') {
+      root.replaceChildren(recordScreen(view));
+      return;
+    }
     if (state.screen.name === 'menuEdit') {
       root.replaceChildren(menuEditScreen(state.menuEdit, libraryNow, function () {
         state.screen = { name: 'menus' };
@@ -2534,7 +2633,7 @@
     }
     if (state.screen.name === 'manual') {
       root.replaceChildren(manualScreen(state.pick, libraryNow, function () {
-        state.screen = { name: 'home' };
+        state.screen = { name: 'record' };
         problem = null;
         draw();
       }));
@@ -2593,10 +2692,10 @@
     if (state.screen.name === 'partial') {
       var menu = view.menus.filter(function (m) { return m.menu_id === state.screen.menuId; })[0];
       if (!menu) {                       // deleted from another tab while we stood here
-        state.screen = { name: 'home' };
+        state.screen = { name: 'record' };
       } else {
         root.replaceChildren(partialScreen(state.draft, menu, function () {
-          state.screen = { name: 'home' };
+          state.screen = { name: 'record' };
           problem = null;
           draw();
         }));
@@ -2620,11 +2719,24 @@
           state.screen = { name: 'history' };
           draw();
         }),
-      amountCard(view.today, view.facts, view.settings),
+      amountCard(view.today, view.facts, view.settings, function () {
+        problem = null;
+        state.historyEnd = view.today.date;
+        state.days = 30;
+        state.screen = { name: 'history' };
+        draw();
+      }),
       h('div', {
         style: 'flex:1;padding:14px 18px 18px;'
           + 'display:flex;flex-direction:column;gap:18px'
       }, [
+        /* Design (2026-09-12): the home page is for looking; the one filled
+         * button on it is the way to the page for doing. */
+        h('button', {
+          style: 'display:block;width:100%;min-height:52px;border:0;border-radius:10px;background:var(--ink);'
+            + 'color:#fff;font-size:16px;font-weight:700;font-family:inherit;cursor:pointer',
+          onclick: function () { problem = null; state.screen = { name: 'record' }; draw(); }
+        }, ['記録する']),
         view.today.sessions.length ? h('div', { style: 'display:flex;flex-direction:column;gap:2px' }, [
           h('div', { style: 'font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.04em', text: 'きょうの記録' })
         ].concat(view.today.sessions.map(function (session, i) {
@@ -2632,77 +2744,7 @@
             problem = null;
             openEdit(session.session_id, view.today.date);
           });
-        }))) : null,
-        h('div', { style: 'display:flex;flex-direction:column;gap:' + (view.menus.length ? '2px' : '12px') }, [
-          h('div', { style: 'font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.04em', text: 'トレーニングメニュー' }),
-          /* Said once, in place of a word under every circle: only while
-           * nothing has ever been recorded. */
-          view.menus.length && view.facts.first_ever ? h('div', {
-            style: 'font-size:14px;color:var(--body);padding:8px 0;line-height:1.6',
-            text: '右の丸を押すと、やった記録が残ります。' }) : null,
-          view.menus.length ? null : firstMenuBox(async function (url, skipVideo) {
-            problem = null;
-            /* Made here rather than on another screen: the field is on this
-             * one because that is the whole of it. An address that is not a
-             * video goes to the editor with what was typed, so nothing that
-             * was written is thrown away. */
-            var id = videoId(url);
-            if (!skipVideo && !id) {
-              if (url.trim()) {
-                newMenu();
-                state.menuEdit.video_url = url.trim();
-                problem = 'YouTube の URL ではないようです。直すか、動画なしで作ってください。';
-                draw();
-                return;
-              }
-              problem = 'URL を貼るか、動画を使わずに作ってください。';
-              draw();
-              return;
-            }
-            newMenu();
-            if (!skipVideo) {
-              state.menuEdit.video_url = url.trim();
-              fetchTitle(state.menuEdit);
-            }
-            draw();
-          })
-        ].concat(view.menus.map(function (menu, i) {
-          /* Already put down today, and at what time. The first one is
-           * enough: the circle says it happened, and the day's own list
-           * below has every record with its time. */
-          /* Sorted by when it was done rather than when it was written down:
-           * someone who records the evening session first and the morning one
-           * afterwards should see the morning time under the tick, not the
-           * order they happened to type them in. */
-          var already = (view.today.sessions || []).filter(function (s) {
-            return s.menu_id === menu.menu_id;
-          }).sort(function (a, b) {
-            return String(a.performed_time || '99:99').localeCompare(String(b.performed_time || '99:99'));
-          })[0];
-          return menuRow(menu, i === 0, view.today.date,
-            already ? (already.performed_time || '記録済み') : null,
-            complete.bind(null, menu, view.today.date),
-            function () {
-              problem = null;
-              /* Pressing the row opens the menu, where the exercises can be
-               * ticked one by one - what used to be 一部だけ, off the row and
-               * onto a screen of its own. A menu with nothing in it has
-               * nothing to tick, so it opens for editing instead. */
-              if (!menu.items.length) { openMenuEdit(menu.menu_id); return; }
-              state.draft = {
-                date: view.today.date,
-                time: pad(new Date().getHours()) + ':' + pad(new Date().getMinutes()),
-                items: menu.items.map(function (m) {
-                  return { menu_item_id: m.menu_item_id, include: true, sets: m.sets };
-                })
-              };
-              state.screen = { name: 'partial', menuId: menu.menu_id };
-              draw();
-            });
-        })).concat([
-          otherRow(function () { openManual(view.today.date); }),
-          addMenuRow(function () { problem = null; newMenu(); })
-        ]))
+        }))) : null
       ]),
       problem ? warnBar(problem, null, null) : null,
       /* The reason differs by phone, so the warning cannot be one sentence.

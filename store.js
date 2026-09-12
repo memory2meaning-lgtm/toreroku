@@ -14,7 +14,7 @@
 
   var SCHEMA = 1;
   var DB_NAME = 'ouchitore';
-  /* お家トレ is read ouchi-tore. The first version of this file called it
+  /* おうちトレ is read ouchi-tore. The first version of this file called it
    * otetore, which is not a reading of anything; a phone that used the app
    * before this was fixed has its records in a database under that name, so
    * they are carried over the first time it opens afterwards. */
@@ -985,7 +985,7 @@
          * means this is not one of ours. */
         if (document && typeof document === 'object'
           && typeof document.v === 'number' && document.v > SCHEMA) {
-          throw ApiError(400, 'このファイルは新しい版のお家トレで書き出されています。'
+          throw ApiError(400, 'このファイルは新しい版のおうちトレで書き出されています。'
             + 'アプリを新しくしてから読み込んでください。');
         }
         if (!document || typeof document !== 'object' || document.v !== SCHEMA

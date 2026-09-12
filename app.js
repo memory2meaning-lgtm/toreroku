@@ -552,7 +552,7 @@
             + 'display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--sub)',
             text: '↑', 'aria-hidden': 'true' }),
           h('div', { style: 'font-size:11px;color:var(--faint);line-height:1.6;flex:1',
-            text: 'Android では、YouTube の共有先に「お家トレ」が出ます。そこから渡しても作れます。' })
+            text: 'Android では、YouTube の共有先に「おうちトレ」が出ます。そこから渡しても作れます。' })
         ])
       ])
     ]);
@@ -1146,7 +1146,7 @@
         ]);
       };
       body = [
-        head('お家トレへようこそ', '家でやったトレーニングを、その場で残しておくための記録帳です。'),
+        head('おうちトレへようこそ', '家でやったトレーニングを、その場で残しておくための記録帳です。'),
         h('div', { style: 'padding:16px 20px 0;display:flex;flex-direction:column;gap:8px' }, [
           /* The owner's own words. The first two used to state a fact and stop
            * there - "記録はこの端末の中だけにあります", "点数をつけません" -
@@ -1450,7 +1450,7 @@
         try {
           var handle = await window.showSaveFilePicker({
             suggestedName: name,
-            types: [{ description: 'お家トレの記録', accept: { 'application/json': ['.json'] } }]
+            types: [{ description: 'おうちトレの記録', accept: { 'application/json': ['.json'] } }]
           });
           var stream = await handle.createWritable();
           await stream.write(text);
@@ -2609,7 +2609,7 @@
          * asked for when checking the phone against the screen. Ticks by
          * itself so it never shows a stale minute. */
         clockLine(longLabel(view.today.date)),
-        h('div', { style: 'font-size:19px;font-weight:800;color:var(--ink);line-height:1.1', text: 'お家トレ' })
+        h('div', { style: 'font-size:19px;font-weight:800;color:var(--ink);line-height:1.1', text: 'おうちトレ' })
       ]),
       weekStrip(view.today.date, view.history, view.today.calendar_this_week, view.today.calendar_prev_week,
         function (date) {

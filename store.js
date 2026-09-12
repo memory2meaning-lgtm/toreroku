@@ -215,7 +215,8 @@
         var ex = byId(state.exercises, 'ex_id', mi.ex_id);
         return {
           menu_item_id: mi.menu_item_id, ex_id: mi.ex_id, name: ex ? ex.name : '',
-          sets: mi.sets, reps: mi.reps, seconds: mi.seconds, unit: mi.unit, ord: mi.ord
+          sets: mi.sets, reps: mi.reps, seconds: mi.seconds, unit: mi.unit, ord: mi.ord,
+          skip: mi.skip === true
         };
       });
   }
@@ -456,7 +457,13 @@
       }
       var exId = anId(item.ex_id, 'ex_id');
       if (!byId(state.exercises, 'ex_id', exId)) throw ApiError(404, '種目が見つかりません', { ex_id: exId });
-      return [exId].concat(values(item, null));
+      /* skip: an exercise the owner usually leaves out (a bad knee, say).
+       * It stays in the menu, is left unticked by default on the partial
+       * screen, and the one-tap record does not claim it was done. */
+      if (item.skip !== undefined && item.skip !== null && typeof item.skip !== 'boolean') {
+        throw ApiError(400, 'skipはtrueまたはfalseで指定してください');
+      }
+      return [exId].concat(values(item, null)).concat([item.skip === true]);
     });
   }
 
@@ -497,7 +504,7 @@
     items.forEach(function (row, order) {
       state.menu_items.push({
         menu_item_id: nextId(state, 'menu_item'), menu_id: menuId, ex_id: row[0],
-        sets: row[1], reps: row[2], seconds: row[3], unit: row[4], ord: order
+        sets: row[1], reps: row[2], seconds: row[3], unit: row[4], ord: order, skip: row[5]
       });
     });
     return { ok: true, menu_id: menuId, revision: nextRevision };
@@ -589,7 +596,9 @@
     var rows = menuItemRows(state, request.menuId);
     var selected = [];
     if (request.requested === null) {
-      selected = rows.map(function (row) { return [row, {}]; });
+      /* The one tap records what is usually done - not the exercises the
+       * owner has marked as usually left out. */
+      selected = rows.filter(function (row) { return !row.skip; }).map(function (row) { return [row, {}]; });
     } else {
       request.requested.forEach(function (raw) {
         var row = rows.filter(function (r) { return r.menu_item_id === raw.menu_item_id; })[0];

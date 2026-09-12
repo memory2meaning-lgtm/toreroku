@@ -763,6 +763,30 @@ async function main() {
     }));
   });
 
+  await check('an exercise usually left out is kept in the menu but not in the one-tap record', async () => {
+    const api = fresh();
+    const squat = await api.post('/api/library/save', { name: 'スクワット', sets: 1, reps: 10, unit: 'reps' });
+    const plank = await api.post('/api/library/save', { name: 'プランク', sets: 1, seconds: 30, unit: 'sec' });
+    const menu = await api.post('/api/menu/save', {
+      menu_id: null, revision: null, name: '膝にやさしく',
+      items: [{ ex_id: squat.ex_id, sets: 1, reps: 10, unit: 'reps', skip: true },
+              { ex_id: plank.ex_id, sets: 1, seconds: 30, unit: 'sec' }]
+    });
+    const listed = (await api.get('/api/menus')).menus.filter(m => m.menu_id === menu.menu_id)[0];
+    equal(listed.items.map(i => i.skip), [true, false], 'skip round-trips');
+    await api.post('/api/menu/complete', { menu_id: menu.menu_id, date: '2026-09-12', request_id: 'skip-1', items: null });
+    const day = await api.get('/api/today?date=2026-09-12');
+    equal(day.sessions[0].items.map(i => i.name), ['プランク'], 'one tap leaves the skipped one out');
+    const other = store.createApi(store.memoryPersist(null));
+    await other.importDocument(await api.exportDocument());
+    const carried = (await other.get('/api/menus')).menus.filter(m => m.menu_id === menu.menu_id)[0];
+    equal(carried.items.map(i => i.skip), [true, false], 'skip survives the move to another phone');
+    await rejects(400, () => api.post('/api/menu/save', {
+      menu_id: null, revision: null, name: 'skipが文字',
+      items: [{ ex_id: plank.ex_id, sets: 1, seconds: 30, unit: 'sec', skip: 'yes' }]
+    }));
+  });
+
   console.log(passed + ' passed, ' + failures.length + ' failed');
   failures.forEach(line => console.log('  FAIL ' + line));
   process.exit(failures.length ? 1 : 0);

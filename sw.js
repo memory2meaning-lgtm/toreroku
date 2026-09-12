@@ -51,7 +51,10 @@ self.addEventListener('install', event => {
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys()
-      .then(names => Promise.all(names.filter(name => name !== VERSION).map(name => caches.delete(name))))
+      /* Only this app's own older stores: another app on the same host
+       * (GitHub Pages puts many under one origin) keeps its cache. */
+      .then(names => Promise.all(names.filter(name => name !== VERSION && name.indexOf('ouchitore-') === 0)
+        .map(name => caches.delete(name))))
       /* Yesterday's scripts are still in here under yesterday's ?v=, and
        * nothing would ever ask for them again. The cache name only changes
        * when this file changes, so without this they pile up for good. */
@@ -97,13 +100,17 @@ self.addEventListener('fetch', event => {
        * the same URL with a query on the end showed the new one. */
       fetch(request.url, { cache: 'no-store', credentials: 'same-origin' }).then(fresh => {
         if (fresh && fresh.ok) {
-          const copy = fresh.clone();
-          caches.open(VERSION).then(cache => cache.put(request, copy));
-          /* The page just told us which scripts it wants. Anything versioned
-           * that it did not ask for is last week's, and nothing will ever ask
-           * for it again - so it goes now, rather than waiting for this file
-           * itself to change, which may be never. */
-          event.waitUntil(sweep(fresh.clone()));
+          /* The page is stored under both of its addresses, "./" and
+           * "./index.html", so whichever one the home-screen icon or a
+           * typed URL asks for, it is the same version - the one whose
+           * scripts are kept. Storing only the address that was fetched
+           * left the other one pointing at scripts the sweep had removed
+           * (Codex review 2026-09-12). The sweep waits for both writes. */
+          const a = fresh.clone(), b = fresh.clone(), c = fresh.clone();
+          event.waitUntil(caches.open(VERSION).then(cache => Promise.all([
+            cache.put(new Request(new URL('./', self.location.href).href), a),
+            cache.put(new Request(new URL('./index.html', self.location.href).href), b)
+          ])).then(() => sweep(c)));
         }
         return fresh;
       }).catch(() => caches.match(request).then(hit => hit || caches.match('./index.html')))
@@ -114,10 +121,11 @@ self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(request).then(hit => {
       if (hit) {
-        /* Refresh in the background so an update lands on the next open. */
-        fetch(request).then(fresh => {
-          if (fresh && fresh.ok) caches.open(VERSION).then(cache => cache.put(request, fresh.clone()));
-        }).catch(() => { });
+        /* Refresh in the background so an update lands on the next open;
+         * the worker is kept alive until the write is done. */
+        event.waitUntil(fetch(request).then(fresh => {
+          if (fresh && fresh.ok) return caches.open(VERSION).then(cache => cache.put(request, fresh.clone()));
+        }).catch(() => { }));
         return hit;
       }
       /* No fallback here on purpose. This branch answers scripts, styles and
@@ -130,7 +138,7 @@ self.addEventListener('fetch', event => {
       return fetch(request).then(fresh => {
         if (fresh && fresh.ok) {
           const copy = fresh.clone();
-          caches.open(VERSION).then(cache => cache.put(request, copy));
+          event.waitUntil(caches.open(VERSION).then(cache => cache.put(request, copy)));
         }
         return fresh;
       });

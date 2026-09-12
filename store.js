@@ -248,6 +248,16 @@
     if (ids.length !== state.menus.length) {
       throw ApiError(409, 'トレーニングメニューが他で変更されています。再読込してください', { conflict: 'count' });
     }
+    /* The screen says what order it believed it was rearranging; if the
+     * store has moved on since, the drag is refused rather than dropped
+     * silently over someone else's (Codex review 2026-09-12). */
+    if (Array.isArray(payload.expected_menu_ids)) {
+      var current = menusList(state).menus.map(function (m) { return m.menu_id; });
+      var expected = payload.expected_menu_ids.map(function (raw) { return anId(raw, 'menu_id'); });
+      if (current.join(',') !== expected.join(',')) {
+        throw ApiError(409, 'トレーニングメニューの並びが他で変更されています。再読込してください', { conflict: 'order' });
+      }
+    }
     var now = nowIso();
     ids.forEach(function (raw, position) {
       var menu = byId(state.menus, 'menu_id', anId(raw, 'menu_id'));
@@ -768,7 +778,12 @@
       })[0];
       if (clash) throw ApiError(409, 'その日には手入力の記録が既にあります');
     }
-    var rows = manualItems(state, payload.items);
+    /* A menu that is only a video was recorded with no lines; correcting
+     * its time must not demand lines it never had (Codex review). */
+    var bare = row.session_kind === 'menu'
+      && !state.items.some(function (i) { return i.session_id === sessionId; })
+      && (!Array.isArray(payload.items) || payload.items.length === 0);
+    var rows = bare ? [] : manualItems(state, payload.items);
     replaceItems(state, sessionId, rows);
     row.date = date;
     if (hasNote) row.note = note;
@@ -1085,14 +1100,21 @@
         ];
         behind.forEach(function (one) {
           var highest = 0;
+          var seenIds = {};
           document[one[1]].forEach(function (row) {
             var id = row && row[one[2]];
-            if (typeof id !== 'number' || !Number.isInteger(id) || id < 1) {
+            if (typeof id !== 'number' || !Number.isSafeInteger(id) || id < 1) {
               throw ApiError(400, 'この書き出しファイルは読み込めません');
             }
+            /* Two rows with one id: whichever is edited, the other changes
+             * too, and a delete takes both. Refused at the door (Codex
+             * review 2026-09-12). */
+            if (seenIds[id]) throw ApiError(400, 'この書き出しファイルは読み込めません');
+            seenIds[id] = true;
             if (id > highest) highest = id;
           });
-          if (document.seq[one[0]] < highest) {
+          if (!Number.isSafeInteger(document.seq[one[0]]) || document.seq[one[0]] < highest
+            || document.seq[one[0]] > Number.MAX_SAFE_INTEGER - 1000000) {
             throw ApiError(400, 'この書き出しファイルは読み込めません');
           }
         });
@@ -1123,18 +1145,55 @@
         var named = function (value, limit) {
           return typeof value === 'string' && value.trim().length > 0 && value.length <= limit;
         };
+        /* The same shape the app writes: a unit, and the count that goes
+         * with it. A row with unit null, or sets null, is not one the app
+         * could have written. */
         var counted = function (row) {
-          return whole(row.sets, 1, 99) && whole(row.reps, 1, 999)
-            && whole(row.seconds, 1, 3600)
-            && (row.unit === 'reps' || row.unit === 'sec' || row.unit === null || row.unit === undefined);
+          if (!whole(row.sets, 1, 99) || row.sets === null || row.sets === undefined) return false;
+          if (row.unit === 'reps') return whole(row.reps, 1, 999) && row.reps !== null && row.reps !== undefined
+            && (row.seconds === null || row.seconds === undefined);
+          if (row.unit === 'sec') return whole(row.seconds, 1, 3600) && row.seconds !== null && row.seconds !== undefined
+            && (row.reps === null || row.reps === undefined);
+          return false;
         };
+        var flag = function (value) { return value === undefined || value === null || typeof value === 'boolean'; };
+        var textOrNone = function (value, limit) {
+          return value === undefined || value === null || (typeof value === 'string' && value.length <= limit);
+        };
+        var urlOrNone = function (value) {
+          return value === undefined || value === null
+            || (typeof value === 'string' && value.length <= 2048 && /^https?:\/\/[^\s/]+/i.test(value));
+        };
+        var realDate = function (value) {
+          if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+          var parts = value.split('-').map(Number);
+          var d = new Date(parts[0], parts[1] - 1, parts[2]);
+          return d.getFullYear() === parts[0] && d.getMonth() === parts[1] - 1 && d.getDate() === parts[2];
+        };
+        var timeOrNone = function (value) {
+          if (value === undefined || value === null) return true;
+          if (typeof value !== 'string' || !/^\d{2}:\d{2}$/.test(value)) return false;
+          var hm = value.split(':').map(Number);
+          return hm[0] <= 23 && hm[1] <= 59;
+        };
+        var seenRequests = {};
         var wrong =
           document.exercises.some(function (e) { return !named(e.name, 100) || !counted(e); })
-          || document.menus.some(function (m) { return !named(m.name, 100); })
-          || document.menu_items.some(function (mi) { return !counted(mi); })
+          || document.menus.some(function (m) {
+            return !named(m.name, 100) || !textOrNone(m.tag, 30) || !urlOrNone(m.video_url)
+              || !textOrNone(m.note, 5000) || !(m.ord === undefined || m.ord === null || whole(m.ord, 0, 1000000))
+              || !(m.revision === undefined || whole(m.revision, 1, 1000000000));
+          })
+          || document.menu_items.some(function (mi) { return !counted(mi) || !flag(mi.skip) || !flag(mi.auto); })
           || document.items.some(function (i) { return !named(i.name, 100) || !counted(i); })
           || document.sessions.some(function (ss) {
-            return !(typeof ss.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(ss.date));
+            if (!realDate(ss.date) || !timeOrNone(ss.performed_time) || !textOrNone(ss.note, 5000)
+              || !urlOrNone(ss.video_url) || !(ss.session_kind === 'manual' || ss.session_kind === 'menu')) return true;
+            if (ss.request_id !== null && ss.request_id !== undefined) {
+              if (typeof ss.request_id !== 'string' || ss.request_id.length > 200 || seenRequests[ss.request_id]) return true;
+              seenRequests[ss.request_id] = true;
+            }
+            return false;
           });
         if (wrong) throw ApiError(400, 'この書き出しファイルは読み込めません');
 

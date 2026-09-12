@@ -813,6 +813,56 @@ async function main() {
       'the order survives the move to another phone');
   });
 
+  await check('a hand-edited file with a doubled id, a bad tag, a javascript: url, a fake date or a null unit is refused', async () => {
+    const api = fresh();
+    const ex = await api.post('/api/library/save', { name: 'スクワット', sets: 1, reps: 10, unit: 'reps' });
+    const menu = await api.post('/api/menu/save', { menu_id: null, revision: null, name: '朝',
+      items: [{ ex_id: ex.ex_id, sets: 1, reps: 10, unit: 'reps' }] });
+    await api.post('/api/menu/complete', { menu_id: menu.menu_id, date: '2026-09-12', request_id: 'r1', items: null });
+    const good = await api.exportDocument();
+    const attempt = async (mutate) => {
+      const doc = JSON.parse(JSON.stringify(good));
+      mutate(doc);
+      const other = store.createApi(store.memoryPersist(null));
+      await rejects(400, () => other.importDocument(doc));
+    };
+    await attempt(d => { d.menus.push(JSON.parse(JSON.stringify(d.menus[0]))); });
+    await attempt(d => { d.menus[0].tag = { x: 1 }; });
+    await attempt(d => { d.menus[0].video_url = 'javascript:void(0)'; });
+    await attempt(d => { d.sessions[0].date = '2026-99-99'; });
+    await attempt(d => { d.items[0].unit = null; d.items[0].sets = null; });
+    await attempt(d => { d.seq.menu = 9007199254740992; });
+    await attempt(d => { d.sessions.push(Object.assign({}, d.sessions[0], { session_id: 99 })); });
+    const clean = store.createApi(store.memoryPersist(null));
+    await clean.importDocument(good);
+    equal((await clean.get('/api/today?date=2026-09-12')).sessions.length, 1, 'the untouched file still loads');
+  });
+
+  await check('a video-only record can have its time corrected without inventing exercises', async () => {
+    const api = fresh();
+    const menu = await api.post('/api/menu/save', { menu_id: null, revision: null, name: '動画だけ',
+      video_url: 'https://youtu.be/Vw8rAmr7eHM', items: [] });
+    const done = await api.post('/api/menu/complete', { menu_id: menu.menu_id, date: '2026-09-12', request_id: 'v1', items: null,
+      performed_time: '09:00' });
+    await api.post('/api/session/update', { session_id: done.session_id, items: [], performed_time: '10:30' });
+    const day = await api.get('/api/today?date=2026-09-12');
+    equal(day.sessions[0].performed_time, '10:30');
+    equal(day.sessions[0].items.length, 0);
+  });
+
+  await check('a reorder from a stale screen is refused', async () => {
+    const api = fresh();
+    const ex = await api.post('/api/library/save', { name: 'スクワット', sets: 1, reps: 10, unit: 'reps' });
+    const mk = (name) => api.post('/api/menu/save', { menu_id: null, revision: null, name,
+      items: [{ ex_id: ex.ex_id, sets: 1, reps: 10, unit: 'reps' }] });
+    const a = await mk('a'), b = await mk('b'), c = await mk('c');
+    await api.post('/api/menu/reorder', { menu_ids: [b.menu_id, a.menu_id, c.menu_id],
+      expected_menu_ids: [a.menu_id, b.menu_id, c.menu_id] });
+    await rejects(409, () => api.post('/api/menu/reorder', { menu_ids: [a.menu_id, c.menu_id, b.menu_id],
+      expected_menu_ids: [a.menu_id, b.menu_id, c.menu_id] }));
+    equal((await api.get('/api/menus')).menus.map(m => m.name), ['b', 'a', 'c']);
+  });
+
   console.log(passed + ' passed, ' + failures.length + ' failed');
   failures.forEach(line => console.log('  FAIL ' + line));
   process.exit(failures.length ? 1 : 0);

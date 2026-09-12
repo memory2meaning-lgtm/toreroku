@@ -214,7 +214,7 @@
         + 'font-family:var(--mono);font-size:13px;font-weight:700;padding:0;';
       cells.push(h('button', {
         style: style + (future ? 'cursor:default;' : 'cursor:pointer;'),
-        disabled: future,
+        'aria-disabled': future ? 'true' : null,
         'aria-label': (day.getMonth() + 1) + '月' + day.getDate() + '日'
           + (count ? 'の記録を見る' : '（記録なし）'),
         onclick: future ? null : onPick.bind(null, date)
@@ -393,6 +393,7 @@
     if (!url) return h('div', { style: box }, inner);
     /* The thumbnail itself is the way to the video - there is no full-width
        row for it (settled decision, spec 17.15). */
+    if (!/^https?:\/\//i.test(videoUrl || '')) return h('div', { style: box }, inner);
     return h('a', { href: videoUrl, target: '_blank', rel: 'noopener noreferrer',
       style: box + 'cursor:pointer', title: 'YouTubeで動画をひらく' }, inner);
   }
@@ -463,6 +464,7 @@
     var box = 'width:104px;height:59px;border-radius:8px;background:#e9eef5;border:1px solid var(--line);'
       + 'overflow:hidden;flex:none;position:relative;display:flex;align-items:center;justify-content:center;';
     if (!url) return h('div', { style: box }, inner);
+    if (!/^https?:\/\//i.test(videoUrl || '')) return h('div', { style: box }, inner);
     return h('a', { href: videoUrl, target: '_blank', rel: 'noopener noreferrer',
       style: box + 'cursor:pointer', title: 'YouTubeで動画をひらく' }, inner);
   }
@@ -663,7 +665,7 @@
       h('button', {
         style: 'width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center;'
           + 'border:0;background:none;padding:0;cursor:pointer',
-        'aria-label': done ? doneAt + ' に記録しました' : 'やったことを記録する',
+        'aria-label': done ? menu.name + ' は ' + doneAt + ' に記録しました' : menu.name + ' をやったことを記録する',
         'aria-pressed': done ? 'true' : 'false',
         /* aria-disabled rather than disabled: the native attribute takes the
          * button out of the focus order on some platforms, and then someone
@@ -806,11 +808,11 @@
             text: chosen.length + ' / ' + draft.items.length + ' 選択' }),
           h('div', { style: 'display:flex;gap:8px' }, [
             h('button', { style: 'border:1px solid var(--line);background:#fff;color:var(--body);'
-              + 'font-family:inherit;font-size:12px;font-weight:700;border-radius:10px;min-height:36px;'
+              + 'font-family:inherit;font-size:12px;font-weight:700;border-radius:10px;min-height:44px;'
               + 'padding:0 10px;cursor:pointer',
               onclick: function () { draft.items.forEach(function (i) { i.include = true; }); draw(); } }, ['すべて']),
             h('button', { style: 'border:1px solid var(--line);background:#fff;color:var(--body);'
-              + 'font-family:inherit;font-size:12px;font-weight:700;border-radius:10px;min-height:36px;'
+              + 'font-family:inherit;font-size:12px;font-weight:700;border-radius:10px;min-height:44px;'
               + 'padding:0 10px;cursor:pointer',
               onclick: function () { draft.items.forEach(function (i) { i.include = false; }); draw(); } }, ['すべて外す'])
           ])
@@ -838,8 +840,8 @@
           style: 'border:0;background:var(--deep);color:#fff;font-family:inherit;font-size:15px;'
             + 'font-weight:800;border-radius:16px;min-height:50px;box-shadow:var(--shadow-action);'
             + 'cursor:pointer;opacity:' + (chosen.length ? '1' : '.45'),
-          disabled: chosen.length === 0,
-          onclick: function () { savePartial(draft, menu); }
+          'aria-disabled': chosen.length === 0 ? 'true' : null,
+          onclick: function () { if (chosen.length === 0) return; savePartial(draft, menu); }
         }, ['選んだ' + chosen.length + '種目を記録する'])
       ])
     ]);
@@ -957,12 +959,13 @@
   function numberBox(value, unitLabel, onChange) {
     return h('div', { style: 'display:flex;align-items:center;gap:4px' }, [
       h('input', {
-        type: 'text', value: String(value), inputmode: 'numeric', pattern: '[0-9]*', maxlength: '3',
+        type: 'text', value: String(value), inputmode: 'numeric', pattern: '[0-9]*', maxlength: '4',
         'aria-label': unitLabel,
         style: 'width:64px;height:44px;box-sizing:border-box;border:1px solid var(--sub);border-radius:6px;'
           + 'background:#fff;padding:0 8px;text-align:center;font-family:var(--mono);font-size:17px;'
           + 'font-weight:700;color:var(--ink);-webkit-appearance:none;appearance:none',
         onchange: function () {
+          if (!/^\d{1,4}$/.test(this.value.trim())) { this.value = String(value); return; }
           var n = parseInt(this.value, 10);
           if (!(n >= 1)) { this.value = String(value); return; }
           onChange(n);
@@ -1097,7 +1100,7 @@
               return h('button', {
                 style: 'border:1px solid var(--line);background:#fff;color:var(--body);'
                   + 'font-family:inherit;font-size:12px;font-weight:700;border-radius:11px;'
-                  + 'min-height:38px;padding:0 12px;cursor:pointer',
+                  + 'min-height:44px;padding:0 12px;cursor:pointer',
                 onclick: function () {
                   edit.items.push({ ex_id: e.ex_id, name: e.name, sets: e.sets, reps: e.reps,
                     seconds: e.seconds, unit: e.unit });
@@ -1501,7 +1504,7 @@
   function aiKeyScreen(onBack, onSave) {
     var draft = { value: aiKey() };
     var field = h('input', {
-      type: 'text', value: draft.value, style: FIELD + ';font-family:var(--mono)',
+      type: 'password', value: draft.value, style: FIELD + ';font-family:var(--mono)',
       placeholder: 'AIza… で始まる文字列', autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false',
       oninput: function () { draft.value = this.value; }
     });
@@ -1836,8 +1839,8 @@
           style: 'border:0;background:var(--deep);color:#fff;font-family:inherit;font-size:15px;'
             + 'font-weight:800;border-radius:16px;min-height:50px;box-shadow:var(--shadow-action);'
             + 'cursor:pointer;opacity:' + (pick.items.length ? '1' : '.45'),
-          disabled: pick.items.length === 0,
-          onclick: function () { saveManual(pick); }
+          'aria-disabled': pick.items.length === 0 ? 'true' : null,
+          onclick: function () { if (pick.items.length === 0) return; saveManual(pick); }
         }, [pick.items.length ? '選んだ' + pick.items.length + '種目を記録' : '種目を選んでください'])
       ])
     ]);
@@ -1855,12 +1858,19 @@
     draw();
   }
 
-  function openManual(date) {
+  /* One by-hand record per day is the store's rule; so the second time
+   * that day, the screen opens with the morning's exercises already in it
+   * and the new ones join them - nothing is overwritten (Codex review
+   * 2026-09-12: the first record used to vanish). */
+  function openManual(date, existing) {
     problem = null;
     state.pick = {
       date: date,
-      time: pad(new Date().getHours()) + ':' + pad(new Date().getMinutes()),
-      items: [], typed: '', showAll: false
+      time: (existing && existing.performed_time) || (pad(new Date().getHours()) + ':' + pad(new Date().getMinutes())),
+      items: existing ? existing.items.map(function (i) {
+        return { ex_id: i.ex_id, name: i.name, sets: i.sets, reps: i.reps, seconds: i.seconds, unit: i.unit };
+      }) : [],
+      typed: '', showAll: false, joining: !!existing
     };
     state.screen = { name: 'manual' };
     draw();
@@ -2091,7 +2101,7 @@
       style: 'width:44px;height:44px;flex:none;font-size:15px;color:var(--faint);'
         + 'display:flex;align-items:center;justify-content:center;margin-left:-13px;'
         + 'touch-action:none;cursor:grab;user-select:none',
-      tabindex: '0', role: 'button',
+      tabindex: '0', role: 'button', 'data-field': 'grab:' + name,
       'aria-label': name + ' を並べ替える（長押しして動かす。上下キーでも動かせます）'
     }, ['≡']);
 
@@ -2189,7 +2199,7 @@
     if (menus.length < 20) return null;
     return h('div', { style: 'padding:8px 18px 0' }, [
       h('input', { type: 'search', value: state.menuSearch || '', placeholder: 'トレーニングメニューの名前',
-        'aria-label': 'トレーニングメニューを名前で探す',
+        'aria-label': 'トレーニングメニューを名前で探す', 'data-field': 'menu-search',
         style: FIELD + ';min-height:44px;border-color:var(--sub);border-radius:8px',
         oninput: function () { state.menuSearch = this.value; draw(); } })
     ]);
@@ -2532,8 +2542,8 @@
     var found = null;
     try {
       var response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + AI_MODEL
-        + ':generateContent?key=' + encodeURIComponent(key), {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        + ':generateContent', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
         body: JSON.stringify({
           contents: [{ parts: [
             { file_data: { file_uri: 'https://www.youtube.com/watch?v=' + id, mime_type: 'video/*' } },
@@ -2546,8 +2556,10 @@
         })
       });
       if (!response.ok) {
-        problem = response.status === 400 || response.status === 403 ? 'キーが違うようです。設定の「動画を読むキー」を確かめてください。'
-          : response.status === 429 ? '無料枠を使い切ったようです。しばらくしてからもう一度。'
+        /* The status alone does not say why: 400 and 403 also come back for a
+         * malformed request, 429 for a moment's rate limit. Say what is known. */
+        problem = response.status === 400 || response.status === 403 ? '読み取りの要求が受け付けられませんでした（' + response.status + '）。設定の「動画を読むキー」を確かめてください。'
+          : response.status === 429 ? '利用の上限に達したようです（429）。しばらくしてからもう一度。'
           : '動画を読めませんでした（' + response.status + '）。';
       } else {
         var answer = await response.json();
@@ -2560,8 +2572,13 @@
         if (!text.trim()) {
           problem = '動画は届きましたが、読み取りが返りませんでした（' + (candidate.finishReason || answer.promptFeedback && answer.promptFeedback.blockReason || '理由不明') + '）。';
         } else {
-          try { found = JSON.parse(text).exercises || []; }
-          catch (broken) { problem = '読み取りの返事を解釈できませんでした（' + (candidate.finishReason || '') + '・' + text.length + '文字）。'; }
+          try {
+            var parsed = JSON.parse(text);
+            found = parsed && Array.isArray(parsed.exercises)
+              ? parsed.exercises.filter(function (one) { return one && typeof one === 'object' && !Array.isArray(one); })
+              : null;
+            if (!found) problem = '読み取りの返事が思った形ではありませんでした。';
+          } catch (broken) { problem = '読み取りの返事を解釈できませんでした（' + (candidate.finishReason || '') + '・' + text.length + '文字）。'; }
         }
       }
     } catch (failed) {
@@ -2588,9 +2605,10 @@
           libraryNow = (await api.get('/api/library')).items;
         }
         if (edit.items.some(function (it) { return it.ex_id === known.ex_id; })) continue;
+        /* The reading's own unit and amount go on this menu's row; the
+         * library entry is only reused for its id (Codex review). */
         edit.items.push({ ex_id: known.ex_id, name: known.name, sets: sets, auto: true,
-          reps: known.unit === 'reps' ? (reps || known.reps || 10) : null,
-          seconds: known.unit === 'sec' ? (seconds || known.seconds || 30) : null, unit: known.unit });
+          reps: reps, seconds: seconds, unit: unit });
         added += 1;
         if (one.confidence === 'low') guessed += 1;
       }
@@ -2904,7 +2922,11 @@
           draw();
         });
     })).concat([
-      otherRow(function () { openManual(view.today.date); })
+      otherRow(function () {
+        openManual(view.today.date, (view.today.sessions || []).filter(function (s) {
+          return s.session_kind === 'manual';
+        })[0]);
+      })
     ]))
       ,
       problem ? warnBar(problem, null, null) : null
@@ -2926,7 +2948,8 @@
     var saveOrder = async function () {
       problem = null;
       try {
-        await api.post('/api/menu/reorder', { menu_ids: order.map(function (m) { return m.menu_id; }) });
+        await api.post('/api/menu/reorder', { menu_ids: order.map(function (m) { return m.menu_id; }),
+          expected_menu_ids: menus.map(function (m) { return m.menu_id; }) });
       } catch (error) {
         problem = error && error.note ? error.note : '並び順を保存できませんでした。';
       }

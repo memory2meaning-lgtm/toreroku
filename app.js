@@ -2286,7 +2286,17 @@
         /* Typing a name has to come first: on a phone that has just installed
          * the app the library is empty, and with only "一覧から足す" there was no
          * way to put a single exercise into a menu at all. */
-        h('div', { style: 'display:flex;flex-direction:column;gap:8px;border:1px solid var(--line);'
+        /* The block does its job once. With exercises in the menu it folds
+         * to one quiet line, so the owner is not offered again what they
+         * just did (2026-09-12). */
+        edit.items.length && !edit.pasteOpen && !edit.videoToolsOpen ? h('div', { style: 'display:flex;flex-direction:column;gap:6px' }, [
+          state.notice ? h('div', { style: 'font-size:13px;color:var(--body);line-height:1.6', text: state.notice }) : null,
+          videoId(edit.video_url) ? h('button', { type: 'button',
+            style: 'border:0;background:none;padding:0;font-size:12px;color:var(--sub);text-decoration:underline;'
+              + 'font-family:inherit;cursor:pointer;min-height:44px;text-align:left',
+            onclick: function () { edit.videoToolsOpen = true; draw(); } }, ['動画から種目を読み直す']) : null
+        ]) : null,
+        edit.items.length && !edit.pasteOpen && !edit.videoToolsOpen ? null : h('div', { style: 'display:flex;flex-direction:column;gap:8px;border:1px solid var(--line);'
           + 'border-radius:12px;padding:12px' }, [
           h('div', { style: 'font-size:13px;font-weight:700;color:var(--ink)', text: '動画から種目を入れる' }),
           videoId(edit.video_url) && aiKey() ? h('button', { type: 'button',
@@ -2578,6 +2588,7 @@
         added += 1;
         if (one.confidence === 'low') guessed += 1;
       }
+      edit.videoToolsOpen = false;
       state.notice = added
         ? 'AI が動画を読んで ' + added + ' 種目を入れました。読み取りは推測です。名前・回数・秒数を上で確かめてください。'
           + (guessed ? '（自信の低い読み取りが ' + guessed + ' 件）' : '')
@@ -2622,6 +2633,7 @@
       }
       edit.pasted = '';
       edit.pasteOpen = false;
+      edit.videoToolsOpen = false;
       state.notice = added ? added + '種目を入れました。秒数と順番は上で直せます。' : 'すべて入っている種目でした。';
     } catch (error) {
       problem = error && error.note ? error.note : '種目にできませんでした。';

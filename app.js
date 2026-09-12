@@ -2723,12 +2723,16 @@
   function clockLine(dateText) {
     var line = h('div', { style: 'font-family:var(--mono);font-size:12px;color:var(--faint)' });
     var tick = function () {
-      if (!line.isConnected) { clearInterval(timer); return; }
       var now = new Date();
       line.textContent = dateText + '  ' + pad(now.getHours()) + ':' + pad(now.getMinutes());
     };
-    var timer = setInterval(tick, 15000);
     tick();
+    /* The line is not on the page yet when it is made; the check runs on
+     * the later ticks only, and stops the timer once the page is redrawn. */
+    var timer = setInterval(function () {
+      if (!line.isConnected) { clearInterval(timer); return; }
+      tick();
+    }, 15000);
     return line;
   }
 

@@ -323,7 +323,7 @@
      * minutes come from what the owner entered for timed exercises, so the
      * name is やった時間, not anything the app did not measure. */
     var figure = function (count, name) {
-      return h('div', { style: 'display:flex;flex-direction:column;align-items:center;gap:2px' }, [
+      return h('div', { style: 'display:flex;flex-direction:column;align-items:flex-start;gap:2px' }, [
         h('span', { style: 'font-family:var(--mono);font-size:20px;font-weight:800;color:var(--ink);line-height:1.1', text: count }),
         h('span', { style: 'font-size:12px;color:var(--sub)', text: name })
       ]);
@@ -335,22 +335,29 @@
     });
     var last = times.length ? times[times.length - 1].replace(/^0/, '') : '';
 
-    return h('div', { style: 'padding:0 18px 14px;display:flex;flex-direction:column;gap:8px' }, [
-      h('div', { style: 'font-size:13px;color:var(--body);line-height:1.5;min-height:20px', text: greetingLine(facts, settings.nickname, sessions.length) }),
+    /* Design (2026-09-12): a band across the screen rather than a framed
+     * card, so the greeting, the heading in here, and the heading below all
+     * start at the same 18px. The companion stands at the right, facing the
+     * numbers - all ten drawings look left or straight ahead, so none is
+     * flipped. */
+    return h('div', { style: 'display:flex;flex-direction:column' }, [
+      h('div', { style: 'padding:0 18px 12px;font-size:13px;color:var(--body);line-height:1.5;min-height:20px',
+        text: greetingLine(facts, settings.nickname, sessions.length) }),
       h('div', {
-        style: 'border:1px solid var(--line);border-radius:16px;background:#fff;padding:14px;'
-          + 'display:flex;gap:14px;align-items:flex-start'
+        style: 'background:#fff;padding:18px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);'
+          + 'display:flex;gap:12px;align-items:flex-end'
       }, [
-        companionBox(companion),
         h('div', { style: 'flex:1;min-width:0;display:flex;flex-direction:column;gap:4px' }, [
-          h('div', { style: 'font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.04em',
+          h('div', { style: 'font-size:13px;color:var(--sub);margin-bottom:6px',
             text: has ? 'きょうの合計' : 'きょうはこれから' }),
-          has ? h('div', { style: 'display:grid;grid-template-columns:repeat(' + figures.length + ',1fr);gap:8px;padding:4px 0' }, figures) : null,
-          h('div', { style: 'font-family:var(--mono);font-size:12px;color:var(--sub)',
+          has ? h('div', { style: 'display:grid;grid-template-columns:repeat(' + figures.length + ',auto);'
+            + 'justify-content:start;column-gap:22px' }, figures) : null,
+          h('div', { style: 'font-family:var(--mono);font-size:12px;color:var(--sub);margin-top:6px',
             text: has ? '記録 ' + sessions.length + '件' + (last ? ' ・ 最後は ' + last : '') : '' }),
           has ? null : h('div', { style: 'font-size:13px;color:var(--body);line-height:1.55',
-            text: '下のボタンから記録できます。' })
-        ])
+            text: '右の丸を押すと記録できます。' })
+        ]),
+        companionBox(companion)
       ])
     ]);
   }
@@ -2598,7 +2605,10 @@
     }
     var page = h('div', { style: 'display:flex;flex-direction:column;min-height:100vh' }, [
       h('div', { style: 'display:flex;flex-direction:column;gap:3px;padding:18px 18px 12px' }, [
-        h('div', { style: 'font-family:var(--mono);font-size:12px;color:var(--faint)', text: longLabel(view.today.date) }),
+        /* The clock the app is running on, beside the date: what the owner
+         * asked for when checking the phone against the screen. Ticks by
+         * itself so it never shows a stale minute. */
+        clockLine(longLabel(view.today.date)),
         h('div', { style: 'font-size:19px;font-weight:800;color:var(--ink);line-height:1.1', text: 'お家トレ' })
       ]),
       weekStrip(view.today.date, view.history, view.today.calendar_this_week, view.today.calendar_prev_week,
@@ -2612,7 +2622,7 @@
         }),
       amountCard(view.today, view.facts, view.settings),
       h('div', {
-        style: 'flex:1;padding:14px 18px 18px;border-top:1px solid var(--line);'
+        style: 'flex:1;padding:14px 18px 18px;'
           + 'display:flex;flex-direction:column;gap:18px'
       }, [
         view.today.sessions.length ? h('div', { style: 'display:flex;flex-direction:column;gap:2px' }, [
@@ -2708,6 +2718,18 @@
       navBar('home')
     ]);
     root.replaceChildren(page);
+  }
+
+  function clockLine(dateText) {
+    var line = h('div', { style: 'font-family:var(--mono);font-size:12px;color:var(--faint)' });
+    var tick = function () {
+      if (!line.isConnected) { clearInterval(timer); return; }
+      var now = new Date();
+      line.textContent = dateText + '  ' + pad(now.getHours()) + ':' + pad(now.getMinutes());
+    };
+    var timer = setInterval(tick, 15000);
+    tick();
+    return line;
   }
 
   /* Redrawing replaces the whole page, which takes the keyboard away from the

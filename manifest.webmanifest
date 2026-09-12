@@ -1,6 +1,6 @@
 {
-  "name": "おうちトレ",
-  "short_name": "おうちトレ",
+  "name": "トレ録",
+  "short_name": "トレ録",
   "description": "自宅でやったトレーニングを、その場で残しておくための記録帳。",
   "start_url": "./index.html",
   "scope": "./",

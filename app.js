@@ -1973,7 +1973,7 @@
         h('button', { style: 'border:0;background:none;padding:0;font-size:14px;color:var(--body);'
           + 'font-weight:700;font-family:inherit;cursor:pointer;min-height:44px;padding:0 4px', onclick: onCancel }, ['やめる']),
         h('div', { style: 'flex:1;text-align:center;font-size:14px;font-weight:800;color:var(--ink)',
-          text: edit.menu_id ? 'メニューを編集' : 'メニューを作る' }),
+          text: edit.menu_id ? 'メニューを編集' : 'メニューを追加' }),
         h('button', { style: 'border:0;background:none;padding:0;font-size:14px;color:var(--deep);'
           + 'font-weight:800;font-family:inherit;cursor:pointer;min-height:44px;padding:0 4px',
           onclick: function () { saveMenu(edit); } }, ['保存'])

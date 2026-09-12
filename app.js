@@ -610,7 +610,7 @@
         + 'background:#fff;border:0;border-top:1px solid var(--line);font-family:inherit;'
         + 'font-size:15px;color:var(--ink);text-align:left;cursor:pointer',
       onclick: onTap
-    }, [svg(ICON.other), 'ここに無いものをやった']);
+    }, [svg(ICON.other), 'メニューに無いものをやった']);
   }
 
   function addMenuRow(onTap) {

@@ -2193,10 +2193,6 @@
         function () { edit.items.splice(index, 1); draw(); }, '', true);
     });
 
-    var addable = library.filter(function (e) {
-      return !edit.items.some(function (i) { return i.ex_id === e.ex_id; });
-    });
-
     return h('div', { style: 'display:flex;flex-direction:column;min-height:100vh' }, [
       /* Stays at the top while the form scrolls: the owner lost 保存 after
        * adding exercises far down the page (2026-09-12). */
@@ -2358,18 +2354,9 @@
           ]),
           h('div', { style: 'font-size:11px;color:var(--faint);line-height:1.6',
             text: '一覧に無い名前を書くと、そのまま一覧に加わります。セット数と回数はあとから直せます。' }),
-          addable.length ? h('div', { style: 'display:flex;flex-wrap:wrap;gap:8px;padding-top:2px' },
-            addable.slice(0, 12).map(function (e) {
-              return h('button', {
-                style: 'border:1px solid var(--line);background:#fff;color:var(--body);font-family:inherit;'
-                  + 'font-size:12px;font-weight:700;border-radius:11px;min-height:38px;padding:0 12px;cursor:pointer',
-                onclick: function () {
-                  edit.items.push({ ex_id: e.ex_id, name: e.name, sets: e.sets, reps: e.reps,
-                    seconds: e.seconds, unit: e.unit });
-                  draw();
-                }
-              }, [e.name]);
-            })) : null
+          /* No chips of other menus' exercises here: the owner saw 種目１
+           * and 種目２ from an unrelated menu offered under this one
+           * (2026-09-12). Typing a name finds an existing one by itself. */
         ]),
         edit.menu_id ? h('div', { style: 'border-top:1px solid var(--line);padding-top:14px;'
           + 'display:flex;flex-direction:column;gap:8px' }, [

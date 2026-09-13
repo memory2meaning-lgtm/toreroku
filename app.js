@@ -1706,6 +1706,43 @@
 
   /* ---- 2d: settings ---- */
 
+  /* "このアプリについて": the notes and the disclaimer, the same three
+   * sentences as the README. Plain text, same frame as the other settings
+   * pages (2026-09-13). */
+  function aboutScreen(onBack) {
+    var para = function (text) {
+      return h('div', { style: 'font-size:13px;color:var(--body);line-height:1.7', text: text });
+    };
+    var heading = function (text) {
+      return h('div', { style: 'font-size:12px;font-weight:800;color:var(--sub)', text: text });
+    };
+    return h('div', { style: 'display:flex;flex-direction:column;min-height:100vh' }, [
+      h('div', { style: 'display:flex;align-items:center;gap:12px;padding:10px 12px;min-height:64px;border-bottom:1px solid var(--line)' }, [
+        h('button', { style: 'border:0;background:none;padding:0;font-size:14px;color:var(--body);'
+          + 'font-weight:700;font-family:inherit;cursor:pointer;min-height:44px;padding:0 4px', onclick: onBack }, ['戻る']),
+        h('div', { style: 'flex:1;text-align:center;font-size:14px;font-weight:800;color:var(--ink)', text: 'このアプリについて' }),
+        h('div', { style: 'width:34px' })
+      ]),
+      h('div', { style: 'padding:16px 18px 22px;display:flex;flex-direction:column;gap:14px' }, [
+        heading('注意'),
+        para('トレ録は、やったトレーニングを残しておくための記録帳です。運動のやり方や量を勧めるものではありません。体調に合わせて、痛みや不調があれば無理をしないでください。'),
+        heading('記録について'),
+        para('記録は、あなたのスマホの中に保存されます。外に保存されたり、外に出たりすることはありません。ただし、ブラウザの保存領域は端末やブラウザの都合で消えることがあり、消えた記録はもとに戻せません。控えは「設定 → 記録を残す」の書き出しでファイルにしておいてください。'),
+        heading('免責'),
+        para('このアプリは、無料で、現状のまま提供しています。動作や記録の保持は保証できません。アプリの利用や利用できなかったことによって生じた損害について、作者は責任を負いません。'),
+        heading('通信の範囲'),
+        para('アプリが外と通信するのは三つだけです。動画のサムネイルを表示するとき（YouTube）、URL から題名を取るとき（YouTube）、そして自分でキーを入れて動画を AI に読ませるとき（Google）。あなたの記録は送りません。'),
+        heading('ライセンス'),
+        para('MIT ライセンスで公開しています。中身は GitHub の memory2meaning-lgtm/toreroku にあります。'),
+        h('a', { href: 'https://github.com/memory2meaning-lgtm/toreroku', target: '_blank', rel: 'noopener noreferrer',
+          style: 'font-size:14px;font-weight:700;color:var(--deep);text-decoration:underline;min-height:44px;display:inline-flex;align-items:center' },
+          ['GitHub で中身を見る'])
+      ]),
+      h('div', { style: 'flex:1' }),
+      navBar('settings')
+    ]);
+  }
+
   function settingsScreen(onBack, go) {
     var row = function (label, hint, target) {
       return h('button', {
@@ -1733,7 +1770,8 @@
         row('記録を残す', '書き出し／読み込み。機種変更のときはここから。', 'export'),
         row('ホーム画面に追加', '記録が消えないための手順をもう一度見ます。', 'a2hs'),
         row('種目の一覧', '名前や標準のセット数を直す。使っていない種目を消す。', 'library'),
-        row('動画を読むキー', 'Google の Gemini のキーを入れると、動画の URL だけで種目を取れます。', 'aikey')
+        row('動画を読むキー', 'Google の Gemini のキーを入れると、動画の URL だけで種目を取れます。', 'aikey'),
+        row('このアプリについて', '注意と免責、通信の範囲、ライセンス。', 'about')
       ]),
       h('div', { style: 'flex:1' }),
       navBar('settings')
@@ -3245,9 +3283,14 @@
             : target === 'companion' ? 'companion'
             : target === 'export' ? 'export'
             : target === 'a2hs' ? 'a2hs'
-            : target === 'aikey' ? 'aikey' : 'library' };
+            : target === 'aikey' ? 'aikey'
+            : target === 'about' ? 'about' : 'library' };
           draw();
         }));
+      return;
+    }
+    if (state.screen.name === 'about') {
+      root.replaceChildren(aboutScreen(function () { state.screen = { name: 'settings' }; draw(); }));
       return;
     }
     if (state.screen.name === 'aikey') {

@@ -229,7 +229,7 @@
       labels.push(h('div', { style: 'flex:1;text-align:center', text: WEEKDAYS[i] }));
     }
 
-    return h('div', { style: 'padding:0 18px 14px;display:flex;flex-direction:column;gap:7px' }, [
+    return h('div', { style: 'padding:16px 18px 14px;display:flex;flex-direction:column;gap:7px' }, [
       h('div', { style: 'display:flex;align-items:baseline;justify-content:space-between' }, [
         h('div', { style: 'font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.04em', text: '今週の実績' }),
         h('div', { style: 'font-family:var(--mono);font-size:12px;color:var(--body)',

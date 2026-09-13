@@ -5,6 +5,7 @@
 アカウント登録はありません。サーバーもありません。記録はその端末の中だけに残ります。
 
 > **公開中：https://memory2meaning-lgtm.github.io/toreroku/**（GitHub Pages）。スマホのブラウザで開いて、ホーム画面に追加してください。
+> 使い方（利用者向け）は [`docs/manual.md`](docs/manual.md)（同じ内容の1枚ページ＝ https://memory2meaning-lgtm.github.io/toreroku/docs/manual.html ）。
 > 決まっていること（見た目・言葉づかい）は `design/SETTLED.md`、このリポジトリの決まりは `CLAUDE.md`。
 
 ---

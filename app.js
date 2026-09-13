@@ -70,6 +70,12 @@
   function pad(n) { return (n < 10 ? '0' : '') + n; }
   function ymd(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
   function parseYmd(s) { var p = s.split('-').map(Number); return new Date(p[0], p[1] - 1, p[2]); }
+  /* "9月13日（日）" - the home header's date, as Claude Design settled it. */
+  function jaDateLabel(date) {
+    var d = parseYmd(date);
+    return (d.getMonth() + 1) + '月' + d.getDate() + '日（' + WEEKDAYS[(d.getDay() + 6) % 7] + '）';
+  }
+
   function longLabel(date) {
     var d = parseYmd(date);
     return date + ' ' + WEEKDAYS[(d.getDay() + 6) % 7];
@@ -3296,12 +3302,23 @@
       }
     }
     var page = h('div', { style: 'display:flex;flex-direction:column;min-height:100vh' }, [
-      h('div', { style: 'display:flex;flex-direction:column;gap:3px;padding:18px 18px 12px' }, [
-        /* The clock the app is running on, beside the date: what the owner
-         * asked for when checking the phone against the screen. Ticks by
-         * itself so it never shows a stale minute. */
-        clockLine(longLabel(view.today.date)),
-        h('div', { style: 'font-size:19px;font-weight:800;color:var(--ink);line-height:1.1', text: 'トレ録' })
+      /* Home header as Claude Design settled it (2026-09-13): the date in
+       * plain Japanese as a quiet line, the title big, and the running clock
+       * on the right of the title line - the weight the owner felt was
+       * missing. Values copied from the artboard; do not tune here. */
+      h('div', { style: 'display:flex;flex-direction:column;padding:20px 20px 14px;background:#fff;'
+        + 'border-bottom:1px solid #e7edf5' }, [
+        h('div', { style: 'font-family:var(--sans);font-size:15px;font-weight:600;color:#6a7a8e;'
+          + 'letter-spacing:.01em', text: jaDateLabel(view.today.date) }),
+        h('div', { style: 'display:flex;align-items:baseline;justify-content:space-between;gap:16px;'
+          + 'margin-top:8px' }, [
+          h('div', { style: 'font-size:30px;font-weight:700;color:#1d2734;line-height:1.15;'
+            + 'letter-spacing:.02em', text: 'トレ録' }),
+          /* The clock the app is running on: what the owner asked for when
+           * checking the phone against the screen. Ticks by itself so it
+           * never shows a stale minute. */
+          clockLine()
+        ])
       ]),
       weekStrip(view.today.date, view.history, view.today.calendar_this_week, view.today.calendar_prev_week,
         function (date) {
@@ -3355,11 +3372,12 @@
     root.replaceChildren(page);
   }
 
-  function clockLine(dateText) {
-    var line = h('div', { style: 'font-family:var(--mono);font-size:12px;color:var(--faint)' });
+  function clockLine() {
+    var line = h('div', { style: 'font-family:var(--mono);font-size:20px;font-weight:500;color:#3c4a5c;'
+      + 'font-variant-numeric:tabular-nums' });
     var tick = function () {
       var now = new Date();
-      line.textContent = dateText + '  ' + pad(now.getHours()) + ':' + pad(now.getMinutes());
+      line.textContent = pad(now.getHours()) + ':' + pad(now.getMinutes());
     };
     tick();
     /* The line is not on the page yet when it is made; the check runs on

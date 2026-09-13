@@ -128,7 +128,7 @@
     return Math.round((parseYmd(to) - parseYmd(from)) / 86400000);
   }
 
-  var FIRST_LINE = 'はじめまして。記録すると、上の目盛りにその日が、下の「きょうの記録」に何をいつやったかが残ります。';
+  var FIRST_LINE = 'はじめまして。記録すると、上の「今週の実績」にその日が、下の「きょうの記録」に何をいつやったかが残ります。';
 
   function greetingLine(facts, nickname, todayCount) {
     var hello = facts.part_of_day === 'morning' ? 'おはようございます'

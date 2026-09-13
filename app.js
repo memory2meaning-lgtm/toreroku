@@ -1297,11 +1297,11 @@
           text: 'おはようございます、' + (draft.nickname || 'たなか') + 'さん。' })
       ]);
       body = [
-        head('呼び名はありますか', ''),
+        head('何とお呼びすればいいでしょうか', ''),
         h('div', { style: 'padding:8px 20px 0' }, [
           h('div', { style: 'display:flex;flex-direction:column;gap:8px' }, [
             h('div', { style: 'display:flex;align-items:baseline;justify-content:space-between' }, [
-              h('div', { style: 'font-size:12px;font-weight:800;color:var(--sub)', text: '呼び名（任意）' }),
+              h('div', { style: 'font-size:12px;font-weight:800;color:var(--sub)', text: 'ニックネーム（任意）' }),
               counter
             ]),
             h('input', { type: 'text', value: draft.nickname, maxlength: '12',
@@ -1468,7 +1468,7 @@
       h('div', { style: 'padding:16px 18px 22px;display:flex;flex-direction:column;gap:16px' }, [
         h('div', { style: 'display:flex;flex-direction:column;gap:6px' }, [
           h('div', { style: 'display:flex;align-items:baseline;justify-content:space-between' }, [
-            h('div', { style: 'font-size:12px;font-weight:800;color:var(--sub)', text: '呼び名（任意）' }),
+            h('div', { style: 'font-size:12px;font-weight:800;color:var(--sub)', text: 'ニックネーム（任意）' }),
             counter
           ]),
           field

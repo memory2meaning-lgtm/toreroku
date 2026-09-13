@@ -191,7 +191,7 @@
 
   /* ---- home ---- */
 
-  function weekStrip(today, history, thisWeek, prevWeek, onPick) {
+  function weekStrip(today, history, thisWeek, prevWeek, onPick, noRecordsYet) {
     var counts = {};
     (history.days || []).forEach(function (day) { counts[day.date] = day.sessions.length; });
     var todayDate = parseYmd(today);
@@ -229,15 +229,21 @@
       labels.push(h('div', { style: 'flex:1;text-align:center', text: WEEKDAYS[i] }));
     }
 
-    return h('div', { style: 'padding:16px 18px 14px;display:flex;flex-direction:column;gap:7px' }, [
+    /* Claude Design (2026-09-13): the block is one unit - label, cells 10px
+     * below, weekdays 4px below those - and the caption that explains the
+     * cells stays under the weekdays, 14px down, only while nothing has
+     * ever been recorded. The 24px that follows (to the companion's line)
+     * is what shows where the block ends; no rule is drawn. */
+    return h('div', { style: 'padding:16px 18px 0;display:flex;flex-direction:column' }, [
       h('div', { style: 'display:flex;align-items:baseline;justify-content:space-between' }, [
         h('div', { style: 'font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.04em', text: '今週の実績' }),
         h('div', { style: 'font-family:var(--mono);font-size:12px;color:var(--body)',
           text: '今週 ' + thisWeek + '日 ・ 先週 ' + prevWeek + '日' })
       ]),
-      h('div', { style: 'display:flex;gap:5px' }, cells),
-      h('div', { style: 'display:flex;gap:5px;font-family:var(--mono);font-size:10px;color:var(--faint)' }, labels),
-      h('div', { style: 'font-size:11px;color:var(--faint)', text: '数字は記録の件数。横線は記録の無かった日。押すとその日を開きます。' })
+      h('div', { style: 'display:flex;gap:6px;margin-top:10px' }, cells),
+      h('div', { style: 'display:flex;gap:6px;margin-top:4px;font-family:var(--mono);font-size:10px;color:var(--faint)' }, labels),
+      noRecordsYet ? h('div', { style: 'margin-top:14px;font-size:13px;font-weight:400;color:#6a7a8e;line-height:1.7;max-width:31em',
+        text: '数字は記録の件数。横線は記録の無かった日。押すとその日を開きます。' }) : null
     ]);
   }
 
@@ -347,7 +353,9 @@
      * numbers - all ten drawings look left or straight ahead, so none is
      * flipped. */
     return h('div', { style: 'display:flex;flex-direction:column' }, [
-      h('div', { style: 'padding:0 18px 12px;font-size:13px;color:var(--body);line-height:1.5;min-height:20px',
+      /* Claude Design (2026-09-13): 24px above and below, 15px, 1.8 - the
+       * same distance from the block above and the band below. */
+      h('div', { style: 'padding:24px 18px;font-size:15px;font-weight:400;color:#3c4a5c;line-height:1.8',
         text: greetingLine(facts, settings.nickname, sessions.length) }),
       /* Design (2026-09-12, home as a reference page): the band opens the
        * day's records when it has any; with none it says so and cannot be
@@ -3328,7 +3336,7 @@
           state.days = 30;
           state.screen = { name: 'history' };
           draw();
-        }),
+        }, view.facts.first_ever),
       amountCard(view.today, view.facts, view.settings, function () {
         problem = null;
         state.historyEnd = view.today.date;
@@ -3444,7 +3452,9 @@
       giveTheKeyboardBack(held);
     } catch (error) {
       /* Whatever went wrong, leaving someone on a single line of text with
-       * nothing to press is the wrong place to leave them. */
+       * nothing to press is the wrong place to leave them. The console gets
+       * the real error so a report can say what broke. */
+      if (window.console && console.error) console.error(error);
       root.replaceChildren(h('div', { style: 'padding:24px 20px;display:flex;flex-direction:column;gap:14px' }, [
         h('div', { style: 'font-size:14px;color:var(--body);line-height:1.7',
           text: error && error.note ? error.note : '画面を開けませんでした。' }),

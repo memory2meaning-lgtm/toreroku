@@ -29,6 +29,12 @@
   * { box-sizing: border-box; }
   button { font-family: inherit; }
   button:active { transform: translateY(1px); }
+  /* The one primary button (Claude Design 2026-09-13): the same blue on the
+     home "記録する" and the first-run "つづける". Pressed = a darker step of the
+     same blue, so the change reads by lightness, not hue. */
+  button.primary { background: #1d5f9f; color: #fff; border: 0; }
+  button.primary:active { background: #16456f; transform: none; }
+  button.primary:focus-visible { outline: 2px solid #16456f; outline-offset: 2px; }
   a { color: var(--deep); }
   /* Nothing here invents a look: the screens carry the design's own inline
      styles, lifted from design/screens/*.html. */
@@ -45,7 +51,7 @@
 <div id="app"><div class="boot">読み込んでいます…</div></div>
 <!-- The query is bumped whenever these files change, so a phone that already
      has the app picks up the new one instead of the copy in its cache. -->
-<script src="store.js?v=93"></script>
-<script src="app.js?v=93"></script>
+<script src="store.js?v=94"></script>
+<script src="app.js?v=94"></script>
 </body>
 </html>

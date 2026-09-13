@@ -1344,7 +1344,7 @@
     var last = draft.step === SETUP_STEPS - 1;
     var foot = [];
     if (!last) {
-      foot.push(h('button', { style: 'border:0;background:var(--deep);color:#fff;font-family:inherit;'
+      foot.push(h('button', { class: 'primary', style: 'font-family:inherit;'
         + 'font-size:15px;font-weight:800;border-radius:16px;min-height:50px;'
         + 'box-shadow:var(--shadow-action);cursor:pointer', onclick: onNext }, ['つづける']));
     }
@@ -3351,8 +3351,9 @@
         /* Design (2026-09-12): the home page is for looking; the one filled
          * button on it is the way to the page for doing. */
         h('button', {
-          style: 'display:block;width:100%;min-height:52px;border:0;border-radius:10px;background:var(--ink);'
-            + 'color:#fff;font-size:16px;font-weight:700;font-family:inherit;cursor:pointer',
+          class: 'primary',
+          style: 'display:block;width:100%;height:52px;border-radius:10px;'
+            + 'font-size:17px;font-weight:700;letter-spacing:.02em;font-family:inherit;cursor:pointer',
           onclick: function () { problem = null; state.screen = { name: 'record' }; draw(); }
         }, ['記録する']),
         view.today.sessions.length ? h('div', { style: 'display:flex;flex-direction:column;gap:2px' }, [

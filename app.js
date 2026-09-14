@@ -299,6 +299,16 @@
    * standing drawing and nothing else. */
   var COMPANION_FRAME = { a: '-a', blink: '-blink', shift: '-shift' };
 
+  /* Where a companion's drawing lives. A host page may add companions of its
+   * own (window.torerokuHooks.companionFrame returns a URL, or null to fall
+   * back); the public app ships only the ten under companions/frames/. */
+  function companionFrameUrl(slug, which) {
+    var own = window.torerokuHooks && window.torerokuHooks.companionFrame;
+    var url = own ? own(slug, which) : null;
+    if (url === '') return '';
+    return url || ('companions/frames/' + slug + COMPANION_FRAME[which] + '.png');
+  }
+
   function stillPlease() {
     try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; }
     catch (e) { return false; }
@@ -307,7 +317,7 @@
   function companionBox(slug, size) {
     if (!slug) return null;
     var px = size || 84;
-    var frame = function (which) { return 'companions/frames/' + slug + COMPANION_FRAME[which] + '.png'; };
+    var frame = function (which) { return companionFrameUrl(slug, which); };
     var picture = h('img', {
       src: frame('a'), alt: '',
       width: String(px), height: String(px),
@@ -320,6 +330,7 @@
      * companion drawn without extra poses simply never moves. */
     var ready = {};
     ['blink', 'shift'].forEach(function (which) {
+      if (!frame(which)) return;
       var probe = new Image();
       probe.onload = function () { ready[which] = true; };
       probe.src = frame(which);
@@ -1347,6 +1358,12 @@
     ['tortoise', 'リクガメ'], ['owl', 'フクロウ'], ['seal', 'アザラシ'],
     ['goat', 'ヤギ'], ['tanuki', 'タヌキ'], ['otter', 'カワウソ'], ['alpaca', 'アルパカ']
   ];
+  /* A host page may put its own companions first (window.torerokuHooks.companions
+   * = [[slug, name], ...]); they are drawn through companionFrameUrl(). */
+  (function () {
+    var extra = window.torerokuHooks && window.torerokuHooks.companions;
+    if (Array.isArray(extra)) COMPANIONS = extra.concat(COMPANIONS);
+  })();
 
   var COMPANION_NOTE = 'ホームの「きょうの合計」のところに小さく出ます。トレーニングをそっと見守ります。'
     + '励ましたり煽ったりはしません。既定は「選ばない」です。';
@@ -1386,7 +1403,7 @@
                 style: 'width:100%;aspect-ratio:1;border-radius:10px;background:#fafbfd;'
                   + 'border:1px solid var(--line2);display:flex;align-items:center;justify-content:center;overflow:hidden'
               }, [
-                h('img', { src: 'companions/frames/' + c[0] + '-a.png', alt: c[1],
+                h('img', { src: companionFrameUrl(c[0], 'a'), alt: c[1],
                   style: 'width:100%;height:100%;object-fit:contain',
                   onerror: function () {
                     this.style.display = 'none';

@@ -891,75 +891,155 @@
     draw();
   }
 
-  /* ---- 2b: history ---- */
+  /* ---- 2b: the calendar of earlier days ----
+   * Claude Design "過去の記録カレンダー" (2026-09-14): one month as a grid,
+   * a square under each day filled by how many records it holds (four
+   * steps of lightness, no hue), the day pressed shown below with the same
+   * cards home uses. Values are the design's; nothing is tuned here. */
 
-  function shortLabel(date) {
-    var d = parseYmd(date);
-    return { md: date.slice(5), wd: WEEKDAYS[(d.getDay() + 6) % 7] };
+  function monthOf(date) { return date.slice(0, 7); }
+  function monthLabel(month) { var p = month.split('-'); return p[0] + '年 ' + Number(p[1]) + '月'; }
+  function daysInMonth(month) { var p = month.split('-').map(Number); return new Date(p[0], p[1], 0).getDate(); }
+  function monthEnd(month) { return month + '-' + pad(daysInMonth(month)); }
+  function shiftMonth(month, by) {
+    var p = month.split('-').map(Number);
+    var d = new Date(p[0], p[1] - 1 + by, 1);
+    return d.getFullYear() + '-' + pad(d.getMonth() + 1);
   }
 
-  function historyScreen(history, days, onBack, onMore, onPick) {
-    var groups = [];
-    (history.days || []).forEach(function (day) {
-      var label = shortLabel(day.date);
-      var items = day.sessions.reduce(function (n, s) { return n + s.item_count; }, 0);
-      groups.push(h('div', {
-        style: 'display:flex;align-items:baseline;justify-content:space-between;padding:14px 0 6px'
+  /* The picture a record without a video carries (Design "動画の無い記録の絵",
+   * one pattern for every such record): the mark that says "a record". */
+  function recordMark(width, height) {
+    return svg('<svg width="' + (width || 112) + '" height="' + (height || 64) + '" viewBox="0 0 112 64" role="img" aria-label="記録の印" style="flex:none;display:block">'
+      + '<rect width="112" height="64" rx="8" fill="var(--line2)"/>'
+      + '<rect x="38" y="14" width="36" height="36" rx="10" fill="none" stroke="var(--faint)" stroke-width="2"/>'
+      + '<rect x="47" y="23" width="18" height="18" rx="5" fill="var(--faint)"/></svg>');
+  }
+
+  function calendarScreen(cal, history, day, today, onBack, onMonth, onPick, onOpen, onRecord) {
+    var counts = {};
+    (history.days || []).forEach(function (d) { counts[d.date] = d.sessions.length; });
+    var recordDays = Object.keys(counts).length;
+    var month = cal.month;
+    var thisMonth = monthOf(today);
+    var p = month.split('-').map(Number);
+    var lead = (new Date(p[0], p[1] - 1, 1).getDay() + 6) % 7;   // Monday start
+    var n = daysInMonth(month);
+
+    var cells = [];
+    var blank = function () { return h('div', { 'aria-hidden': 'true' }); };
+    for (var b = 0; b < lead; b++) cells.push(blank());
+    for (var i = 1; i <= n; i++) {
+      var date = month + '-' + pad(i);
+      var future = date > today;
+      var isToday = date === today;
+      var selected = date === cal.date;
+      var count = counts[date] || 0;
+      /* 1 / 2 / 3-4 / 5+ records: the four steps. */
+      var fill = count > 0 ? WEEK_FILLS[count >= 5 ? 3 : count >= 3 ? 2 : count - 1] : null;
+      var cell = 'display:flex;flex-direction:column;align-items:center;gap:4px;min-height:48px;'
+        + 'padding:5px 0 6px;border-radius:9px;font-family:inherit;background:'
+        + (selected ? 'var(--ink)' : 'transparent') + ';'
+        + (isToday ? 'border:2px solid var(--today-ring);' : 'border:0;')
+        + (future ? 'cursor:default;' : 'cursor:pointer;');
+      var num = 'font-size:13px;font-weight:700;line-height:1;color:var(--'
+        + (selected ? 'card' : future ? 'faint' : 'ink') + ')';
+      var mark = 'width:22px;height:22px;border-radius:6px;'
+        + (fill ? 'background:' + fill + ';'
+                : 'border:1.5px dashed var(--cell-dash' + (future ? '-future' : '') + ');');
+      cells.push(h('button', {
+        style: cell,
+        'aria-disabled': future ? 'true' : null,
+        'aria-pressed': selected ? 'true' : 'false',
+        'aria-label': p[1] + '月' + i + '日' + (count ? '（' + count + '件）' : future ? '（まだ来ていない日）' : '（記録なし）'),
+        onclick: future ? null : onPick.bind(null, date)
       }, [
-        h('div', { style: 'font-size:13px;font-weight:800;color:var(--ink)' }, [
-          h('span', { style: 'font-family:var(--mono)', text: label.md }), ' ' + label.wd
-        ]),
-        h('div', { style: 'font-size:11px;color:var(--faint)',
-          text: day.sessions.length + '件 ・ ' + items + '種目' })
+        h('span', { style: num, text: String(i) }),
+        h('span', { style: mark })
       ]));
-      day.sessions.forEach(function (session) {
-        var look = sessionLook(session, day.date);
-        groups.push(h('button', {
-          style: 'padding:11px 0;border-top:1px solid var(--line2);display:flex;gap:12px;'
-            + 'align-items:flex-start;width:100%;background:none;border-left:0;border-right:0;'
-            + 'border-bottom:0;text-align:left;font-family:inherit;cursor:pointer',
-          onclick: onPick.bind(null, session.session_id, day.date)
-        }, [
-          h('div', { style: 'font-size:14px;font-weight:700;color:var(--ink);'
-            + 'flex:none;width:44px;padding-top:1px', text: session.performed_time || '' }),
-          h('div', { style: 'flex:1;min-width:0;display:flex;flex-direction:column;gap:4px' }, [
-            h('div', { style: 'font-size:14px;font-weight:800;color:var(--ink);line-height:1.25;' + TWO_LINES,
-              text: look.name || session.menu_name || '種目 ' + session.item_count + '件' }),
-            h('div', { style: 'font-size:11px;color:var(--sub)',
-              text: session.session_kind === 'manual' ? '手で選んだ記録'
-                : session.item_count ? session.item_count + '種目'
-                : session.video_url ? '種目情報なし' : '記録のみ' })
-          ]),
-          /* The picture the record's card carries (video or a host-supplied
-           * one) stays with it here too - settled look, spec 17.10 / 17.21. */
-          look.thumb ? stillPicture(look.thumb, 104, 59)
-            : (session.video_url ? stillPicture(thumbUrl(session.video_url), 104, 59) : null)
-        ]));
+    }
+    while (cells.length % 7) cells.push(blank());
+
+    var legendSquare = function (style) {
+      return h('span', { style: 'width:12px;height:12px;border-radius:3px;flex:none;' + style });
+    };
+    var legend = h('div', { style: 'display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:12px;'
+      + 'font-size:12px;font-weight:400;color:var(--sub)' }, [
+      legendSquare('background:var(--lv1)'), legendSquare('background:var(--lv2)'),
+      legendSquare('background:var(--lv3)'), legendSquare('background:var(--lv4)'),
+      h('span', { text: '記録の多い日ほど濃く' }),
+      h('span', { style: 'width:10px' }),
+      legendSquare('border:1.5px dashed var(--cell-dash)'),
+      h('span', { text: '記録なし' })
+    ]);
+
+    var monthBtn = function (label, disabled, onTap, align) {
+      return h('button', {
+        style: 'border:0;background:none;padding:0 6px;min-height:44px;min-width:44px;font-family:inherit;'
+          + 'font-size:14px;font-weight:700;text-align:' + align + ';'
+          + (disabled ? 'color:var(--faint);cursor:default' : 'color:var(--color-action);cursor:pointer'),
+        'aria-disabled': disabled ? 'true' : null,
+        onclick: disabled ? null : onTap
+      }, [label]);
+    };
+    var atThisMonth = month >= thisMonth;
+
+    /* The day below the grid. */
+    var sessions = (day && day.sessions) || [];
+    var times = sessions.map(function (s) { return s.performed_time; }).filter(Boolean).sort();
+    var last = times.length ? times[times.length - 1] : '';
+    var dayLabel = jaDateLabel(cal.date);
+    var below = [
+      h('div', { style: 'display:flex;align-items:baseline;justify-content:space-between;padding:0 2px' }, [
+        h('span', { style: 'font-size:15px;font-weight:800;color:var(--ink)', text: dayLabel + 'の記録' }),
+        sessions.length ? h('span', { style: 'font-size:12px;font-weight:700;color:var(--sub)',
+          text: sessions.length + '件' + (last ? ' ／ 最後は ' + last : '') }) : null
+      ])
+    ];
+    if (sessions.length) {
+      sessions.forEach(function (session) {
+        below.push(recordCard(session, onOpen.bind(null, session.session_id, cal.date), cal.date));
       });
-    });
-    if (!groups.length) {
-      groups.push(h('div', { style: 'padding:24px 0;font-size:13px;color:var(--sub);line-height:1.6',
-        text: 'この範囲に記録はありません。' }));
+    } else {
+      below.push(h('div', { style: 'font-size:14px;font-weight:400;color:var(--body);line-height:1.6',
+        text: dayLabel + 'は記録がありません。' }));
+      /* The same outline button home shows once the day holds a record. */
+      below.push(h('button', {
+        class: 'primary outline',
+        style: 'display:flex;align-items:center;justify-content:center;gap:9px;width:100%;min-height:58px;'
+          + 'border-radius:var(--radius-control);font-size:17px;font-weight:800;'
+          + 'letter-spacing:.02em;font-family:inherit;cursor:pointer;padding:0 16px',
+        onclick: onRecord.bind(null, cal.date)
+      }, [
+        svg('<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg>'),
+        'この日に記録する'
+      ]));
     }
 
     return h('div', { style: 'display:flex;flex-direction:column;min-height:100vh' }, [
       h('div', { style: 'display:flex;align-items:center;gap:12px;padding:10px 12px;min-height:64px;border-bottom:1px solid var(--line)' }, [
-        h('button', { style: 'border:0;background:none;padding:0;font-size:14px;color:var(--body);'
-          + 'font-weight:700;font-family:inherit;cursor:pointer;min-height:44px;padding:0 4px', onclick: onBack }, ['戻る']),
-        h('div', { style: 'flex:1;text-align:center;font-size:14px;font-weight:800;color:var(--ink)', text: '履歴' }),
-        h('div', { style: 'width:34px' })
+        h('button', { style: 'border:0;background:none;padding:0 4px;font-size:14px;color:var(--color-action);'
+          + 'font-weight:700;font-family:inherit;cursor:pointer;min-height:44px', onclick: onBack }, ['‹ 戻る']),
+        h('div', { style: 'flex:1;text-align:center;font-size:17px;font-weight:800;color:var(--ink)', text: '前の日の記録' }),
+        h('div', { style: 'width:52px' })
       ]),
-      h('div', {
-        style: 'display:flex;align-items:center;justify-content:space-between;padding:11px 18px;'
-          + 'border-bottom:1px solid var(--line2);background:#fafbfd'
-      }, [
-        h('div', { style: 'font-size:12px;color:var(--body)',
-          text: history.start + ' → ' + history.end }),
-        h('button', { style: 'border:0;background:none;padding:0;font-size:12px;font-weight:700;'
-          + 'color:var(--color-action);text-decoration:underline;font-family:inherit;cursor:pointer;min-height:44px;padding:0 4px',
-          onclick: onMore }, [days + '日前へ'])
+      h('div', { style: 'padding:12px 18px 0;display:flex;flex-direction:column' }, [
+        h('div', { style: 'display:flex;align-items:center;justify-content:space-between' }, [
+          monthBtn('‹ 前の月', false, onMonth.bind(null, shiftMonth(month, -1)), 'left'),
+          h('div', { style: 'font-size:18px;font-weight:800;color:var(--ink)', text: monthLabel(month) }),
+          monthBtn('次の月 ›', atThisMonth, onMonth.bind(null, shiftMonth(month, 1)), 'right')
+        ]),
+        h('div', { style: 'display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:10px;'
+          + 'font-size:11px;font-weight:700;color:var(--faint);text-align:center' },
+          WEEKDAYS.map(function (w) { return h('div', { text: w }); })),
+        h('div', { style: 'display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:4px' }, cells),
+        legend,
+        h('div', { style: 'margin-top:14px;padding-top:12px;border-top:1px solid var(--line);font-size:13px;'
+          + 'font-weight:400;color:var(--body);line-height:1.7',
+          text: 'この月に記録があった日は ' + recordDays + ' 日です。日を押すと、その日の記録が下に出ます。' })
       ]),
-      h('div', { style: 'padding:0 18px 18px;display:flex;flex-direction:column' }, groups)
+      h('div', { style: 'flex:1;padding:18px 18px 24px;display:flex;flex-direction:column;gap:12px' }, below),
+      problem ? warnBar(problem, null, null) : null
     ]);
   }
 
@@ -1105,7 +1185,7 @@
             style: 'font-size:15px;font-weight:700;color:var(--ink);'
               + 'border:0;background:none;padding:0',
             onchange: function () { edit.date = this.value; } }),
-          '別の日へ移せます。手で選んだ記録は1日に1つまでです。'),
+          '別の日へ移せます。セルフトレは1日に1つまでです。'),
         fieldRow('実施時刻', edit.time, false,
           h('input', { type: 'time', value: edit.time || '',
             style: 'font-size:15px;font-weight:700;color:var(--ink);'
@@ -1991,8 +2071,9 @@
    * that day, the screen opens with the morning's exercises already in it
    * and the new ones join them - nothing is overwritten (Codex review
    * 2026-09-12: the first record used to vanish). */
-  function openManual(date, existing) {
+  function openManual(date, existing, from) {
     problem = null;
+    state.manualFrom = from || 'record';
     state.pick = {
       date: date,
       time: (existing && existing.performed_time) || (pad(new Date().getHours()) + ':' + pad(new Date().getMinutes())),
@@ -2021,8 +2102,9 @@
       });
       /* A record made by hand has no row on the record page to show it
        * landed; home does (今日の記録), so that is where this returns
-       * (the owner, 2026-09-12). */
-      state.screen = { name: 'home' };
+       * (the owner, 2026-09-12). A day opened from the calendar goes back
+       * to the calendar, where that day now shows it. */
+      state.screen = { name: state.manualFrom === 'history' ? 'history' : 'home' };
     } catch (error) {
       problem = error && error.note ? error.note : '記録できませんでした。';
     }
@@ -3138,7 +3220,7 @@
 
   /* ---- screen ---- */
 
-  var state = { screen: { name: 'home' }, draft: null, days: 30 };
+  var state = { screen: { name: 'home' }, draft: null, cal: null };
   var libraryNow = [];
   var menusNow = [];    // the menus as last read, for comparing a record against its menu
 
@@ -3304,10 +3386,12 @@
     }
 
     if (state.screen.name === 'history') {
-      root.replaceChildren(historyScreen(view.history, state.days,
-        function () { state.screen = { name: 'home' }; draw(); },
-        function () { state.days += 30; draw(); },
-        openEdit));
+      root.replaceChildren(calendarScreen(state.cal, view.history, view.day, view.today.date,
+        function () { problem = null; state.screen = { name: 'home' }; draw(); },
+        function (month) { problem = null; state.cal = { month: month, date: null }; draw(); },
+        function (date) { problem = null; state.cal.date = date; draw(); },
+        function (sessionId, date) { problem = null; openEdit(sessionId, date); },
+        function (date) { openManual(date, null, 'history'); }));
       return;
     }
     if (state.screen.name === 'library') {
@@ -3344,7 +3428,7 @@
     }
     if (state.screen.name === 'manual') {
       root.replaceChildren(manualScreen(state.pick, libraryNow, function () {
-        state.screen = { name: 'record' };
+        state.screen = { name: state.manualFrom === 'history' ? 'history' : 'record' };
         problem = null;
         draw();
       }));
@@ -3457,15 +3541,13 @@
         function (date) {
           /* "押すとその日を開きます" - the history list ending on that day, so
              the day tapped is the first one shown. */
-          state.historyEnd = date;
-          state.days = 30;
+          state.cal = { month: monthOf(date), date: date };
           state.screen = { name: 'history' };
           draw();
         }, view.facts.first_ever),
       amountCard(view.today, view.facts, view.settings, function () {
         problem = null;
-        state.historyEnd = view.today.date;
-        state.days = 30;
+        state.cal = { month: monthOf(view.today.date), date: null };
         state.screen = { name: 'history' };
         draw();
       }),
@@ -3482,8 +3564,7 @@
           openEdit(session.session_id, view.today.date);
         }, function () {
           problem = null;
-          state.historyEnd = view.today.date;
-          state.days = 30;
+          state.cal = { month: monthOf(view.today.date), date: null };
           state.screen = { name: 'history' };
           draw();
         }, view.today.date),
@@ -3533,8 +3614,8 @@
    * bottom row "種目を見る" folds the exercise list open without a redraw. */
   function recordCard(session, onOpen, date) {
     var look = sessionLook(session, date);
-    var name = look.name || session.menu_name
-      || (session.items.length === 1 ? session.items[0].name : '種目 ' + session.items.length + '件');
+    /* A record tied to no menu is a セルフトレ (owner, 2026-09-14). */
+    var name = look.name || session.menu_name || 'セルフトレ';
     var time = session.performed_time || '';
     var meta = (session.items.length ? session.items.length + '種目' : (session.video_url ? '種目なし' : '記録のみ'))
       + (time ? ' ／ ' + time + ' 実施' : '');
@@ -3576,7 +3657,7 @@
           h('div', { style: 'font-size:15px;font-weight:800;color:var(--ink);line-height:1.4;' + TWO_LINES, text: name }),
           h('div', { style: 'font-size:12px;font-weight:700;color:var(--sub);margin-top:5px', text: meta })
         ]),
-        look.thumb ? stillPicture(look.thumb, 112, 64) : (session.video_url ? thumb(session.video_url, 112, 64) : null),
+        look.thumb ? stillPicture(look.thumb, 112, 64) : (session.video_url ? thumb(session.video_url, 112, 64) : recordMark(112, 64)),
         h('span', { style: 'flex:none;align-self:center;font-size:20px;font-weight:700;color:var(--sub);line-height:1', text: '›', 'aria-hidden': 'true' })
       ]),
       list,
@@ -3657,10 +3738,18 @@
     var held = whereTheKeyboardWas();
     try {
       var today = await api.get('/api/today');
+      var onCalendar = state.screen.name === 'history';
+      if (onCalendar) {
+        /* The month being looked at: this month, unless a day was pressed
+         * on home's week. */
+        var cal = state.cal || (state.cal = { month: null, date: null });
+        if (!cal.month) cal.month = monthOf(cal.date || today.date);
+        if (cal.date && monthOf(cal.date) !== cal.month) cal.date = null;
+      }
       var results = await Promise.all([
         api.get('/api/history?end='
-          + (state.screen.name === 'history' ? (state.historyEnd || today.date) : today.date)
-          + '&days=' + (state.screen.name === 'history' ? state.days : 21)),
+          + (onCalendar ? monthEnd(state.cal.month) : today.date)
+          + '&days=' + (onCalendar ? daysInMonth(state.cal.month) : 21)),
         api.get('/api/greeting?date=' + today.date),
         api.get('/api/settings'),
         api.get('/api/menus'),
@@ -3668,13 +3757,24 @@
       ]);
       menusNow = results[3].menus;
       libraryNow = results[4].items;
+      var day = null;
+      if (onCalendar) {
+        /* Nothing chosen yet: the month's most recent day with a record;
+         * failing that today, or the last day of an earlier month. */
+        if (!state.cal.date) {
+          var had = results[0].days || [];   // newest first
+          state.cal.date = had.length ? had[0].date
+            : (state.cal.month === monthOf(today.date) ? today.date : monthEnd(state.cal.month));
+        }
+        day = await api.get('/api/today?date=' + state.cal.date);
+      }
       var total = 0;
       if (state.screen.name === 'export') {
         /* Only counted where it is shown; the store keeps no running total. */
         var whole = await api.exportDocument();
         total = whole.sessions.length;
       }
-      render({ today: today, history: results[0], facts: results[1],
+      render({ today: today, history: results[0], day: day, facts: results[1],
         settings: results[2].settings, menus: menusNow, totalSessions: total });
       giveTheKeyboardBack(held);
     } catch (error) {

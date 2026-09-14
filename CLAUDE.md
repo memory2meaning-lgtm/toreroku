@@ -81,3 +81,11 @@ GitHub Pages。`main` の root をそのまま配る。**push は本人の手番
 - Design が上流の質問を返してきたら、SETTLED.md と本人の発言から答えられるものは即答して生成を再開させる。本人にしか答えられないものだけ本人に聞く。
 - 生成物が出たら `.dc.html` を取得して結線→Playwright で3テーマ×ホーム/設定を撮って確認→S24 で本人目視。
 - 待ち時間は依存しない下回り（保存・切替・テスト）を別エージェントで並行させる。
+
+## 本人用（C:\VoiceMirror の :5973）はこの画面をそのまま使う（2026-09-14）
+
+- ここ（`C:\toreroku`）が**画面の正本**。本人用のサーバーは `C:\VoiceMirror\tools\workout_ui_sync.py` で index.html / app.js / themes.css / tokens.css / 相棒の絵を写して配信する（store.js だけ HTTP 版に差し替わる）。
+- だから **`api.get/post('/api/…')` の名前と JSON の形は本人用サーバーとの契約**。パスを増やす・形を変えるときは `C:\VoiceMirror\tools\workout_web.py` も同時に直す（正本＝`C:\VoiceMirror\context\M2M_WORKOUT_SPEC.md` §18）。
+- 本人用にだけ要る差は `window.torerokuHooks`（いまは `thumbUrl`）の受け口で吸う。app.js に本人用の分岐を書かない。
+- 更新の流れ：ここで commit/push → sync → :5973 再起動。
+

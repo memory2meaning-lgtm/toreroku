@@ -62,7 +62,10 @@
    * YouTube, the same way an embed would (see the publishing note, 3.3). */
   function thumbUrl(url) {
     var id = videoId(url);
-    return id ? 'https://i.ytimg.com/vi/' + id + '/mqdefault.jpg' : null;
+    if (!id) return null;
+    /* A host page may supply its own copy (the PC server caches them at /thumb/). */
+    var own = window.torerokuHooks && window.torerokuHooks.thumbUrl;
+    return (own && own(id)) || 'https://i.ytimg.com/vi/' + id + '/mqdefault.jpg';
   }
 
   var WEEKDAYS = ['月', '火', '水', '木', '金', '土', '日'];

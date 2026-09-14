@@ -909,7 +909,21 @@
 
   /* The picture a record without a video carries (Design "動画の無い記録の絵",
    * one pattern for every such record): the mark that says "a record". */
+  /* Records without a video carry one shared picture (thumbs/selftre.png,
+   * drawn 2026-09-14). If it cannot load, the plain mark below stands in. */
+  var SELF_TRAINING_PICTURE = 'thumbs/selftre.png';
+
   function recordMark(width, height) {
+    var box = stillPicture(SELF_TRAINING_PICTURE, width || 112, height || 64);
+    var img = box.firstChild;
+    if (img) {
+      img.alt = '';
+      img.onerror = function () { box.replaceWith(recordMarkPlain(width, height)); };
+    }
+    return box;
+  }
+
+  function recordMarkPlain(width, height) {
     return svg('<svg width="' + (width || 112) + '" height="' + (height || 64) + '" viewBox="0 0 112 64" role="img" aria-label="記録の印" style="flex:none;display:block">'
       + '<rect width="112" height="64" rx="8" fill="var(--line2)"/>'
       + '<rect x="38" y="14" width="36" height="36" rx="10" fill="none" stroke="var(--faint)" stroke-width="2"/>'

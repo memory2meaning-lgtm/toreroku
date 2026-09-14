@@ -3486,8 +3486,8 @@
   }
 
   /* One card per record (design/THEMES_20260914.md): title, "n種目 ／ HH:MM
-   * 実施", the thumbnail on the right, and a bottom row with "種目を見る"
-   * (folds the exercise list open, no redraw) and "編集" (opens the record). */
+   * 実施", the thumbnail on the right; the top row opens the record, and a
+   * bottom row "種目を見る" folds the exercise list open without a redraw. */
   function recordCard(session, onOpen) {
     var name = session.menu_name
       || (session.items.length === 1 ? session.items[0].name : '種目 ' + session.items.length + '件');
@@ -3520,24 +3520,23 @@
     if (!session.items.length) toggle.style.visibility = 'hidden';
     return h('div', { style: 'background:var(--card);border:1px solid var(--line);border-radius:var(--radius-card);'
       + 'box-shadow:var(--shadow-card);overflow:hidden' }, [
-      h('div', { style: 'display:flex;align-items:flex-start;gap:12px;padding:14px 16px 10px' }, [
+      // The whole top row is the way in (SETTLED 2026-09-12: no "編集"
+      // button on a list you are reading; open the record and fix it there).
+      h('button', {
+        style: 'display:flex;align-items:flex-start;gap:12px;padding:14px 16px 10px;width:100%;'
+          + 'background:transparent;border:0;text-align:left;font-family:inherit;cursor:pointer;color:inherit',
+        'aria-label': (time ? time.replace(/^0/, '').replace(':', '時') + '分の記録を' : 'この記録を') + '開く',
+        onclick: onOpen
+      }, [
         h('div', { style: 'flex:1;min-width:0' }, [
           h('div', { style: 'font-size:15px;font-weight:800;color:var(--ink);line-height:1.4;' + TWO_LINES, text: name }),
           h('div', { style: 'font-size:12px;font-weight:700;color:var(--sub);margin-top:5px', text: meta })
         ]),
-        session.video_url ? thumb(session.video_url, 112, 64) : null
+        session.video_url ? thumb(session.video_url, 112, 64) : null,
+        h('span', { style: 'flex:none;align-self:center;font-size:20px;font-weight:700;color:var(--sub);line-height:1', text: '›', 'aria-hidden': 'true' })
       ]),
       list,
-      h('div', { style: 'display:flex;align-items:center;border-top:1px solid var(--line)' }, [
-        toggle,
-        h('span', { style: 'width:1px;height:20px;background:var(--line)' }),
-        h('button', {
-          style: 'min-height:44px;background:transparent;border:0;padding:9px 16px;font-family:inherit;'
-            + 'cursor:pointer;font-size:13px;font-weight:700;color:var(--color-action)',
-          'aria-label': (time ? time.replace(/^0/, '').replace(':', '時') + '分の記録を' : 'この記録を') + '編集する',
-          onclick: onOpen
-        }, ['編集'])
-      ])
+      session.items.length ? h('div', { style: 'display:flex;align-items:center;border-top:1px solid var(--line)' }, [toggle]) : null
     ]);
   }
 

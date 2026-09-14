@@ -418,6 +418,24 @@
     ]);
   }
 
+  /* How a record is shown: a host page may give it a name and a picture of
+   * its own (window.torerokuHooks.sessionLook(session, date) -> {name, thumb}).
+   * The public app has no such records, so it never sets the hook. */
+  function sessionLook(session, date) {
+    var own = window.torerokuHooks && window.torerokuHooks.sessionLook;
+    var look = own ? own(session, date) : null;
+    return look || {};
+  }
+
+  /* A plain picture in the thumbnail's box: no link, no play mark. */
+  function stillPicture(url, width, height) {
+    return h('div', {
+      style: 'width:' + (width || 120) + 'px;height:' + (height || 68) + 'px;border-radius:8px;'
+        + 'background:var(--line2);border:1px solid var(--line);overflow:hidden;flex:none'
+    }, [h('img', { src: url, alt: '', style: 'width:100%;height:100%;object-fit:cover',
+      onerror: function () { this.remove(); } })]);
+  }
+
   function thumb(videoUrl, width, height) {
     var url = thumbUrl(videoUrl);
     var inner = [];
@@ -905,7 +923,7 @@
             + 'flex:none;width:44px;padding-top:1px', text: session.performed_time || '' }),
           h('div', { style: 'flex:1;min-width:0;display:flex;flex-direction:column;gap:4px' }, [
             h('div', { style: 'font-size:14px;font-weight:800;color:var(--ink);line-height:1.25;' + TWO_LINES,
-              text: session.menu_name || '種目 ' + session.item_count + '件' }),
+              text: sessionLook(session, day.date).name || session.menu_name || '種目 ' + session.item_count + '件' }),
             h('div', { style: 'font-size:11px;color:var(--sub)',
               text: session.session_kind === 'manual' ? '手で選んだ記録'
                 : session.item_count ? session.item_count + '種目'
@@ -3463,7 +3481,7 @@
           state.days = 30;
           state.screen = { name: 'history' };
           draw();
-        }),
+        }, view.today.date),
         /* Last on the page, after what the day holds (Design .dc.html and
          * the owner's local app put it there). */
         homeButton(view.today.sessions.length > 0, function () {
@@ -3508,8 +3526,9 @@
   /* One card per record (design/THEMES_20260914.md): title, "n種目 ／ HH:MM
    * 実施", the thumbnail on the right; the top row opens the record, and a
    * bottom row "種目を見る" folds the exercise list open without a redraw. */
-  function recordCard(session, onOpen) {
-    var name = session.menu_name
+  function recordCard(session, onOpen, date) {
+    var look = sessionLook(session, date);
+    var name = look.name || session.menu_name
       || (session.items.length === 1 ? session.items[0].name : '種目 ' + session.items.length + '件');
     var time = session.performed_time || '';
     var meta = (session.items.length ? session.items.length + '種目' : (session.video_url ? '種目なし' : '記録のみ'))
@@ -3552,7 +3571,7 @@
           h('div', { style: 'font-size:15px;font-weight:800;color:var(--ink);line-height:1.4;' + TWO_LINES, text: name }),
           h('div', { style: 'font-size:12px;font-weight:700;color:var(--sub);margin-top:5px', text: meta })
         ]),
-        session.video_url ? thumb(session.video_url, 112, 64) : null,
+        look.thumb ? stillPicture(look.thumb, 112, 64) : (session.video_url ? thumb(session.video_url, 112, 64) : null),
         h('span', { style: 'flex:none;align-self:center;font-size:20px;font-weight:700;color:var(--sub);line-height:1', text: '›', 'aria-hidden': 'true' })
       ]),
       list,
@@ -3562,7 +3581,7 @@
 
   /* "今日の記録": heading with the count and last time on the right, then
    * one card per record, then the way to earlier days. */
-  function todayRecords(sessions, onOpen, onHistory) {
+  function todayRecords(sessions, onOpen, onHistory, date) {
     var times = sessions.map(function (s) { return s.performed_time; }).filter(Boolean).sort();
     var last = times.length ? times[times.length - 1] : '';
     return h('div', { style: 'display:flex;flex-direction:column;gap:12px' }, [
@@ -3572,7 +3591,7 @@
           text: sessions.length + '件' + (last ? ' ／ 最後は ' + last : '') })
       ]) : null
     ].concat(sessions.map(function (session) {
-      return recordCard(session, onOpen.bind(null, session));
+      return recordCard(session, onOpen.bind(null, session), date);
     })).concat([
       h('button', {
         style: 'display:flex;align-items:center;justify-content:space-between;min-height:44px;width:100%;'

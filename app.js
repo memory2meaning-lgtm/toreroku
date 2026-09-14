@@ -913,6 +913,7 @@
           text: day.sessions.length + '件 ・ ' + items + '種目' })
       ]));
       day.sessions.forEach(function (session) {
+        var look = sessionLook(session, day.date);
         groups.push(h('button', {
           style: 'padding:11px 0;border-top:1px solid var(--line2);display:flex;gap:12px;'
             + 'align-items:flex-start;width:100%;background:none;border-left:0;border-right:0;'
@@ -923,12 +924,16 @@
             + 'flex:none;width:44px;padding-top:1px', text: session.performed_time || '' }),
           h('div', { style: 'flex:1;min-width:0;display:flex;flex-direction:column;gap:4px' }, [
             h('div', { style: 'font-size:14px;font-weight:800;color:var(--ink);line-height:1.25;' + TWO_LINES,
-              text: sessionLook(session, day.date).name || session.menu_name || '種目 ' + session.item_count + '件' }),
+              text: look.name || session.menu_name || '種目 ' + session.item_count + '件' }),
             h('div', { style: 'font-size:11px;color:var(--sub)',
               text: session.session_kind === 'manual' ? '手で選んだ記録'
                 : session.item_count ? session.item_count + '種目'
                 : session.video_url ? '種目情報なし' : '記録のみ' })
-          ])
+          ]),
+          /* The picture the record's card carries (video or a host-supplied
+           * one) stays with it here too - settled look, spec 17.10 / 17.21. */
+          look.thumb ? stillPicture(look.thumb, 104, 59)
+            : (session.video_url ? stillPicture(thumbUrl(session.video_url), 104, 59) : null)
         ]));
       });
     });

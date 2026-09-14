@@ -51,8 +51,9 @@
    * outline, a faint tint of the action colour, and a 3px step underneath
    * carry the weight; pressing sinks it by the step. */
   button.primary { background: color-mix(in oklab, var(--color-action) 9%, var(--card)); color: var(--color-action);
-    border: 2.5px solid var(--color-action); box-shadow: 0 3px 0 var(--color-action-press); }
-  button.primary:active { box-shadow: none; transform: translateY(3px); border-color: var(--color-action-press); }
+    border: 2.5px solid var(--color-action); box-shadow: none; }
+  /* Pressed: the tint deepens and the frame darkens (lightness, not hue). */
+  button.primary:active { background: color-mix(in oklab, var(--color-action) 22%, var(--card)); border-color: var(--color-action-press); color: var(--color-action-press); transform: none; }
   button.primary[aria-disabled="true"], button.primary:disabled { border-color: var(--faint); color: var(--faint); box-shadow: none; background: var(--card); }
   button.primary:focus-visible { outline: 2px solid var(--color-action-press); outline-offset: 2px; }
   /* The same button once the day already holds a record: outline, not fill. */
@@ -74,7 +75,7 @@
 <div id="app"><div class="boot">読み込んでいます…</div></div>
 <!-- The query is bumped whenever these files change, so a phone that already
      has the app picks up the new one instead of the copy in its cache. -->
-<script src="store.js?v=105"></script>
-<script src="app.js?v=105"></script>
+<script src="store.js?v=106"></script>
+<script src="app.js?v=106"></script>
 </body>
 </html>

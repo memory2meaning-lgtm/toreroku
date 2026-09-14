@@ -1,14 +1,25 @@
-/* M2M ui_kit tokens (v1 snapshot bundled with Genkan project, saved 2026-07-08) */
+/* M2M ui_kit tokens (v1 snapshot bundled with Genkan project, saved 2026-07-08)
+ *
+ * 2026-09-14: the colours that differ between the three looks live in
+ * themes.css (Claude Design), loaded after this file and keyed on
+ * html[data-theme]. Anything named there overrides what is here; this file
+ * keeps the shared shapes and the paper-look fallbacks for a page that has
+ * no data-theme yet.
+ */
 :root{
   --ink:#1d2734; --body:#3c4a5c; --sub:#6a7a8e; --faint:#9aa8ba;
-  --line:#e7edf5; --line2:#eef2f8;
+  --line:#e7edf5; --line2:#eef2f8; --line-strong:#a99e8b;
   --blue:#2f6fed; --deep:#1f6fb2;
   --good:#19b89a; --goodSoft:#e2f7f1;
   --warn:#f4b740; --warnSoft:#fdf3da; --warnInk:#c98a1a;
   --labelBg:#ece9fb; --labelInk:#6b5fc0;
-  --card:#fff;
-  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
-  --sans:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic Medium",YuGothic,"Segoe UI",system-ui,sans-serif;
+  --bg:#efe9df;
+  --card:#fffdf8;
+  /* One family only, as the local app has it: the phone's own sans. Weights
+     carry the hierarchy (headings / big numbers / buttons 800, body 400,
+     secondary 700). No monospace anywhere. */
+  --sans:system-ui,sans-serif;
+  --mono:var(--sans);
   --color-text-strong:var(--ink);
   --color-text:var(--body);
   --color-text-muted:var(--sub);
@@ -16,11 +27,15 @@
   --color-border:var(--line);
   --color-border-soft:var(--line2);
   --color-action:var(--deep);
+  --on-action:#fff;
+  --color-action-press:#18578c;
   --color-accent:var(--blue);
   --color-ok:var(--good); --color-ok-soft:var(--goodSoft);
   --color-warn:var(--warn); --color-warn-soft:var(--warnSoft); --color-warn-ink:var(--warnInk);
   --color-label-bg:var(--labelBg); --color-label-ink:var(--labelInk);
   --color-surface:var(--card);
+  --cell-bg:#fff; --cell-line:#e6dfd2; --cell-dash:#cdc4b4; --cell-dash-future:#e2dbcd; --today-ring:var(--ink);
+  --lv1:#cfe9e1; --lv2:#97d6c6; --lv3:#4cc4ab; --lv4:var(--good);
   --font-mono:var(--mono);
   --font-sans:var(--sans);
   --radius-card:18px; --radius-control:16px; --radius-chip:11px;

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>トレ録</title>
-<meta name="theme-color" content="#f7f4ee">
+<meta name="theme-color" content="#efe9df">
 <meta name="apple-mobile-web-app-title" content="トレ録">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="manifest" href="manifest.webmanifest">
@@ -13,8 +13,23 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" href="icon-192.png">
 <link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="themes.css">
+<!-- The chosen look is stamped on <html> before the first paint, so a page
+     that opens in "classic" never flashes "paper" first. -->
+<script>
+(function () {
+  try {
+    var t = localStorage.getItem('toreroku.theme');
+    t = t === 'classic' || t === 'night' ? t : 'paper';
+    document.documentElement.setAttribute('data-theme', t);
+    var bar = { paper: '#efe9df', classic: '#eef1f6', night: '#14181d' };
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', bar[t]);
+  } catch (e) { document.documentElement.setAttribute('data-theme', 'paper'); }
+})();
+</script>
 <style>
-  html, body { margin: 0; background: #eef1f6; }
+  html, body { margin: 0; background: var(--bg); }
   body {
     font-family: var(--sans);
     color: var(--body);
@@ -23,7 +38,7 @@
        keeps that width and sits in the middle rather than stretching. */
     max-width: 430px;
     margin: 0 auto;
-    background: var(--card);
+    background: var(--bg);
     min-height: 100vh;
   }
   * { box-sizing: border-box; }
@@ -32,10 +47,13 @@
   /* The one primary button (Claude Design 2026-09-13): the same blue on the
      home "記録する" and the first-run "つづける". Pressed = a darker step of the
      same blue, so the change reads by lightness, not hue. */
-  button.primary { background: #1d5f9f; color: #fff; border: 0; }
-  button.primary:active { background: #16456f; transform: none; }
-  button.primary:focus-visible { outline: 2px solid #16456f; outline-offset: 2px; }
-  a { color: var(--deep); }
+  button.primary { background: var(--color-action); color: var(--on-action); border: 0; }
+  button.primary:active { background: var(--color-action-press); transform: none; }
+  button.primary:focus-visible { outline: 2px solid var(--color-action-press); outline-offset: 2px; }
+  /* The same button once the day already holds a record: outline, not fill. */
+  button.primary.outline { background: var(--card); color: var(--color-action); border: 1.5px solid var(--color-action); box-shadow: var(--shadow-card); }
+  button.primary.outline:active { background: var(--line2); }
+  a { color: var(--color-action); }
   /* Nothing here invents a look: the screens carry the design's own inline
      styles, lifted from design/screens/*.html. */
   #app { display: flex; flex-direction: column; min-height: 100vh; }
@@ -51,7 +69,7 @@
 <div id="app"><div class="boot">読み込んでいます…</div></div>
 <!-- The query is bumped whenever these files change, so a phone that already
      has the app picks up the new one instead of the copy in its cache. -->
-<script src="store.js?v=95"></script>
-<script src="app.js?v=95"></script>
+<script src="store.js?v=96"></script>
+<script src="app.js?v=96"></script>
 </body>
 </html>

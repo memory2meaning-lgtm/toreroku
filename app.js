@@ -80,13 +80,39 @@
     var d = parseYmd(date);
     return date + ' ' + WEEKDAYS[(d.getDay() + 6) % 7];
   }
-
   /* Four steps of lightness by how many records the day holds - no hue, no
-   * score.  Claude Design settled these for the published strip: relative
-   * luminance falls 100 - 79 - 58 - 35 - 12 percent, so the order survives
-   * with the hue taken out, which is the point for a colour-blind reader. */
-  var INK_STEPS = ['#dce3ec', '#b3c0d1', '#7e8ea3', '#37465c'];
-  var INK_TEXT = ['var(--ink)', 'var(--ink)', '#fff', '#fff'];
+   * score. The colours are the theme's (themes.css --lv1..--lv4): each
+   * theme keeps the hue fixed and moves only the lightness, so the order
+   * survives with the hue taken out, which is the point for a colour-blind
+   * reader. */
+  var WEEK_FILLS = ['var(--lv1)', 'var(--lv2)', 'var(--lv3)', 'var(--lv4)'];
+
+  /* ---- the look ----
+   *
+   * Three colour sets (2026-09-14, owner's call): the published look until
+   * now, the owner's local app (default), and a third one still to come from
+   * Claude Design. Kept on this phone only; index.html reads the same key
+   * before the first paint. */
+  var THEME_KEY = 'toreroku.theme';
+  /* id, name, sub-text, and the three sample colours (ground / card / primary)
+   * from design/THEMES_20260914.md. */
+  var THEMES = [
+    ['classic', 'いまのトレ録', '青みの灰色の地・白いカード', ['#eef1f6', '#fff', '#1d5f9f']],
+    ['paper', '紙', '生成りの地・クリーム色のカード', ['#efe9df', '#fffdf8', '#1f6fb2']],
+    ['night', '夜', '暗い地・明るい文字', ['#14181d', '#1e242b', '#f2a33c']]
+  ];
+  function currentTheme() {
+    var t = null;
+    try { t = localStorage.getItem(THEME_KEY); } catch (e) { t = null; }
+    return THEMES.some(function (one) { return one[0] === t; }) ? t : 'paper';
+  }
+  var THEME_COLOR = { paper: '#efe9df', classic: '#eef1f6', night: '#14181d' };
+  function applyTheme(name) {
+    document.documentElement.setAttribute('data-theme', name);
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', THEME_COLOR[name] || THEME_COLOR.paper);
+    try { localStorage.setItem(THEME_KEY, name); } catch (e) { /* private window */ }
+  }
 
   /* ---- the line above the card ----
    *
@@ -128,7 +154,7 @@
     return Math.round((parseYmd(to) - parseYmd(from)) / 86400000);
   }
 
-  var FIRST_LINE = 'はじめまして。記録すると、上の「今週の実績」にその日の回数が、下の「きょうの記録」に何をいつやったかが残ります。';
+  var FIRST_LINE = 'はじめまして。記録すると、上の「今週の実績」にその日の回数が、下の「今日の記録」に何をいつやったかが残ります。';
 
   function greetingLine(facts, nickname, todayCount) {
     var hello = facts.part_of_day === 'morning' ? 'おはようございます'
@@ -190,7 +216,6 @@
   }
 
   /* ---- home ---- */
-
   function weekStrip(today, history, thisWeek, prevWeek, onPick, noRecordsYet) {
     var counts = {};
     (history.days || []).forEach(function (day) { counts[day.date] = day.sessions.length; });
@@ -198,8 +223,13 @@
     var monday = new Date(todayDate);
     monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7));
 
+    /* One cell per day, as the owner's local app draws it (2026-09-14):
+     * the weekday label and a 26px square stacked in a column. Past days and
+     * today are white cells with a hairline; today's cell wears the theme's
+     * frame and a bold label; a day still to come has no cell at all and
+     * cannot be pressed. The square is filled by count (four steps of
+     * lightness) or, for a day with nothing, drawn as a dashed outline. */
     var cells = [];
-    var labels = [];
     for (var i = 0; i < 7; i++) {
       var day = new Date(monday);
       day.setDate(monday.getDate() + i);
@@ -207,43 +237,46 @@
       var future = date > today;
       var isToday = date === today;
       var count = counts[date] || 0;
-      var step = count > 0 ? Math.min(count, INK_STEPS.length) - 1 : -1;
-      var style = 'flex:1;height:44px;border-radius:8px;'
-        /* Design (2026-09-12): a past day that was checked and had nothing
-         * is not left white - white is what "not drawn" looks like. It gets
-         * the faintest ground, a solid edge, and a short dash. */
-        + (future ? 'border:1px dashed var(--faint);background:#fff;'
-                  : step < 0 ? 'border:1px solid #b3c0d1;background:#f2f5f9;color:var(--sub);'
-                  : 'border:1px solid var(--line);background:' + INK_STEPS[step] + ';color:' + INK_TEXT[step] + ';')
-        + (isToday ? 'box-shadow:0 0 0 2px var(--card),0 0 0 3.5px var(--ink);' : '')
-        + 'display:flex;align-items:center;justify-content:center;'
-        + 'font-family:var(--mono);font-size:13px;font-weight:700;padding:0;';
+      var fill = count > 0 ? WEEK_FILLS[Math.min(count, WEEK_FILLS.length) - 1] : null;
+      var cell = 'display:flex;flex-direction:column;align-items:center;gap:6px;min-height:62px;'
+        + 'padding:6px 0 7px;border-radius:9px;font-family:inherit;'
+        + (future ? 'background:transparent;border:0;cursor:default;'
+                  : 'background:var(--cell-bg);cursor:pointer;'
+                    + (isToday ? 'border:2px solid var(--today-ring);' : 'border:1px solid var(--cell-line);'));
+      var label = 'font-size:11px;' + (isToday ? 'font-weight:800;color:var(--ink)'
+        : 'font-weight:700;color:var(--' + (future ? 'faint' : 'sub') + ')');
+      var mark = 'width:26px;height:26px;border-radius:7px;'
+        + (fill ? 'background:' + fill + ';'
+                : 'border:1.5px dashed var(--cell-dash' + (future ? '-future' : '') + ');');
       cells.push(h('button', {
-        style: style + (future ? 'cursor:default;' : 'cursor:pointer;'),
+        style: cell,
         'aria-disabled': future ? 'true' : null,
         'aria-label': (day.getMonth() + 1) + '月' + day.getDate() + '日'
-          + (count ? 'の記録を見る' : '（記録なし）'),
+          + (count ? 'の記録を見る（' + count + '件）' : '（記録なし）'),
         onclick: future ? null : onPick.bind(null, date)
-      }, [count ? String(count) : (future ? '' : h('span', { style: 'display:block;width:10px;height:1.5px;'
-        + 'background:var(--sub);border-radius:1px' }))]));
-      labels.push(h('div', { style: 'flex:1;text-align:center', text: WEEKDAYS[i] }));
+      }, [
+        h('span', { style: label, text: WEEKDAYS[i] }),
+        h('span', { style: mark })
+      ]));
     }
 
-    /* Claude Design (2026-09-13): the block is one unit - label, cells 10px
-     * below, weekdays 4px below those - and the caption that explains the
-     * cells stays under the weekdays, 14px down, only while nothing has
+    /* Claude Design (2026-09-13): the block is one unit, and the caption
+     * that explains the squares stays under them only while nothing has
      * ever been recorded. The 24px that follows (to the companion's line)
      * is what shows where the block ends; no rule is drawn. */
     return h('div', { style: 'padding:16px 18px 0;display:flex;flex-direction:column' }, [
-      h('div', { style: 'display:flex;align-items:baseline;justify-content:space-between' }, [
-        h('div', { style: 'font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.04em', text: '今週の実績' }),
-        h('div', { style: 'font-family:var(--mono);font-size:12px;color:var(--body)',
-          text: '今週 ' + thisWeek + '日 ・ 先週 ' + prevWeek + '日' })
+      h('div', { style: 'display:grid;grid-template-columns:repeat(7,1fr);gap:4px' }, cells),
+      /* "今週の実績 1 日" with the figure heavier than its words, and last
+       * week's count on the right (design/THEMES_20260914.md). */
+      h('div', { style: 'display:flex;align-items:baseline;gap:6px;margin-top:10px;font-size:13px;font-weight:700;color:var(--body)' }, [
+        '今週の実績',
+        h('span', { style: 'font-size:17px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums', text: String(thisWeek) }),
+        '日',
+        h('span', { style: 'flex:1' }),
+        h('span', { style: 'font-size:12px;font-weight:700;color:var(--sub)', text: '先週 ' + prevWeek + ' 日' })
       ]),
-      h('div', { style: 'display:flex;gap:6px;margin-top:10px' }, cells),
-      h('div', { style: 'display:flex;gap:6px;margin-top:4px;font-family:var(--mono);font-size:10px;color:var(--faint)' }, labels),
-      noRecordsYet ? h('div', { style: 'margin-top:14px;font-size:13px;font-weight:400;color:#6a7a8e;line-height:1.7;max-width:31em',
-        text: '数字は記録の件数。横線は記録の無かった日。押すとその日を開きます。' }) : null
+      noRecordsYet ? h('div', { style: 'margin-top:14px;font-size:13px;font-weight:400;color:var(--sub);line-height:1.7;max-width:31em',
+        text: '濃いほど記録が多い日です。押すとその日を開きます。' }) : null
     ]);
   }
 
@@ -322,69 +355,56 @@
     }, 0);
     var minutes = Math.round(seconds / 60);
     var times = sessions.map(function (s) { return s.performed_time; }).filter(Boolean).sort();
-    var span = times.length > 1 ? times[0] + ' - ' + times[times.length - 1] : (times[0] || '');
+    var span = times.length > 1 ? times[0] + ' – ' + times[times.length - 1] : (times[0] || '');
     var has = sessions.length > 0;
 
-    var videos = sessions.filter(function (s) { return !!s.video_url; }).length;
-
-    /* Only what the day holds, and a zero is never written: a day spent on one
-     * video used to read 0種目, which told someone who had just trained that
-     * they had done nothing. */
-    /* Design (2026-09-12): a number is never shown bare - each one has its
-     * name under it, the way Apple's totals and Hevy's summary do. The
-     * minutes come from what the owner entered for timed exercises, so the
-     * name is やった時間, not anything the app did not measure. */
-    var figure = function (count, name) {
-      return h('div', { style: 'display:flex;flex-direction:column;align-items:flex-start;gap:2px' }, [
-        h('span', { style: 'font-family:var(--mono);font-size:20px;font-weight:800;color:var(--ink);line-height:1.1', text: count }),
-        h('span', { style: 'font-size:12px;color:var(--sub)', text: name })
+    /* "N 種目 ｜ M 分", as the owner's local app shows it (2026-09-14): the
+     * number big and heavy, its name small beside it, a hairline between
+     * the two. Minutes come only from timed exercises, so they are left
+     * out when there are none rather than shown as 0. */
+    var figure = function (count, name, size) {
+      return h('span', { style: 'display:inline-flex;align-items:baseline;gap:4px' }, [
+        h('span', { style: 'font-size:' + size + 'px;font-weight:800;color:var(--ink);line-height:1;'
+          + 'letter-spacing:-.01em;font-variant-numeric:tabular-nums', text: String(count) }),
+        h('span', { style: 'font-size:13px;font-weight:700;color:var(--sub)', text: name })
       ]);
     };
-    var figures = [];
-    [[items, String(items), '種目'], [minutes, minutes + '分', 'やった時間'], [videos, String(videos), '動画']].forEach(function (three) {
-      if (three[0] <= 0) return;
-      figures.push(figure(three[1], three[2]));
-    });
-    var last = times.length ? times[times.length - 1].replace(/^0/, '') : '';
+    var figures = [figure(items, '種目', 44)];
+    if (minutes > 0) {
+      figures.push(h('span', { style: 'width:1px;height:30px;background:var(--line);margin:0 12px;align-self:center' }));
+      figures.push(figure(minutes, '分', 44));
+    }
 
-    /* Design (2026-09-12): a band across the screen rather than a framed
-     * card, so the greeting, the heading in here, and the heading below all
-     * start at the same 18px. The companion stands at the right, facing the
-     * numbers - all ten drawings look left or straight ahead, so none is
-     * flipped. */
     return h('div', { style: 'display:flex;flex-direction:column' }, [
       /* Claude Design (2026-09-13): 24px above and below, 15px, 1.8 - the
-       * same distance from the block above and the band below. */
-      h('div', { style: 'padding:24px 18px;font-size:15px;font-weight:400;color:#3c4a5c;line-height:1.8',
+       * same distance from the block above and the card below. */
+      h('div', { style: 'padding:24px 18px 14px;font-size:15px;font-weight:400;color:var(--body);line-height:1.8',
         text: greetingLine(facts, settings.nickname, sessions.length) }),
-      /* Design (2026-09-12, home as a reference page): the band opens the
-       * day's records when it has any; with none it says so and cannot be
-       * pressed - it is still drawn, so an empty day is not mistaken for a
-       * page that failed to load. */
+      /* One card: the companion on the left, the day's amount on the right.
+       * With records it opens the day; with none it says so and cannot be
+       * pressed - still drawn, so an empty day is not mistaken for a page
+       * that failed to load. */
       h(has ? 'button' : 'div', {
-        style: 'width:100%;background:#fff;padding:18px;border:0;border-top:1px solid var(--line);'
-          + 'border-bottom:1px solid var(--line);display:flex;gap:12px;align-items:flex-end;'
+        style: 'margin:0 18px;background:var(--card);border:1px solid var(--line);'
+          + 'border-radius:var(--radius-card);box-shadow:var(--shadow-card);padding:16px 18px;'
+          + 'display:flex;align-items:center;gap:14px;width:auto;'
           + 'font-family:inherit;text-align:left;color:var(--ink);' + (has ? 'cursor:pointer' : ''),
-        'aria-label': has ? 'きょうの記録を見る' : null,
+        'aria-label': has ? '今日の記録を見る' : null,
         'aria-disabled': has ? null : 'true',
         onclick: has ? onOpen : null
       }, [
-        h('div', { style: 'flex:1;min-width:0;display:flex;flex-direction:column;gap:4px' }, [
-          has ? h('div', { style: 'font-size:13px;color:var(--sub);margin-bottom:6px', text: 'きょうの合計' }) : null,
-          has ? h('div', { style: 'display:grid;grid-template-columns:repeat(' + figures.length + ',auto);'
-            + 'justify-content:start;column-gap:22px' }, figures) : null,
-          has ? h('div', { style: 'font-family:var(--mono);font-size:12px;color:var(--sub);margin-top:6px',
-            text: '記録 ' + sessions.length + '件' + (last ? ' ・ 最後は ' + last : '') }) : null,
-          has ? null : h('div', { style: 'font-size:14px;color:var(--body);line-height:1.6',
-            text: 'きょうはまだ記録がありません。' })
-        ]),
-        companionBox(companion),
-        has ? h('span', { style: 'flex:none;align-self:center;color:var(--sub);display:flex' }, [svg(ICON.chevron)]) : null
+        companionBox(companion, 60),
+        h('span', { style: 'flex:1;min-width:0;display:flex;flex-direction:column' }, [
+          h('span', { style: 'font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.14em', text: 'きょう動いた分' }),
+          has ? h('span', { style: 'display:flex;align-items:baseline;flex-wrap:wrap;margin-top:6px' }, figures) : null,
+          h('span', { style: 'font-size:12px;font-weight:700;color:var(--sub);margin-top:7px',
+            text: has ? sessions.length + '件' + (span ? ' ／ ' + span : '') : 'きょうはまだ記録がありません。' })
+        ])
       ])
     ]);
   }
 
-  function thumb(videoUrl) {
+  function thumb(videoUrl, width, height) {
     var url = thumbUrl(videoUrl);
     var inner = [];
     if (url) {
@@ -402,7 +422,8 @@
       }, [h('div', { style: 'width:0;height:0;border-left:6px solid rgba(255,255,255,.88);'
           + 'border-top:4px solid transparent;border-bottom:4px solid transparent;margin-left:2px' })]));
     }
-    var box = 'width:120px;height:68px;border-radius:8px;background:#e9eef5;border:1px solid var(--line);'
+    var box = 'width:' + (width || 120) + 'px;height:' + (height || 68) + 'px;border-radius:8px;'
+      + 'background:var(--line2);border:1px solid var(--line);'
       + 'overflow:hidden;flex:none;position:relative;display:flex;align-items:center;justify-content:center;';
     if (!url) return h('div', { style: box }, inner);
     /* The thumbnail itself is the way to the video - there is no full-width
@@ -410,49 +431,6 @@
     if (!/^https?:\/\//i.test(videoUrl || '')) return h('div', { style: box }, inner);
     return h('a', { href: videoUrl, target: '_blank', rel: 'noopener noreferrer',
       style: box + 'cursor:pointer', title: 'YouTubeで動画をひらく' }, inner);
-  }
-
-  function sessionRow(session, first, onOpen) {
-    var name = session.menu_name
-      || (session.items.length === 1 ? session.items[0].name : '種目 ' + session.items.length + '件');
-    /* "すべて" is a claim about this record against the menu it came from, so
-     * it is only said when the menu is still here and the counts agree.  Saying
-     * it for a partly-done menu would be a small lie in the one place the
-     * owner looks to check what actually happened. */
-    var sub;
-    if (session.session_kind === 'manual') {
-      sub = '手で選んだ記録';
-    } else {
-      var source = menuOf(session.menu_id);
-      if (!session.items.length) {
-        sub = session.video_url ? '種目なし' : '記録のみ';
-      } else {
-        sub = session.items.length + '種目'
-          + (!source ? '' : session.items.length < source.items.length ? '（一部）' : 'すべて');
-      }
-    }
-    var time = session.performed_time || '';
-    var spoken = time ? time.replace(/^0/, '').replace(':', '時') + '分の記録を開く' : 'この記録を開く';
-
-    /* Design (2026-09-12), after Hevy and Apple Health: the list you read
-     * has no edit button on it. The row itself opens the record, where
-     * correcting and deleting live; the chevron is the one sign iOS uses
-     * for "this row goes somewhere". */
-    return h('button', {
-      style: 'display:flex;align-items:flex-start;gap:10px;width:100%;min-height:44px;'
-        + 'padding:12px 0;background:none;border:0;font-family:inherit;text-align:left;cursor:pointer;'
-        + (first ? '' : 'border-top:1px solid var(--line2);'),
-      'aria-label': spoken, onclick: onOpen
-    }, [
-      h('span', { style: 'font-family:var(--mono);font-size:12px;color:var(--sub);flex:none;width:38px;'
-        + 'padding-top:2px;font-variant-numeric:tabular-nums', text: time.replace(/^0/, '') }),
-      h('span', { style: 'flex:1;min-width:0;display:flex;flex-direction:column;gap:4px' }, [
-        h('span', { style: 'font-size:15px;font-weight:700;color:var(--ink);line-height:1.3;' + TWO_LINES, text: name }),
-        h('span', { style: 'font-size:12px;color:var(--sub)', text: sub })
-      ]),
-      session.video_url ? thumb(session.video_url) : null,
-      h('span', { style: 'flex:none;align-self:center;margin-left:2px;color:var(--sub);display:flex' }, [svg(ICON.chevron)])
-    ]);
   }
 
   /* ---- menus ---- */
@@ -586,13 +564,13 @@
     var field = h('input', {
       type: 'url', placeholder: 'https://www.youtube.com/watch?v=…',
       style: 'border:1.5px solid var(--ink);border-radius:12px;padding:12px;min-height:50px;'
-        + 'background:#fff;font-family:var(--mono);font-size:12px;color:var(--ink);width:100%',
+        + 'background:var(--card);font-size:12px;color:var(--ink);width:100%',
       'data-field': 'first-url'
     });
     var numbered = function (n, text) {
       return h('div', { style: 'display:flex;gap:9px;align-items:flex-start' }, [
         h('div', { style: 'width:19px;height:19px;border:1.5px solid var(--sub);border-radius:5px;flex:none;'
-          + 'display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;'
+          + 'display:flex;align-items:center;justify-content:center;font-size:11px;'
           + 'font-weight:700;color:var(--sub);margin-top:1px', text: String(n) }),
         h('div', { style: 'font-size:12px;color:var(--body);line-height:1.6;flex:1', text: text })
       ]);
@@ -607,7 +585,7 @@
       ]),
       h('div', { style: 'display:flex;flex-direction:column;gap:8px' }, [
         field,
-        h('button', { style: 'border:0;background:var(--deep);color:#fff;font-family:inherit;font-size:15px;'
+        h('button', { style: 'border:0;background:var(--color-action);color:var(--on-action);font-family:inherit;font-size:15px;'
           + 'font-weight:800;border-radius:14px;min-height:50px;box-shadow:var(--shadow-action);cursor:pointer',
           onclick: function () { onPasted(field.value, false); } }, ['URL から題名を取って作る'])
       ]),
@@ -624,7 +602,7 @@
         + 'padding-top:12px' }, [
         h('div', { style: 'font-size:12px;color:var(--body);line-height:1.6',
           text: 'Gemini のキーを作成して、このアプリに登録しておくと、URL を貼ったあと自動で種目も入ります。無料枠の範囲なら費用はかかりません。' }),
-        h('button', { style: 'align-self:flex-start;border:1px solid var(--sub);background:#fff;color:var(--ink);'
+        h('button', { style: 'align-self:flex-start;border:1px solid var(--sub);background:var(--card);color:var(--ink);'
           + 'font-family:inherit;font-size:13px;font-weight:700;border-radius:12px;min-height:44px;padding:0 14px;cursor:pointer',
           onclick: function () { problem = null; state.aikeyFrom = 'record'; state.screen = { name: 'aikey' }; draw(); } },
           ['先に動画を読むキーを入れる'])
@@ -632,7 +610,7 @@
       h('div', { style: 'display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--line2);'
         + 'padding-top:12px' }, [
         h('button', { style: 'align-self:flex-start;border:0;background:none;padding:0;font-size:12px;'
-          + 'font-weight:700;color:var(--deep);text-decoration:underline;font-family:inherit;cursor:pointer;'
+          + 'font-weight:700;color:var(--color-action);text-decoration:underline;font-family:inherit;cursor:pointer;'
           + 'min-height:44px;display:flex;align-items:center;margin:-11px 0',
           onclick: function () { onPasted('', true); } }, ['動画を使わずに作る']),
         h('div', { style: 'display:flex;gap:8px;align-items:flex-start' }, [
@@ -657,7 +635,7 @@
       style: 'width:28px;height:28px;border-radius:50%;display:flex;align-items:center;'
         + 'justify-content:center;box-sizing:border-box;'
         + (done ? 'background:var(--ink);border:1.5px solid var(--ink);'
-                : 'background:#fff;border:1.5px solid var(--sub);')
+                : 'background:var(--card);border:1.5px solid var(--sub);')
     }, [done ? svg(ICON.tick) : null]);
 
     return h('div', {
@@ -672,7 +650,7 @@
       }, [
         h('div', { style: 'font-size:15px;font-weight:800;color:var(--ink);line-height:1.35;' + TWO_LINES,
           text: menu.name }),
-        h('div', { style: 'font-family:var(--mono);font-size:12px;color:var(--sub)',
+        h('div', { style: 'font-size:12px;color:var(--sub)',
           text: (done ? doneAt + ' ・ ' : '') + menuShape(menu) })
       ]),
       menuThumb(menu.video_url),
@@ -696,7 +674,7 @@
   function otherRow(onTap) {
     return h('button', {
       style: 'display:flex;align-items:center;gap:10px;width:100%;min-height:44px;padding:0 16px;'
-        + 'background:#fff;border:0;border-top:1px solid var(--line);font-family:inherit;'
+        + 'background:var(--card);border:0;border-top:1px solid var(--line);font-family:inherit;'
         + 'font-size:15px;color:var(--ink);text-align:left;cursor:pointer',
       onclick: onTap
     }, [svg(ICON.other), 'トレーニングメニュー以外をやった']);
@@ -738,7 +716,7 @@
       ];
       if (item.include && changed) {
         left.push(h('div', {
-          style: 'font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:2px',
+          style: 'font-size:10px;color:var(--faint);margin-top:2px',
           text: '定義 ' + amountLabel(source.unit, source.sets, source.reps, source.seconds)
             + ' → ' + amountLabel(source.unit, item.sets, source.reps, source.seconds)
         }));
@@ -747,20 +725,20 @@
       var right;
       if (item.include) {
         right = h('div', { style: 'display:flex;align-items:center;gap:6px;flex:none' }, [
-          h('button', { style: 'width:44px;height:44px;border:1px solid var(--line);background:#fff;'
+          h('button', { style: 'width:44px;height:44px;border:1px solid var(--line);background:var(--card);'
             + 'border-radius:9px;font-size:15px;color:var(--body);font-family:inherit;cursor:pointer',
             'aria-label': 'セットを減らす',
             onclick: function () { if (item.sets > 1) { item.sets -= 1; draw(); } } }, ['−']),
-          h('div', { style: 'font-family:var(--mono);font-size:13px;font-weight:700;color:var(--ink);'
+          h('div', { style: 'font-size:13px;font-weight:700;color:var(--ink);'
             + 'min-width:56px;text-align:center',
             text: amountLabel(source.unit, item.sets, source.reps, source.seconds) }),
-          h('button', { style: 'width:44px;height:44px;border:1px solid var(--line);background:#fff;'
+          h('button', { style: 'width:44px;height:44px;border:1px solid var(--line);background:var(--card);'
             + 'border-radius:9px;font-size:15px;color:var(--body);font-family:inherit;cursor:pointer',
             'aria-label': 'セットを増やす',
             onclick: function () { if (item.sets < 99) { item.sets += 1; draw(); } } }, ['＋'])
         ]);
       } else {
-        right = h('div', { style: 'font-family:var(--mono);font-size:12px;color:var(--faint);flex:none',
+        right = h('div', { style: 'font-size:12px;color:var(--faint);flex:none',
           text: amountLabel(source.unit, source.sets, source.reps, source.seconds) });
       }
 
@@ -768,14 +746,14 @@
       return h('div', {
         'data-skip': usuallyOut ? '1' : null,
         style: 'display:flex;gap:12px;align-items:center;border-radius:14px;padding:11px 12px;'
-          + (item.include ? 'border:1.5px solid var(--ink);background:#fff'
-                          : 'border:1px solid var(--line);background:' + (usuallyOut ? '#f2f5f9' : '#fafbfd'))
+          + (item.include ? 'border:1.5px solid var(--ink);background:var(--card)'
+                          : 'border:1px solid var(--line);background:' + (usuallyOut ? 'var(--line2)' : 'var(--card)'))
       }, [
         h('button', {
           style: 'width:24px;height:24px;border-radius:7px;flex:none;padding:0;cursor:pointer;'
             + 'display:flex;align-items:center;justify-content:center;font-size:13px;'
-            + (item.include ? 'background:var(--ink);color:#fff;border:0'
-                            : 'border:1.5px solid var(--faint);background:#fff'),
+            + (item.include ? 'background:var(--ink);color:var(--card);border:0'
+                            : 'border:1.5px solid var(--faint);background:var(--card)'),
           'aria-label': source.name + (item.include ? ' を外す' : ' を選ぶ'),
           onclick: function () { item.include = !item.include; draw(); }
         }, [item.include ? '✓' : '']),
@@ -818,14 +796,14 @@
       ]),
       h('div', { style: 'flex:1;display:flex;flex-direction:column;padding-bottom:16px' }, [
         h('div', { style: 'display:flex;align-items:center;justify-content:space-between;padding:12px 16px 8px' }, [
-          h('div', { style: 'font-family:var(--mono);font-size:12px;color:var(--sub)',
+          h('div', { style: 'font-size:12px;color:var(--sub)',
             text: chosen.length + ' / ' + draft.items.length + ' 選択' }),
           h('div', { style: 'display:flex;gap:8px' }, [
-            h('button', { style: 'border:1px solid var(--line);background:#fff;color:var(--body);'
+            h('button', { style: 'border:1px solid var(--line);background:var(--card);color:var(--body);'
               + 'font-family:inherit;font-size:12px;font-weight:700;border-radius:10px;min-height:44px;'
               + 'padding:0 10px;cursor:pointer',
               onclick: function () { draft.items.forEach(function (i) { i.include = true; }); draw(); } }, ['すべて']),
-            h('button', { style: 'border:1px solid var(--line);background:#fff;color:var(--body);'
+            h('button', { style: 'border:1px solid var(--line);background:var(--card);color:var(--body);'
               + 'font-family:inherit;font-size:12px;font-weight:700;border-radius:10px;min-height:44px;'
               + 'padding:0 10px;cursor:pointer',
               onclick: function () { draft.items.forEach(function (i) { i.include = false; }); draw(); } }, ['すべて外す'])
@@ -838,20 +816,20 @@
       problem ? warnBar(problem, null, null) : null,
       h('div', {
         style: 'border-top:1px solid var(--line);padding:12px 16px 22px;display:flex;'
-          + 'flex-direction:column;gap:10px;background:#fff'
+          + 'flex-direction:column;gap:10px;background:var(--card)'
       }, [
         h('div', { style: 'display:flex;align-items:center;justify-content:space-between' }, [
           h('div', { style: 'font-size:12px;color:var(--sub)', text: '実施時刻' }),
           h('label', { style: 'display:flex;align-items:center;gap:8px;border:1px solid var(--line);'
             + 'border-radius:10px;padding:8px 12px;min-height:40px;cursor:pointer' }, [
             h('input', { type: 'time', value: draft.time,
-              style: 'font-family:var(--mono);font-size:14px;font-weight:700;color:var(--ink);'
-                + 'border:0;background:none;padding:0;font-family:var(--mono)',
+              style: 'font-size:14px;font-weight:700;color:var(--ink);'
+                + 'border:0;background:none;padding:0',
               onchange: function () { draft.time = this.value; } })
           ])
         ]),
         h('button', {
-          style: 'border:0;background:var(--deep);color:#fff;font-family:inherit;font-size:15px;'
+          style: 'border:0;background:var(--color-action);color:var(--on-action);font-family:inherit;font-size:15px;'
             + 'font-weight:800;border-radius:16px;min-height:50px;box-shadow:var(--shadow-action);'
             + 'cursor:pointer;opacity:' + (chosen.length ? '1' : '.45'),
           'aria-disabled': chosen.length === 0 ? 'true' : null,
@@ -899,7 +877,7 @@
         h('div', { style: 'font-size:13px;font-weight:800;color:var(--ink)' }, [
           h('span', { style: 'font-family:var(--mono)', text: label.md }), ' ' + label.wd
         ]),
-        h('div', { style: 'font-family:var(--mono);font-size:11px;color:var(--faint)',
+        h('div', { style: 'font-size:11px;color:var(--faint)',
           text: day.sessions.length + '件 ・ ' + items + '種目' })
       ]));
       day.sessions.forEach(function (session) {
@@ -909,7 +887,7 @@
             + 'border-bottom:0;text-align:left;font-family:inherit;cursor:pointer',
           onclick: onPick.bind(null, session.session_id, day.date)
         }, [
-          h('div', { style: 'font-family:var(--mono);font-size:14px;font-weight:700;color:var(--ink);'
+          h('div', { style: 'font-size:14px;font-weight:700;color:var(--ink);'
             + 'flex:none;width:44px;padding-top:1px', text: session.performed_time || '' }),
           h('div', { style: 'flex:1;min-width:0;display:flex;flex-direction:column;gap:4px' }, [
             h('div', { style: 'font-size:14px;font-weight:800;color:var(--ink);line-height:1.25;' + TWO_LINES,
@@ -938,10 +916,10 @@
         style: 'display:flex;align-items:center;justify-content:space-between;padding:11px 18px;'
           + 'border-bottom:1px solid var(--line2);background:#fafbfd'
       }, [
-        h('div', { style: 'font-family:var(--mono);font-size:12px;color:var(--body)',
+        h('div', { style: 'font-size:12px;color:var(--body)',
           text: history.start + ' → ' + history.end }),
         h('button', { style: 'border:0;background:none;padding:0;font-size:12px;font-weight:700;'
-          + 'color:var(--deep);text-decoration:underline;font-family:inherit;cursor:pointer;min-height:44px;padding:0 4px',
+          + 'color:var(--color-action);text-decoration:underline;font-family:inherit;cursor:pointer;min-height:44px;padding:0 4px',
           onclick: onMore }, [days + '日前へ'])
       ]),
       h('div', { style: 'padding:0 18px 18px;display:flex;flex-direction:column' }, groups)
@@ -961,7 +939,7 @@
   function deleteButton(label, onTap) {
     return h('button', {
       style: 'width:44px;height:44px;flex:none;border:1px solid var(--sub);border-radius:8px;'
-        + 'display:flex;align-items:center;justify-content:center;background:#fff;cursor:pointer;'
+        + 'display:flex;align-items:center;justify-content:center;background:var(--card);cursor:pointer;'
         + 'padding:0;color:var(--ink)',
       'aria-label': label, onclick: onTap
     }, [svg(ICON.bin)]);
@@ -976,7 +954,7 @@
         type: 'text', value: String(value), inputmode: 'numeric', pattern: '[0-9]*', maxlength: '4',
         'aria-label': unitLabel,
         style: 'width:64px;height:44px;box-sizing:border-box;border:1px solid var(--sub);border-radius:6px;'
-          + 'background:#fff;padding:0 8px;text-align:center;font-family:var(--mono);font-size:17px;'
+          + 'background:var(--card);padding:0 8px;text-align:center;font-size:17px;'
           + 'font-weight:700;color:var(--ink);-webkit-appearance:none;appearance:none',
         onchange: function () {
           if (!/^\d{1,4}$/.test(this.value.trim())) { this.value = String(value); return; }
@@ -996,7 +974,7 @@
    * 2026-09-12). A frame and a word, never a colour alone. */
   function skipBadge(onTap) {
     var style = 'font-size:11px;line-height:1;padding:4px 6px;border:1px solid var(--sub);border-radius:4px;'
-      + 'color:var(--ink);background:#fff;flex:none;font-family:inherit';
+      + 'color:var(--ink);background:var(--card);flex:none;font-family:inherit';
     if (!onTap) return h('span', { style: style, text: 'ふだんは外す' });
     return h('button', { style: style + ';min-height:44px;cursor:pointer', 'aria-label': 'ふだんは外すのをやめる',
       onclick: onTap }, ['ふだんは外す']);
@@ -1044,7 +1022,7 @@
       h('div', { style: 'font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.04em', text: label }),
       h('label', {
         style: 'display:flex;align-items:center;justify-content:space-between;border-radius:12px;'
-          + 'padding:11px 12px;min-height:46px;background:#fff;cursor:pointer;'
+          + 'padding:11px 12px;min-height:46px;background:var(--card);cursor:pointer;'
           + (warn ? 'border:1.5px solid var(--warnInk)' : 'border:1px solid var(--line)')
       }, [onOpen, h('span', { style: 'font-size:12px;color:var(--sub)', text: '変更' })]),
       hint ? h('div', { style: 'font-size:11px;color:var(--faint);line-height:1.6', text: hint }) : null
@@ -1067,11 +1045,11 @@
       /* Stays at the top while the form scrolls: the owner lost 保存 after
        * adding exercises far down the page (2026-09-12). */
       h('div', { style: 'display:flex;align-items:center;gap:12px;padding:10px 12px;min-height:64px;border-bottom:1px solid var(--line);'
-        + 'position:sticky;top:0;background:#fff;z-index:3' }, [
+        + 'position:sticky;top:0;background:var(--card);z-index:3' }, [
         h('button', { style: 'border:0;background:none;padding:0;font-size:14px;color:var(--body);'
           + 'font-weight:700;font-family:inherit;cursor:pointer;min-height:44px;padding:0 4px', onclick: onCancel }, ['やめる']),
         h('div', { style: 'flex:1;text-align:center;font-size:14px;font-weight:800;color:var(--ink)', text: '記録を修正' }),
-        h('button', { style: 'border:0;background:none;padding:0;font-size:14px;color:var(--deep);'
+        h('button', { style: 'border:0;background:none;padding:0;font-size:14px;color:var(--color-action);'
           + 'font-weight:800;font-family:inherit;cursor:pointer;min-height:44px;padding:0 4px',
           onclick: function () { saveEdit(edit); } }, ['保存'])
       ]),
@@ -1087,13 +1065,13 @@
       h('div', { style: 'padding:16px 18px;display:flex;flex-direction:column;gap:16px' }, [
         fieldRow('日付', edit.date, !!problem,
           h('input', { type: 'date', value: edit.date,
-            style: 'font-family:var(--mono);font-size:15px;font-weight:700;color:var(--ink);'
+            style: 'font-size:15px;font-weight:700;color:var(--ink);'
               + 'border:0;background:none;padding:0',
             onchange: function () { edit.date = this.value; } }),
           '別の日へ移せます。手で選んだ記録は1日に1つまでです。'),
         fieldRow('実施時刻', edit.time, false,
           h('input', { type: 'time', value: edit.time || '',
-            style: 'font-family:var(--mono);font-size:15px;font-weight:700;color:var(--ink);'
+            style: 'font-size:15px;font-weight:700;color:var(--ink);'
               + 'border:0;background:none;padding:0',
             onchange: function () { edit.time = this.value; } }), null),
         h('div', { style: 'display:flex;flex-direction:column;gap:2px' }, [
@@ -1112,7 +1090,7 @@
               return !edit.items.some(function (i) { return i.name === e.name; });
             }).map(function (e) {
               return h('button', {
-                style: 'border:1px solid var(--line);background:#fff;color:var(--body);'
+                style: 'border:1px solid var(--line);background:var(--card);color:var(--body);'
                   + 'font-family:inherit;font-size:12px;font-weight:700;border-radius:11px;'
                   + 'min-height:44px;padding:0 12px;cursor:pointer',
                 onclick: function () {
@@ -1128,7 +1106,7 @@
           h('div', { style: 'font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.04em', text: 'メモ' }),
           h('textarea', {
             style: 'border:1px solid var(--line);border-radius:12px;padding:11px 12px;min-height:60px;'
-              + 'background:#fff;font-size:13px;color:var(--body);line-height:1.6;font-family:inherit;'
+              + 'background:var(--card);font-size:13px;color:var(--body);line-height:1.6;font-family:inherit;'
               + 'width:100%;resize:vertical',
             onchange: function () { edit.note = this.value; }
           }, [edit.note || ''])
@@ -1138,7 +1116,7 @@
           h('div', { style: 'font-size:14px;color:var(--body);line-height:1.6',
             text: 'これを次もやるなら、トレーニングメニューに入れておけます。' }),
           h('button', {
-            style: 'border:1px solid var(--sub);background:#fff;color:var(--ink);font-family:inherit;'
+            style: 'border:1px solid var(--sub);background:var(--card);color:var(--ink);font-family:inherit;'
               + 'font-size:15px;font-weight:700;border-radius:12px;min-height:44px;cursor:pointer;'
               + 'align-self:flex-start;padding:0 16px',
             onclick: function () { menuFromRecord(edit); }
@@ -1147,7 +1125,7 @@
         h('div', { style: 'border-top:1px solid var(--line);padding-top:14px;display:flex;'
           + 'flex-direction:column;gap:8px' }, [
           h('button', {
-            style: 'border:1px solid var(--line);background:#fff;color:var(--body);font-family:inherit;'
+            style: 'border:1px solid var(--line);background:var(--card);color:var(--body);font-family:inherit;'
               + 'font-size:14px;font-weight:700;border-radius:13px;min-height:46px;cursor:pointer;'
               + 'display:flex;align-items:center;justify-content:center;gap:8px',
             onclick: function () { removeRecord(edit); }
@@ -1273,7 +1251,7 @@
   function setupScreen(draft, onChoose, onName, onNext, onSkip) {
     var head = function (title, note) {
       return h('div', { style: 'padding:22px 20px 0' }, [
-        h('div', { style: 'font-family:var(--mono);font-size:12px;color:var(--faint);padding-bottom:10px',
+        h('div', { style: 'font-size:12px;color:var(--faint);padding-bottom:10px',
           text: (draft.step + 1) + ' / ' + SETUP_STEPS }),
         h('div', { style: 'font-size:20px;font-weight:800;color:var(--ink);line-height:1.35', text: title }),
         h('div', { style: 'font-size:13px;color:var(--body);line-height:1.75;padding-top:10px', text: note })
@@ -1284,7 +1262,7 @@
     if (draft.step === 0) {
       var line = function (text) {
         return h('div', { style: 'display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);'
-          + 'border-radius:12px;padding:12px;background:#fff' }, [
+          + 'border-radius:12px;padding:12px;background:var(--card)' }, [
           h('div', { style: 'width:6px;height:6px;border-radius:3px;background:var(--ink);margin-top:7px;flex:none' }),
           h('div', { style: 'flex:1;font-size:13px;color:var(--body);line-height:1.6', text: text })
         ]);
@@ -1303,7 +1281,7 @@
         ])
       ];
     } else if (draft.step === 1) {
-      var counter = h('div', { style: 'font-family:var(--mono);font-size:11px;color:var(--faint)',
+      var counter = h('div', { style: 'font-size:11px;color:var(--faint)',
         text: Array.from(draft.nickname).length + ' / 12' });
       var sample = h('div', { style: 'font-size:12px;color:var(--sub);line-height:1.65' }, [
         'アプリを開いたときの挨拶に、一度だけ使います。',
@@ -1348,14 +1326,14 @@
         + 'font-size:15px;font-weight:800;border-radius:16px;min-height:50px;'
         + 'box-shadow:var(--shadow-action);cursor:pointer', onclick: onNext }, ['つづける']));
     }
-    foot.push(h('button', { style: 'border:1px solid var(--line);background:#fff;color:var(--sub);'
+    foot.push(h('button', { style: 'border:1px solid var(--line);background:var(--card);color:var(--sub);'
       + 'font-family:inherit;font-size:14px;font-weight:700;border-radius:16px;min-height:48px;cursor:pointer',
       onclick: onSkip }, [last ? '相棒は選ばない' : 'あとで']));
 
-    return h('div', { style: 'display:flex;flex-direction:column;min-height:100vh;background:#fff' },
+    return h('div', { style: 'display:flex;flex-direction:column;min-height:100vh;background:var(--card)' },
       body.concat([
         h('div', { style: 'flex:1;min-height:18px' }),
-        h('div', { style: 'padding:12px 20px 26px;display:flex;flex-direction:column;gap:8px;background:#fff' }, foot)
+        h('div', { style: 'padding:12px 20px 26px;display:flex;flex-direction:column;gap:8px;background:var(--card)' }, foot)
       ]));
   }
 
@@ -1384,11 +1362,11 @@
           h('div', { style: 'width:44px;height:44px;border:1.5px dashed var(--faint);border-radius:11px;flex:none' }),
           h('div', { style: 'flex:1' }, [
             h('div', { style: 'font-size:14px;font-weight:800;color:var(--ink)', text: '選ばない' }),
-            h('div', { style: 'font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:2px', text: '既定' })
+            h('div', { style: 'font-size:10px;color:var(--faint);margin-top:2px', text: '既定' })
           ]),
           h('div', { style: 'width:22px;height:22px;border-radius:11px;flex:none;display:flex;'
             + 'align-items:center;justify-content:center;font-size:12px;'
-            + (chosen ? 'border:1.5px solid var(--faint);' : 'background:var(--ink);color:#fff;') },
+            + (chosen ? 'border:1.5px solid var(--faint);' : 'background:var(--ink);color:var(--card);') },
             [chosen ? '' : '✓'])
         ]),
         h('div', { style: 'display:grid;grid-template-columns:1fr 1fr;gap:10px' },
@@ -1396,7 +1374,7 @@
             var on = chosen === c[0];
             return h('button', {
               style: 'border-radius:14px;padding:10px;display:flex;flex-direction:column;gap:8px;'
-                + 'align-items:center;background:#fff;font-family:inherit;cursor:pointer;'
+                + 'align-items:center;background:var(--card);font-family:inherit;cursor:pointer;'
                 + (on ? 'border:1.5px solid var(--ink);' : 'border:1px solid var(--line);'),
               'aria-label': c[1] + (on ? ' を選んでいます' : ' を選ぶ'),
               onclick: onChoose.bind(null, c[0])
@@ -1432,16 +1410,16 @@
       ]),
       h('div', { style: 'flex:1;padding:14px 16px 18px;display:flex;flex-direction:column;gap:12px' },
         companionChoices(chosen, onChoose)),
-      h('div', { style: 'border-top:1px solid var(--line);padding:12px 16px 22px;background:#fff;'
+      h('div', { style: 'border-top:1px solid var(--line);padding:12px 16px 22px;background:var(--card);'
         + 'display:flex;flex-direction:column;gap:8px' }, [
         h('div', { style: 'display:flex;align-items:center;gap:10px' }, [
           h('div', { style: 'width:22px;height:22px;border-radius:6px;flex:none;display:flex;'
             + 'align-items:center;justify-content:center;font-size:12px;'
-            + (name ? 'background:var(--ink);color:#fff;' : 'border:1.5px solid var(--faint);') },
+            + (name ? 'background:var(--ink);color:var(--card);' : 'border:1.5px solid var(--faint);') },
             [name ? '✓' : '']),
           h('div', { style: 'font-size:13px;color:var(--body);flex:1',
             text: name ? '選んでいます' : '選んでいません' }),
-          name ? h('button', { style: 'border:1px solid var(--line);background:#fff;color:var(--body);'
+          name ? h('button', { style: 'border:1px solid var(--line);background:var(--card);color:var(--body);'
             + 'font-family:inherit;font-size:12px;font-weight:700;border-radius:10px;min-height:38px;'
             + 'padding:0 12px;cursor:pointer', onclick: onChoose.bind(null, null) }, ['やめる']) : null
         ]),
@@ -1457,7 +1435,7 @@
    * invented here. */
   function nicknameScreen(current, onBack, onSave) {
     var draft = { value: current || '' };
-    var counter = h('div', { style: 'font-family:var(--mono);font-size:11px;color:var(--faint)',
+    var counter = h('div', { style: 'font-size:11px;color:var(--faint)',
       text: Array.from(draft.value).length + ' / 12' });
     var field = h('input', {
       type: 'text', value: draft.value, maxlength: '12', style: FIELD,
@@ -1489,12 +1467,12 @@
         ])
       ]),
       h('div', { style: 'flex:1' }),
-      h('div', { style: 'border-top:1px solid var(--line);padding:12px 16px 22px;background:#fff;'
+      h('div', { style: 'border-top:1px solid var(--line);padding:12px 16px 22px;background:var(--card);'
         + 'display:flex;gap:10px' }, [
-        h('button', { style: 'flex:1;border:1px solid var(--line);background:#fff;color:var(--body);'
+        h('button', { style: 'flex:1;border:1px solid var(--line);background:var(--card);color:var(--body);'
           + 'font-family:inherit;font-size:14px;font-weight:700;border-radius:12px;min-height:46px;cursor:pointer',
           onclick: function () { onSave(''); } }, ['呼ばない']),
-        h('button', { style: 'flex:2;border:0;background:var(--ink);color:#fff;font-family:inherit;'
+        h('button', { style: 'flex:2;border:0;background:var(--ink);color:var(--card);font-family:inherit;'
           + 'font-size:14px;font-weight:800;border-radius:12px;min-height:46px;cursor:pointer',
           onclick: function () { onSave(draft.value); } }, ['この名前にする'])
       ])
@@ -1518,7 +1496,7 @@
   function aiKeyScreen(onBack, onSave) {
     var draft = { value: aiKey() };
     var field = h('input', {
-      type: 'password', value: draft.value, style: FIELD + ';font-family:var(--mono)',
+      type: 'password', value: draft.value, style: FIELD + '',
       placeholder: 'AIza… で始まる文字列', autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false',
       oninput: function () { draft.value = this.value; }
     });
@@ -1535,7 +1513,7 @@
         h('div', { style: 'font-size:13px;color:var(--body);line-height:1.7',
           text: 'キーは Google AI Studio で無料で作れます（無料枠あり・Google アカウントが要ります）。作ったキーをここに貼ってください。' }),
         h('a', { href: 'https://aistudio.google.com/apikey', target: '_blank', rel: 'noopener noreferrer',
-          style: 'font-size:14px;font-weight:700;color:var(--deep);text-decoration:underline;min-height:44px;display:inline-flex;align-items:center' },
+          style: 'font-size:14px;font-weight:700;color:var(--color-action);text-decoration:underline;min-height:44px;display:inline-flex;align-items:center' },
           ['Google AI Studio でキーを作る']),
         h('div', { style: 'font-size:12px;color:var(--sub);line-height:1.7',
           text: 'キーはこの端末の中だけに残り、書き出しファイルには入りません。動画を読ませるときに Google へ送るのは、動画の URL と読み取りの指示だけです。あなたの記録は送りません。' })
@@ -1545,11 +1523,11 @@
         field
       ]),
       h('div', { style: 'flex:1' }),
-      h('div', { style: 'border-top:1px solid var(--line);padding:12px 16px 22px;background:#fff;display:flex;gap:10px' }, [
-        h('button', { style: 'flex:1;border:1px solid var(--line);background:#fff;color:var(--body);'
+      h('div', { style: 'border-top:1px solid var(--line);padding:12px 16px 22px;background:var(--card);display:flex;gap:10px' }, [
+        h('button', { style: 'flex:1;border:1px solid var(--line);background:var(--card);color:var(--body);'
           + 'font-family:inherit;font-size:14px;font-weight:700;border-radius:12px;min-height:46px;cursor:pointer',
           onclick: function () { onSave(''); } }, ['キーを消す']),
-        h('button', { style: 'flex:2;border:0;background:var(--ink);color:#fff;font-family:inherit;'
+        h('button', { style: 'flex:2;border:0;background:var(--ink);color:var(--card);font-family:inherit;'
           + 'font-size:14px;font-weight:800;border-radius:12px;min-height:46px;cursor:pointer',
           onclick: function () { onSave(draft.value); } }, ['このキーにする'])
       ])
@@ -1562,7 +1540,7 @@
     var fileRow = function (label, value) {
       return h('div', { style: 'display:flex;align-items:center;justify-content:space-between' }, [
         h('div', { style: 'font-size:12px;color:var(--sub)', text: label }),
-        h('div', { style: 'font-family:var(--mono);font-size:12px;font-weight:700;color:var(--ink)', text: value })
+        h('div', { style: 'font-size:12px;font-weight:700;color:var(--ink)', text: value })
       ]);
     };
     return h('div', { style: 'display:flex;flex-direction:column;min-height:100vh' }, [
@@ -1582,7 +1560,7 @@
             text: whichPhone() === 'ios'
               ? 'Safari は7日間使わないと記録を消します。ホーム画面に追加したものは消えません。'
               : 'ホーム画面に追加すると、次からすぐ開けます。控えはこの下の書き出しで残せます。' }),
-          h('button', { style: 'border:1px solid var(--warnInk);background:#fff;color:var(--warnInk);'
+          h('button', { style: 'border:1px solid var(--warnInk);background:var(--card);color:var(--warnInk);'
             + 'font-family:inherit;font-size:13px;font-weight:800;border-radius:12px;min-height:44px;cursor:pointer',
             onclick: onA2hs }, ['手順を見る'])
         ]),
@@ -1595,7 +1573,7 @@
             h('div', { style: 'border-top:1px solid var(--line2);padding-top:10px' },
               [fileRow('前回の書き出し', settings.last_export || 'まだありません')]),
             fileRow('記録の件数', sessionCount + '件'),
-            h('button', { style: 'border:0;background:var(--deep);color:#fff;font-family:inherit;'
+            h('button', { style: 'border:0;background:var(--color-action);color:var(--on-action);font-family:inherit;'
               + 'font-size:15px;font-weight:800;border-radius:14px;min-height:48px;'
               + 'box-shadow:var(--shadow-action);cursor:pointer', onclick: exportFile }, ['ファイルに書き出す'])
           ])
@@ -1613,7 +1591,7 @@
                 text: 'いまの記録は消えます。取り違えると戻せません。'
                   + '読み込む前に、いまの分を書き出しておいてください。' })
             ]),
-            h('label', { style: 'border:1px solid var(--line);background:#fff;color:var(--body);'
+            h('label', { style: 'border:1px solid var(--line);background:var(--card);color:var(--body);'
               + 'font-family:inherit;font-size:14px;font-weight:800;border-radius:14px;min-height:48px;'
               + 'cursor:pointer;display:flex;align-items:center;justify-content:center' }, [
               'ファイルを選ぶ',
@@ -1735,8 +1713,63 @@
         heading('ライセンス'),
         para('MIT ライセンスで公開しています。中身は GitHub の memory2meaning-lgtm/toreroku にあります。'),
         h('a', { href: 'https://github.com/memory2meaning-lgtm/toreroku', target: '_blank', rel: 'noopener noreferrer',
-          style: 'font-size:14px;font-weight:700;color:var(--deep);text-decoration:underline;min-height:44px;display:inline-flex;align-items:center' },
+          style: 'font-size:14px;font-weight:700;color:var(--color-action);text-decoration:underline;min-height:44px;display:inline-flex;align-items:center' },
           ['GitHub で中身を見る'])
+      ]),
+      h('div', { style: 'flex:1' }),
+      navBar('settings')
+    ]);
+  }
+
+  /* "見た目": three colour sets, one chosen. Radio-style rows with a visible
+   * check and a border, never hue alone; 44px targets; applies at once. */
+  function themeScreen(onBack) {
+    var chosen = currentTheme();
+    var list = h('div', { style: 'display:flex;flex-direction:column;gap:10px', role: 'radiogroup',
+      'aria-label': '見た目' });
+    var swatch = function (colour) {
+      return h('span', { style: 'width:16px;height:26px;border-radius:4px;border:1px solid var(--line-strong);'
+        + 'background:' + colour });
+    };
+    var paint = function () {
+      list.replaceChildren();
+      THEMES.forEach(function (one) {
+        var on = one[0] === chosen;
+        /* Selected shows three ways at once - the frame, the filled circle
+         * with its check, and the "選択中" tag - none of them a hue. */
+        list.appendChild(h('button', {
+          style: 'display:flex;align-items:center;gap:14px;min-height:72px;padding:14px 16px;width:100%;'
+            + 'border-radius:14px;background:var(--card);font-family:inherit;text-align:left;cursor:pointer;'
+            + 'color:var(--ink);' + (on ? 'border:2px solid var(--ink);' : 'border:1px solid var(--line-strong);'),
+          role: 'radio', 'aria-checked': on ? 'true' : 'false',
+          onclick: function () { chosen = one[0]; applyTheme(chosen); paint(); }
+        }, [
+          h('span', { style: 'flex:none;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;'
+            + 'justify-content:center;' + (on ? 'background:var(--color-action);border:0' : 'border:2px solid var(--sub)') },
+            on ? [svg('<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--on-action)" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.6 9.6 17 19 7.4"/></svg>')] : []),
+          h('span', { style: 'flex:none;display:flex;gap:3px' }, one[3].map(swatch)),
+          h('span', { style: 'flex:1;min-width:0' }, [
+            h('span', { style: 'display:block;font-size:16px;font-weight:' + (on ? 800 : 700) + ';color:var(--ink)', text: one[1] }),
+            h('span', { style: 'display:block;font-size:12px;font-weight:400;color:var(--sub);margin-top:3px;line-height:1.5', text: one[2] })
+          ]),
+          on ? h('span', { style: 'flex:none;font-size:11px;font-weight:800;color:var(--ink);border:1px solid var(--ink);'
+            + 'border-radius:5px;padding:5px 6px', text: '選択中' }) : null
+        ]));
+      });
+    };
+    paint();
+    return h('div', { style: 'display:flex;flex-direction:column;min-height:100vh' }, [
+      h('div', { style: 'display:flex;align-items:center;gap:12px;padding:10px 12px;min-height:64px;border-bottom:1px solid var(--line)' }, [
+        h('button', { style: 'border:0;background:none;padding:0;font-size:14px;color:var(--body);'
+          + 'font-weight:700;font-family:inherit;cursor:pointer;min-height:44px;padding:0 4px', onclick: onBack }, ['戻る']),
+        h('div', { style: 'flex:1;text-align:center;font-size:14px;font-weight:800;color:var(--ink)', text: '設定' }),
+        h('div', { style: 'width:34px' })
+      ]),
+      h('div', { style: 'padding:16px;display:flex;flex-direction:column;gap:14px' }, [
+        h('div', { style: 'font-size:20px;font-weight:800;color:var(--ink)', text: '見た目' }),
+        h('div', { style: 'font-size:14px;font-weight:400;color:var(--body);line-height:1.7',
+          text: 'アプリ全体の色が変わります。文字の大きさや並び方は変わりません。' }),
+        list
       ]),
       h('div', { style: 'flex:1' }),
       navBar('settings')
@@ -1747,7 +1780,7 @@
     var row = function (label, hint, target) {
       return h('button', {
         style: 'display:flex;align-items:center;gap:12px;border:1px solid var(--line);border-radius:14px;'
-          + 'padding:14px;background:#fff;width:100%;font-family:inherit;text-align:left;cursor:pointer',
+          + 'padding:14px;background:var(--card);width:100%;font-family:inherit;text-align:left;cursor:pointer',
         onclick: go.bind(null, target)
       }, [
         h('div', { style: 'flex:1;min-width:0' }, [
@@ -1767,6 +1800,7 @@
       h('div', { style: 'padding:16px;display:flex;flex-direction:column;gap:10px' }, [
         row('名前', 'ホームのあいさつで一度だけ呼びます。空でも使えます。', 'nickname'),
         row('相棒', 'ホームに小さく出ます。既定は選ばない。', 'companion'),
+        row('見た目', 'アプリ全体の色を3つから選びます。', 'theme'),
         row('記録を残す', '書き出し／読み込み。機種変更のときはここから。', 'export'),
         row('ホーム画面に追加', '記録が消えないための手順をもう一度見ます。', 'a2hs'),
         row('種目の一覧', '名前や標準のセット数を直す。使っていない種目を消す。', 'library'),
@@ -1786,14 +1820,14 @@
         + 'border-top:1px solid var(--line2)' }, [
         h('div', { style: 'flex:1;min-width:0;font-size:14px;font-weight:700;color:var(--ink)', text: item.name }),
         h('div', { style: 'display:flex;align-items:center;gap:6px;flex:none' }, [
-          h('button', { style: 'width:44px;height:44px;border:1px solid var(--line);background:#fff;'
+          h('button', { style: 'width:44px;height:44px;border:1px solid var(--line);background:var(--card);'
             + 'border-radius:9px;font-size:15px;color:var(--body);font-family:inherit;cursor:pointer',
             'aria-label': 'セットを減らす',
             onclick: function () { if (item.sets > 1) { item.sets -= 1; draw(); } } }, ['−']),
-          h('div', { style: 'font-family:var(--mono);font-size:13px;font-weight:700;color:var(--ink);'
+          h('div', { style: 'font-size:13px;font-weight:700;color:var(--ink);'
             + 'min-width:56px;text-align:center',
             text: amountLabel(item.unit, item.sets, item.reps, item.seconds) }),
-          h('button', { style: 'width:44px;height:44px;border:1px solid var(--line);background:#fff;'
+          h('button', { style: 'width:44px;height:44px;border:1px solid var(--line);background:var(--card);'
             + 'border-radius:9px;font-size:15px;color:var(--body);font-family:inherit;cursor:pointer',
             'aria-label': 'セットを増やす',
             onclick: function () { if (item.sets < 99) { item.sets += 1; draw(); } } }, ['＋'])
@@ -1810,7 +1844,7 @@
       /* Stays at the top while the form scrolls: the owner lost 保存 after
        * adding exercises far down the page (2026-09-12). */
       h('div', { style: 'display:flex;align-items:center;gap:12px;padding:10px 12px;min-height:64px;border-bottom:1px solid var(--line);'
-        + 'position:sticky;top:0;background:#fff;z-index:3' }, [
+        + 'position:sticky;top:0;background:var(--card);z-index:3' }, [
         h('button', { style: 'border:0;background:none;padding:0;font-size:14px;color:var(--body);'
           + 'font-weight:700;font-family:inherit;cursor:pointer;min-height:44px;padding:0 4px', onclick: onCancel }, ['やめる']),
         h('div', { style: 'flex:1;text-align:center;font-size:14px;font-weight:800;color:var(--ink)',
@@ -1818,7 +1852,7 @@
         h('div', { style: 'width:34px' })
       ]),
       h('div', { style: 'padding:11px 18px;border-bottom:1px solid var(--line2);background:#fafbfd' }, [
-        h('div', { style: 'font-family:var(--mono);font-size:12px;color:var(--body)', text: longLabel(pick.date) })
+        h('div', { style: 'font-size:12px;color:var(--body)', text: longLabel(pick.date) })
       ]),
       h('div', { style: 'flex:1;padding:14px 16px 18px;display:flex;flex-direction:column;gap:18px' }, [
         h('div', { style: 'display:flex;flex-direction:column;gap:2px' }, [
@@ -1835,11 +1869,11 @@
           h('div', { style: 'display:flex;gap:8px' }, [
             h('input', { type: 'text', placeholder: '種目名を書く', value: pick.typed,
               style: 'flex:1;min-width:0;border:1px solid var(--line);border-radius:12px;padding:11px 12px;'
-                + 'min-height:46px;font-family:inherit;font-size:14px;color:var(--ink);background:#fff',
+                + 'min-height:46px;font-family:inherit;font-size:14px;color:var(--ink);background:var(--card)',
               oninput: function () { pick.typed = this.value; },
               onkeydown: function (e) { if (e.key === 'Enter') { e.preventDefault(); addTyped(pick); } } }),
             h('button', { type: 'button',
-              style: 'border:1px solid var(--line);background:#fff;color:var(--body);font-family:inherit;'
+              style: 'border:1px solid var(--line);background:var(--card);color:var(--body);font-family:inherit;'
                 + 'font-size:13px;font-weight:700;border-radius:12px;min-height:46px;padding:0 14px;cursor:pointer',
               onclick: function () { addTyped(pick); }
             }, ['足す'])
@@ -1854,10 +1888,10 @@
               + 'border-top:1px solid var(--line2)' }, [
               h('div', { style: 'flex:1;min-width:0' }, [
                 h('div', { style: 'font-size:14px;font-weight:700;color:var(--ink)', text: e.name }),
-                h('div', { style: 'font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:2px',
+                h('div', { style: 'font-size:10px;color:var(--faint);margin-top:2px',
                   text: '標準 ' + amountLabel(e.unit, e.sets, e.reps, e.seconds) + ' ・ 記録 ' + e.use_count + '件' })
               ]),
-              h('button', { style: 'border:1px solid var(--line);background:#fff;color:var(--body);'
+              h('button', { style: 'border:1px solid var(--line);background:var(--card);color:var(--body);'
                 + 'font-family:inherit;font-size:12px;font-weight:700;border-radius:10px;min-height:36px;'
                 + 'padding:0 12px;cursor:pointer;flex:none',
                 onclick: function () {
@@ -1868,7 +1902,7 @@
             ]);
           })).concat(library.length > 4 && !pick.showAll ? [
             h('button', { style: 'border:0;background:none;padding:10px 0 0;text-align:left;'
-              + 'font-size:12px;font-weight:700;color:var(--deep);text-decoration:underline;'
+              + 'font-size:12px;font-weight:700;color:var(--color-action);text-decoration:underline;'
               + 'font-family:inherit;cursor:pointer;min-height:44px;padding:0 4px',
               onclick: function () { pick.showAll = true; draw(); } }, ['一覧をすべて見る'])
           ] : []))
@@ -1876,19 +1910,19 @@
       ]),
       problem ? warnBar(problem, null, null) : null,
       h('div', { style: 'border-top:1px solid var(--line);padding:12px 16px 22px;display:flex;'
-        + 'flex-direction:column;gap:10px;background:#fff' }, [
+        + 'flex-direction:column;gap:10px;background:var(--card)' }, [
         h('div', { style: 'display:flex;align-items:center;justify-content:space-between' }, [
           h('div', { style: 'font-size:12px;color:var(--sub)', text: '実施時刻' }),
           h('label', { style: 'display:flex;align-items:center;gap:8px;border:1px solid var(--line);'
             + 'border-radius:10px;padding:8px 12px;min-height:40px;cursor:pointer' }, [
             h('input', { type: 'time', value: pick.time,
-              style: 'font-family:var(--mono);font-size:14px;font-weight:700;color:var(--ink);'
+              style: 'font-size:14px;font-weight:700;color:var(--ink);'
                 + 'border:0;background:none;padding:0',
               onchange: function () { pick.time = this.value; } })
           ])
         ]),
         h('button', {
-          style: 'border:0;background:var(--deep);color:#fff;font-family:inherit;font-size:15px;'
+          style: 'border:0;background:var(--color-action);color:var(--on-action);font-family:inherit;font-size:15px;'
             + 'font-weight:800;border-radius:16px;min-height:50px;box-shadow:var(--shadow-action);'
             + 'cursor:pointer;opacity:' + (pick.items.length ? '1' : '.45'),
           'aria-disabled': pick.items.length === 0 ? 'true' : null,
@@ -1943,7 +1977,7 @@
         })
       });
       /* A record made by hand has no row on the record page to show it
-       * landed; home does (きょうの記録), so that is where this returns
+       * landed; home does (今日の記録), so that is where this returns
        * (the owner, 2026-09-12). */
       state.screen = { name: 'home' };
     } catch (error) {
@@ -1979,9 +2013,9 @@
     var phone = whichPhone();
     var step = function (n, text, mark) {
       return h('div', { style: 'display:flex;align-items:center;gap:12px;border:1px solid var(--line);'
-        + 'border-radius:12px;padding:12px;background:#fff' }, [
-        h('div', { style: 'width:22px;height:22px;border-radius:6px;background:var(--ink);color:#fff;'
-          + 'font-family:var(--mono);font-size:12px;font-weight:700;display:flex;align-items:center;'
+        + 'border-radius:12px;padding:12px;background:var(--card)' }, [
+        h('div', { style: 'width:22px;height:22px;border-radius:6px;background:var(--ink);color:var(--card);'
+          + 'font-size:12px;font-weight:700;display:flex;align-items:center;'
           + 'justify-content:center;flex:none', text: String(n) }),
         h('div', { style: 'flex:1;font-size:13px;color:var(--body);line-height:1.5', text: text }),
         h('div', { style: 'width:30px;height:30px;border:1px solid var(--line);border-radius:8px;'
@@ -1989,7 +2023,7 @@
           + 'flex:none', text: mark })
       ]);
     };
-    return h('div', { style: 'display:flex;flex-direction:column;min-height:100vh;background:#fff' }, [
+    return h('div', { style: 'display:flex;flex-direction:column;min-height:100vh;background:var(--card)' }, [
       h('div', { style: 'padding:22px 20px 8px' }, [
         h('div', { style: 'width:40px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 18px' }),
         h('div', { style: 'font-size:19px;font-weight:800;color:var(--ink);line-height:1.3',
@@ -2035,7 +2069,7 @@
       ]),
       h('div', { style: 'flex:1' }),
       h('div', { style: 'padding:12px 20px 26px;display:flex;flex-direction:column;gap:8px' }, [
-        installOffer ? h('button', { style: 'border:0;background:var(--deep);color:#fff;font-family:inherit;'
+        installOffer ? h('button', { style: 'border:0;background:var(--color-action);color:var(--on-action);font-family:inherit;'
           + 'font-size:15px;font-weight:800;border-radius:16px;min-height:50px;'
           + 'box-shadow:var(--shadow-action);cursor:pointer',
           onclick: async function () {
@@ -2056,9 +2090,9 @@
             }
           } }, ['このまま追加する']) : null,
         h('button', { style: installOffer
-          ? 'border:1px solid var(--line);background:#fff;color:var(--body);font-family:inherit;font-size:14px;'
+          ? 'border:1px solid var(--line);background:var(--card);color:var(--body);font-family:inherit;font-size:14px;'
             + 'font-weight:700;border-radius:16px;min-height:48px;cursor:pointer'
-          : 'border:0;background:var(--deep);color:#fff;font-family:inherit;font-size:15px;'
+          : 'border:0;background:var(--color-action);color:var(--on-action);font-family:inherit;font-size:15px;'
             + 'font-weight:800;border-radius:16px;min-height:50px;box-shadow:var(--shadow-action);cursor:pointer',
           onclick: function () { remember(A2HS_KEY, { added: true, on: new Date().toISOString() }); onClose(); } }, ['追加しました']),
         h('button', { style: 'border:0;background:none;color:var(--sub);font-family:inherit;font-size:13px;'
@@ -2077,14 +2111,14 @@
           label,
           h('span', { style: 'font-weight:700;color:var(--faint);margin-left:4px', text: optional })
         ]),
-        counter ? h('div', { style: 'font-family:var(--mono);font-size:11px;color:var(--faint)', text: counter }) : null
+        counter ? h('div', { style: 'font-size:11px;color:var(--faint)', text: counter }) : null
       ]),
       child
     ]);
   }
 
   var FIELD = 'border:1px solid var(--line);border-radius:12px;padding:11px 12px;min-height:46px;'
-    + 'background:#fff;font-family:inherit;font-size:14px;color:var(--ink);width:100%';
+    + 'background:var(--card);font-family:inherit;font-size:14px;color:var(--ink);width:100%';
 
   /* What sits under the name field. Three ways this goes, and Design drew all
    * of them: the title is on its way, it could not be had, or it arrived and
@@ -2109,7 +2143,7 @@
      * sentence says what happened, and the "shorten" button carries the
      * shortened title itself, so nobody has to be told what it would cut. */
     var shortened = shortenTitle(edit.name);
-    var OUTLINE = 'border:1px solid var(--line);border-radius:12px;background:#fff;min-height:44px;'
+    var OUTLINE = 'border:1px solid var(--line);border-radius:12px;background:var(--card);min-height:44px;'
       + 'padding:6px 14px;font-family:inherit;cursor:pointer;color:var(--ink);text-align:left;'
       + 'display:flex;flex-direction:column;justify-content:center;gap:2px;max-width:100%';
     return h('div', { style: 'display:flex;flex-direction:column;gap:8px;margin-top:-8px' }, [
@@ -2240,8 +2274,8 @@
         var on = chip[0] === current;
         return h('button', {
           style: 'flex:none;min-height:36px;padding:0 14px;border-radius:18px;font-family:inherit;font-size:14px;'
-            + 'cursor:pointer;' + (on ? 'background:var(--ink);border:1px solid var(--ink);color:#fff;font-weight:700'
-                                     : 'background:#fff;border:1px solid var(--sub);color:var(--ink)'),
+            + 'cursor:pointer;' + (on ? 'background:var(--ink);border:1px solid var(--ink);color:var(--card);font-weight:700'
+                                     : 'background:var(--card);border:1px solid var(--sub);color:var(--ink)'),
           'aria-pressed': on ? 'true' : 'false',
           onclick: function () { remember(TAG_KEY, { tag: chip[0] }); draw(); }
         }, [chip[1]]);
@@ -2281,12 +2315,12 @@
       /* Stays at the top while the form scrolls: the owner lost 保存 after
        * adding exercises far down the page (2026-09-12). */
       h('div', { style: 'display:flex;align-items:center;gap:12px;padding:10px 12px;min-height:64px;border-bottom:1px solid var(--line);'
-        + 'position:sticky;top:0;background:#fff;z-index:3' }, [
+        + 'position:sticky;top:0;background:var(--card);z-index:3' }, [
         h('button', { style: 'border:0;background:none;padding:0;font-size:14px;color:var(--body);'
           + 'font-weight:700;font-family:inherit;cursor:pointer;min-height:44px;padding:0 4px', onclick: onCancel }, ['やめる']),
         h('div', { style: 'flex:1;text-align:center;font-size:14px;font-weight:800;color:var(--ink)',
           text: edit.menu_id ? 'トレーニングメニューを編集' : 'トレーニングメニューを追加' }),
-        h('button', { style: 'border:0;background:none;padding:0;font-size:14px;color:var(--deep);'
+        h('button', { style: 'border:0;background:none;padding:0;font-size:14px;color:var(--color-action);'
           + 'font-weight:800;font-family:inherit;cursor:pointer;min-height:44px;padding:0 4px',
           onclick: function () { saveMenu(edit); } }, ['保存'])
       ]),
@@ -2298,7 +2332,7 @@
           + 'display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;'
           + 'color:var(--warnInk);flex:none', text: '!', 'aria-hidden': 'true' }),
         h('div', { style: 'flex:1;font-size:12px;color:#7a5b12;line-height:1.5', text: problem }),
-        edit.menu_id ? h('button', { style: 'border:1px solid var(--warnInk);background:#fff;'
+        edit.menu_id ? h('button', { style: 'border:1px solid var(--warnInk);background:var(--card);'
           + 'color:var(--warnInk);font-family:inherit;font-size:12px;font-weight:700;border-radius:9px;'
           + 'padding:8px 10px;min-height:36px;cursor:pointer',
           onclick: function () { openMenuEdit(edit.menu_id); } }, ['再読込']) : null
@@ -2347,7 +2381,7 @@
             ? [h('div', { style: 'display:flex;gap:8px;flex-wrap:wrap' }, usedTags().map(function (tag) {
                 return h('button', {
                   style: 'min-height:44px;padding:0 14px;border-radius:22px;border:1px solid var(--sub);'
-                    + 'background:#fff;color:var(--ink);font-family:inherit;font-size:14px;cursor:pointer',
+                    + 'background:var(--card);color:var(--ink);font-family:inherit;font-size:14px;cursor:pointer',
                   onclick: function () { edit.tag = tag; draw(); }
                 }, [tag]);
               }))]
@@ -2356,7 +2390,7 @@
           h('div', { style: 'display:flex;align-items:baseline;justify-content:space-between;padding-bottom:6px' }, [
             h('div', { style: 'font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.04em' }, [
               '種目', h('span', { style: 'font-weight:700;color:var(--faint);margin-left:4px', text: '（任意）' })]),
-            h('div', { style: 'font-family:var(--mono);font-size:11px;color:var(--faint)',
+            h('div', { style: 'font-size:11px;color:var(--faint)',
               text: edit.items.length + ' / 100' })
           ])
         ].concat(rows.length ? rows : [
@@ -2380,7 +2414,7 @@
           + 'border-radius:12px;padding:12px' }, [
           h('div', { style: 'font-size:13px;font-weight:700;color:var(--ink)', text: '動画から種目を入れる' }),
           videoId(edit.video_url) && aiKey() ? h('button', { type: 'button',
-            style: 'border:0;background:var(--ink);color:#fff;font-family:inherit;font-size:14px;font-weight:700;'
+            style: 'border:0;background:var(--ink);color:var(--card);font-family:inherit;font-size:14px;font-weight:700;'
               + 'border-radius:12px;min-height:44px;padding:0 14px;cursor:pointer;align-self:flex-start;'
               + (edit.aiBusy ? 'opacity:.6' : ''),
             'aria-disabled': edit.aiBusy ? 'true' : null,
@@ -2390,7 +2424,7 @@
             h('div', { style: 'font-size:12px;color:var(--sub);line-height:1.6',
               text: 'Google の Gemini のキーを入れると、URL だけで種目を取れます（キーはあなた自身のもの・無料枠あり）。' }),
             h('button', { type: 'button',
-              style: 'border:1px solid var(--sub);background:#fff;color:var(--ink);font-family:inherit;font-size:14px;'
+              style: 'border:1px solid var(--sub);background:var(--card);color:var(--ink);font-family:inherit;font-size:14px;'
                 + 'font-weight:700;border-radius:12px;min-height:44px;padding:0 14px;cursor:pointer;align-self:flex-start',
               onclick: function () { problem = null; state.aikeyFrom = 'menuEdit'; state.screen = { name: 'aikey' }; draw(); }
             }, ['動画を読むキーを入れる'])
@@ -2402,7 +2436,7 @@
             oninput: function () { edit.pasted = this.value; } }, [edit.pasted || '']) : null,
           h('div', { style: 'display:flex;gap:8px' }, [
             h('button', { type: 'button',
-              style: 'border:1px solid var(--sub);background:#fff;color:var(--ink);font-family:inherit;'
+              style: 'border:1px solid var(--sub);background:var(--card);color:var(--ink);font-family:inherit;'
                 + 'font-size:14px;font-weight:700;border-radius:12px;min-height:44px;padding:0 14px;cursor:pointer',
               onclick: function () {
                 if (edit.pasteOpen && (edit.pasted || '').trim()) { importFromDescription(edit); return; }
@@ -2419,7 +2453,7 @@
               oninput: function () { edit.typed = this.value; },
               onkeydown: function (e) { if (e.key === 'Enter') { e.preventDefault(); addMenuExercise(edit); } } }),
             h('button', { type: 'button',
-              style: 'border:1px solid var(--line);background:#fff;color:var(--body);font-family:inherit;'
+              style: 'border:1px solid var(--line);background:var(--card);color:var(--body);font-family:inherit;'
                 + 'font-size:13px;font-weight:700;border-radius:12px;min-height:46px;padding:0 14px;cursor:pointer',
               onclick: function () { addMenuExercise(edit); } }, ['足す'])
           ]),
@@ -2428,12 +2462,12 @@
             h('button', { type: 'button',
               style: 'border:1px solid var(--line);border-radius:10px;min-height:38px;padding:0 12px;'
                 + 'font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;'
-                + (edit.newUnit === 'sec' ? 'background:#fff;color:var(--sub);' : 'background:var(--ink);color:#fff;'),
+                + (edit.newUnit === 'sec' ? 'background:var(--card);color:var(--sub);' : 'background:var(--ink);color:var(--card);'),
               onclick: function () { edit.newUnit = 'reps'; draw(); } }, ['回数']),
             h('button', { type: 'button',
               style: 'border:1px solid var(--line);border-radius:10px;min-height:38px;padding:0 12px;'
                 + 'font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;'
-                + (edit.newUnit === 'sec' ? 'background:var(--ink);color:#fff;' : 'background:#fff;color:var(--sub);'),
+                + (edit.newUnit === 'sec' ? 'background:var(--ink);color:var(--card);' : 'background:var(--card);color:var(--sub);'),
               onclick: function () { edit.newUnit = 'sec'; draw(); } }, ['秒数'])
           ]),
           h('div', { style: 'font-size:11px;color:var(--faint);line-height:1.6',
@@ -2445,7 +2479,7 @@
         edit.menu_id ? h('div', { style: 'border-top:1px solid var(--line);padding-top:14px;'
           + 'display:flex;flex-direction:column;gap:8px' }, [
           h('button', {
-            style: 'border:1px solid var(--line);background:#fff;color:var(--body);font-family:inherit;'
+            style: 'border:1px solid var(--line);background:var(--card);color:var(--body);font-family:inherit;'
               + 'font-size:14px;font-weight:700;border-radius:13px;min-height:46px;cursor:pointer;'
               + 'display:flex;align-items:center;justify-content:center;gap:8px',
             onclick: function () { removeMenu(edit); }
@@ -2814,7 +2848,7 @@
           + 'color:var(--warnInk);flex:none', text: '!', 'aria-hidden': 'true' }),
         h('div', { style: 'flex:1;font-size:12px;color:#7a5b12;line-height:1.5' }, [
           problem,
-          state.usedBy ? h('div', { style: 'font-family:var(--mono);font-size:11px;margin-top:3px',
+          state.usedBy ? h('div', { style: 'font-size:11px;margin-top:3px',
             text: state.usedBy.join(' ／ ') }) : null
         ])
       ]) : null,
@@ -2827,10 +2861,10 @@
                 style: 'font-size:14px;font-weight:700;color:var(--ink);border:0;background:none;'
                   + 'padding:0;width:100%;font-family:inherit',
                 onchange: function () { renameExercise(e, this.value); } }),
-              h('div', { style: 'font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:3px',
+              h('div', { style: 'font-size:10px;color:var(--faint);margin-top:3px',
                 text: '記録 ' + e.use_count + '件' + (e.use_count ? '' : ' ・ 未使用') })
             ]),
-            h('div', { style: 'font-family:var(--mono);font-size:12px;color:var(--sub);flex:none',
+            h('div', { style: 'font-size:12px;color:var(--sub);flex:none',
               text: amountLabel(e.unit, e.sets, e.reps, e.seconds) }),
             deleteButton(e.name + ' を一覧から消す', function () { removeExercise(e); })
           ]);
@@ -2882,7 +2916,7 @@
       h('div', { style: 'font-size:14px;color:var(--body);line-height:1.6',
         text: '外した種目を、次回からも外しておけます。' }),
       h('button', {
-        style: 'border:1px solid var(--sub);background:#fff;color:var(--ink);font-family:inherit;'
+        style: 'border:1px solid var(--sub);background:var(--card);color:var(--ink);font-family:inherit;'
           + 'font-size:15px;font-weight:700;border-radius:12px;min-height:44px;cursor:pointer;'
           + 'align-self:flex-start;padding:0 16px',
         onclick: async function () {
@@ -3036,7 +3070,7 @@
               h('div', { style: 'flex:1;min-width:0;display:flex;flex-direction:column;gap:3px' }, [
                 h('div', { style: 'font-size:15px;font-weight:800;color:var(--ink);line-height:1.3;' + TWO_LINES,
                   text: menu.name }),
-                h('div', { style: 'font-family:var(--mono);font-size:11px;color:var(--sub)',
+                h('div', { style: 'font-size:11px;color:var(--sub)',
                   text: menuShape(menu) + (menu.tag ? ' ・ ' + menu.tag : '') })
               ]),
               menuThumb(menu.video_url),
@@ -3100,7 +3134,7 @@
      * pictures everyone knows. Selected = filled + bold + a 2px band on
      * top; nothing rests on hue. */
     var tabs = [['ホーム', 'home'], ['トレーニング', 'menus'], ['設定', 'settings']];
-    return h('div', { style: 'display:flex;height:56px;border-top:1px solid var(--line);background:#fff;'
+    return h('div', { style: 'display:flex;height:56px;border-top:1px solid var(--line);background:var(--card);'
       + 'padding-bottom:env(safe-area-inset-bottom)' },
       tabs.map(function (tab) {
         var on = tab[1] === here;
@@ -3284,9 +3318,14 @@
             : target === 'export' ? 'export'
             : target === 'a2hs' ? 'a2hs'
             : target === 'aikey' ? 'aikey'
-            : target === 'about' ? 'about' : 'library' };
+            : target === 'about' ? 'about'
+            : target === 'theme' ? 'theme' : 'library' };
           draw();
         }));
+      return;
+    }
+    if (state.screen.name === 'theme') {
+      root.replaceChildren(themeScreen(function () { state.screen = { name: 'settings' }; draw(); }));
       return;
     }
     if (state.screen.name === 'about') {
@@ -3357,13 +3396,13 @@
        * plain Japanese as a quiet line, the title big, and the running clock
        * on the right of the title line - the weight the owner felt was
        * missing. Values copied from the artboard; do not tune here. */
-      h('div', { style: 'display:flex;flex-direction:column;padding:20px 20px 14px;background:#fff;'
-        + 'border-bottom:1px solid #e7edf5' }, [
-        h('div', { style: 'font-family:var(--sans);font-size:15px;font-weight:600;color:#6a7a8e;'
+      h('div', { style: 'display:flex;flex-direction:column;padding:20px 20px 14px;background:var(--card);'
+        + 'border-bottom:1px solid var(--line)' }, [
+        h('div', { style: 'font-size:15px;font-weight:700;color:var(--sub);'
           + 'letter-spacing:.01em', text: jaDateLabel(view.today.date) }),
         h('div', { style: 'display:flex;align-items:baseline;justify-content:space-between;gap:16px;'
           + 'margin-top:8px' }, [
-          h('div', { style: 'font-size:30px;font-weight:700;color:#1d2734;line-height:1.15;'
+          h('div', { style: 'font-size:30px;font-weight:800;color:var(--ink);line-height:1.15;'
             + 'letter-spacing:.02em', text: 'トレ録' }),
           /* The clock the app is running on: what the owner asked for when
            * checking the phone against the screen. Ticks by itself so it
@@ -3391,22 +3430,25 @@
         style: 'flex:1;padding:14px 18px 18px;'
           + 'display:flex;flex-direction:column;gap:18px'
       }, [
-        /* Design (2026-09-12): the home page is for looking; the one filled
-         * button on it is the way to the page for doing. */
-        h('button', {
-          class: 'primary',
-          style: 'display:block;width:100%;height:52px;border-radius:10px;'
-            + 'font-size:17px;font-weight:700;letter-spacing:.02em;font-family:inherit;cursor:pointer',
-          onclick: function () { problem = null; state.screen = { name: 'record' }; draw(); }
-        }, ['記録する']),
-        view.today.sessions.length ? h('div', { style: 'display:flex;flex-direction:column;gap:2px' }, [
-          h('div', { style: 'font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.04em', text: 'きょうの記録' })
-        ].concat(view.today.sessions.map(function (session, i) {
-          return sessionRow(session, i === 0, function () {
-            problem = null;
-            openEdit(session.session_id, view.today.date);
-          });
-        }))) : null
+        /* Design (2026-09-12): the home page is for looking; the one button
+         * on it is the way to the page for doing. Two states (2026-09-14,
+         * after the owner's local app): filled while the day is empty,
+         * outline with a plus once it holds a record. */
+        todayRecords(view.today.sessions, function (session) {
+          problem = null;
+          openEdit(session.session_id, view.today.date);
+        }, function () {
+          problem = null;
+          state.historyEnd = view.today.date;
+          state.days = 30;
+          state.screen = { name: 'history' };
+          draw();
+        }),
+        /* Last on the page, after what the day holds (Design .dc.html and
+         * the owner's local app put it there). */
+        homeButton(view.today.sessions.length > 0, function () {
+          problem = null; state.screen = { name: 'record' }; draw();
+        })
       ]),
       problem ? warnBar(problem, null, null) : null,
       /* The reason differs by phone, so the warning cannot be one sentence.
@@ -3424,8 +3466,106 @@
     root.replaceChildren(page);
   }
 
+  /* The wording of the second state is a placeholder until Claude Design
+   * settles it with the owner ("足す" is out, by the owner's word). One place
+   * to change it. */
+  var RECORD_LABEL = '記録する';
+  var RECORD_MORE_LABEL = 'もう1つ記録する';
+
+  function homeButton(hasRecords, onPress) {
+    return h('button', {
+      class: 'primary' + (hasRecords ? ' outline' : ''),
+      style: 'display:flex;align-items:center;justify-content:center;gap:9px;width:100%;min-height:58px;'
+        + 'border-radius:var(--radius-control);font-size:17px;font-weight:800;'
+        + 'letter-spacing:.02em;font-family:inherit;cursor:pointer;padding:0 16px',
+      onclick: onPress
+    }, [
+      hasRecords ? svg('<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg>') : null,
+      hasRecords ? RECORD_MORE_LABEL : RECORD_LABEL
+    ]);
+  }
+
+  /* One card per record (design/THEMES_20260914.md): title, "n種目 ／ HH:MM
+   * 実施", the thumbnail on the right, and a bottom row with "種目を見る"
+   * (folds the exercise list open, no redraw) and "編集" (opens the record). */
+  function recordCard(session, onOpen) {
+    var name = session.menu_name
+      || (session.items.length === 1 ? session.items[0].name : '種目 ' + session.items.length + '件');
+    var time = session.performed_time || '';
+    var meta = (session.items.length ? session.items.length + '種目' : (session.video_url ? '種目なし' : '記録のみ'))
+      + (time ? ' ／ ' + time + ' 実施' : '');
+    var list = h('div', { style: 'display:none;border-top:1px solid var(--line);padding:12px 16px;'
+      + 'flex-direction:column;gap:6px' },
+      session.items.map(function (item) {
+        var amount = item.sets + 'セット×' + (item.unit === 'sec' ? item.seconds + '秒' : item.reps + '回');
+        return h('div', { style: 'display:flex;justify-content:space-between;gap:10px;font-size:13px;color:var(--body)' }, [
+          h('span', { text: item.name }),
+          h('span', { style: 'font-weight:700;color:var(--sub)', text: amount })
+        ]);
+      }));
+    var toggleLabel = h('span', { text: '種目を見る' });
+    var toggle = h('button', {
+      style: 'flex:1;min-height:44px;background:transparent;border:0;padding:9px 16px;font-family:inherit;'
+        + 'cursor:pointer;display:flex;align-items:center;gap:6px;text-align:left;font-size:13px;'
+        + 'font-weight:700;color:var(--color-action)',
+      'aria-expanded': 'false',
+      onclick: function () {
+        var open = list.style.display === 'none';
+        list.style.display = open ? 'flex' : 'none';
+        toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        toggleLabel.textContent = open ? '種目をとじる' : '種目を見る';
+        toggle.lastChild.style.transform = open ? 'rotate(180deg)' : '';
+      }
+    }, [toggleLabel, svg('<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9.5 12 15.5 18 9.5"/></svg>')]);
+    if (!session.items.length) toggle.style.visibility = 'hidden';
+    return h('div', { style: 'background:var(--card);border:1px solid var(--line);border-radius:var(--radius-card);'
+      + 'box-shadow:var(--shadow-card);overflow:hidden' }, [
+      h('div', { style: 'display:flex;align-items:flex-start;gap:12px;padding:14px 16px 10px' }, [
+        h('div', { style: 'flex:1;min-width:0' }, [
+          h('div', { style: 'font-size:15px;font-weight:800;color:var(--ink);line-height:1.4;' + TWO_LINES, text: name }),
+          h('div', { style: 'font-size:12px;font-weight:700;color:var(--sub);margin-top:5px', text: meta })
+        ]),
+        session.video_url ? thumb(session.video_url, 112, 64) : null
+      ]),
+      list,
+      h('div', { style: 'display:flex;align-items:center;border-top:1px solid var(--line)' }, [
+        toggle,
+        h('span', { style: 'width:1px;height:20px;background:var(--line)' }),
+        h('button', {
+          style: 'min-height:44px;background:transparent;border:0;padding:9px 16px;font-family:inherit;'
+            + 'cursor:pointer;font-size:13px;font-weight:700;color:var(--color-action)',
+          'aria-label': (time ? time.replace(/^0/, '').replace(':', '時') + '分の記録を' : 'この記録を') + '編集する',
+          onclick: onOpen
+        }, ['編集'])
+      ])
+    ]);
+  }
+
+  /* "今日の記録": heading with the count and last time on the right, then
+   * one card per record, then the way to earlier days. */
+  function todayRecords(sessions, onOpen, onHistory) {
+    var times = sessions.map(function (s) { return s.performed_time; }).filter(Boolean).sort();
+    var last = times.length ? times[times.length - 1] : '';
+    return h('div', { style: 'display:flex;flex-direction:column;gap:12px' }, [
+      sessions.length ? h('div', { style: 'display:flex;align-items:baseline;justify-content:space-between;padding:0 2px' }, [
+        h('span', { style: 'font-size:13px;font-weight:800;color:var(--body);letter-spacing:.03em', text: '今日の記録' }),
+        h('span', { style: 'font-size:12px;font-weight:700;color:var(--sub)',
+          text: sessions.length + '件' + (last ? ' ／ 最後は ' + last : '') })
+      ]) : null
+    ].concat(sessions.map(function (session) {
+      return recordCard(session, onOpen.bind(null, session));
+    })).concat([
+      h('button', {
+        style: 'display:flex;align-items:center;justify-content:space-between;min-height:44px;width:100%;'
+          + 'border:0;border-top:1px solid var(--line);background:none;padding:10px 2px;font-family:inherit;'
+          + 'cursor:pointer;font-size:14px;font-weight:400;color:var(--body);text-align:left',
+        onclick: onHistory
+      }, ['前の日の記録を見る', h('span', { style: 'color:var(--sub);display:flex' }, [svg(ICON.chevron)])])
+    ]));
+  }
+
   function clockLine() {
-    var line = h('div', { style: 'font-family:var(--mono);font-size:20px;font-weight:500;color:#3c4a5c;'
+    var line = h('div', { style: 'font-size:20px;font-weight:700;color:var(--body);'
       + 'font-variant-numeric:tabular-nums' });
     var tick = function () {
       var now = new Date();
@@ -3504,7 +3644,7 @@
           text: error && error.note ? error.note : '画面を開けませんでした。' }),
         h('div', { style: 'font-size:12px;color:var(--faint);line-height:1.7',
           text: '記録は端末の中に残っています。もう一度開いてみてください。' }),
-        h('button', { style: 'border:0;background:var(--deep);color:#fff;font-family:inherit;font-size:15px;'
+        h('button', { style: 'border:0;background:var(--color-action);color:var(--on-action);font-family:inherit;font-size:15px;'
           + 'font-weight:800;border-radius:16px;min-height:50px;cursor:pointer',
           onclick: function () { problem = null; state.screen = { name: 'home' }; draw(); } }, ['もう一度'])
       ]));

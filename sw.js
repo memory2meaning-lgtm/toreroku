@@ -11,7 +11,7 @@
  * index.html where a picture belonged is still holding those answers - the
  * companions come back as 絵なし until the store they are in is emptied. */
 const VERSION = 'ouchitore-v3';
-const ALWAYS = ['./', './index.html', './manifest.webmanifest', './tokens.css'];
+const ALWAYS = ['./', './index.html', './manifest.webmanifest', './tokens.css', './themes.css'];
 
 /* What the app is made of, read off the page rather than written down here.
  *

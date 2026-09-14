@@ -1,0 +1,90 @@
+/* トレ録 — 見た目3テーマ（2026-09-14）
+   html 要素の data-theme="paper" | "classic" | "night" で切り替える。
+   既定は paper。既存 tokens.css の後ろに読み込む（同名を上書きする）。
+   変わるのは色だけ。形・文言・並び・大きさは共通。 */
+
+[data-theme]{
+  --sans:system-ui, sans-serif;
+  --radius-card:18px; --radius-control:16px;
+}
+
+/* ────────── ② 紙（既定・本人用ローカル版の写し） ────────── */
+[data-theme="paper"]{
+  --bg:#efe9df;                 /* 画面の地（生成りの紙色） */
+  --bg-fade:linear-gradient(to top,#f7f4ee 66%,rgba(247,244,238,0));
+  --card:#fffdf8;               /* カード（クリーム寄りの白） */
+  --color-surface:var(--card);
+
+  --ink:#1d2734; --body:#3c4a5c; --sub:#6a7a8e; --faint:#9aa8ba;
+  --line:#e6dfd2;               /* 罫線・カードの枠 */
+  --line2:#efe9de;
+  --line-strong:#a99e8b;        /* 意味を持つ枠（3:1） */
+
+  --color-action:#1f6fb2;       /* 主ボタンの塗り */
+  --on-action:#fff;
+  --color-action-press:#18578c;
+
+  --cell-bg:#fff;               /* 週の目盛り：過去・今日の列 */
+  --cell-line:#e6dfd2;
+  --cell-dash:#cdc4b4;          /* 記録なし（過去） */
+  --cell-dash-future:#e2dbcd;   /* 未来 */
+  --today-ring:var(--ink);
+  --lv1:#cfe9e1; --lv2:#97d6c6; --lv3:#4cc4ab; --lv4:#19b89a;
+
+  --shadow-card:0 1px 2px rgba(31,55,92,.04),0 6px 22px rgba(31,55,92,.07);
+}
+
+/* ────────── ① いまのトレ録 ────────── */
+[data-theme="classic"]{
+  --bg:#eef1f6;
+  --bg-fade:linear-gradient(to top,#eef1f6 66%,rgba(238,241,246,0));
+  --card:#fff;
+  --color-surface:var(--card);
+
+  --ink:#1d2734; --body:#3c4a5c; --sub:#6a7a8e; --faint:#9aa8ba;
+  --line:#e7edf5;
+  --line2:#eef2f8;
+  --line-strong:#95a3b5;
+
+  --color-action:#1d5f9f;
+  --on-action:#fff;
+  --color-action-press:#16456f;
+
+  --cell-bg:#f2f5f9;
+  --cell-line:#b3c0d1;
+  --cell-dash:#b3c0d1;
+  --cell-dash-future:#cfd8e3;
+  --today-ring:var(--ink);
+  --lv1:#dce3ec; --lv2:#b3c0d1; --lv3:#7e8ea3; --lv4:#37465c;
+
+  --shadow-card:0 1px 2px rgba(31,55,92,.04),0 6px 22px rgba(31,55,92,.07);
+}
+
+/* ────────── ③ 夜（暗い地・暖色1色） ────────── */
+/* 参考：Apple フィットネス＝黒地に濃灰のカード、数字が主役。
+        Nike Training Club＝黒地に強い暖色を1色だけ。
+        Hevy / Strong＝暗い地で操作の色を1色に絞る。 */
+[data-theme="night"]{
+  --bg:#14181d;
+  --bg-fade:linear-gradient(to top,#14181d 66%,rgba(20,24,29,0));
+  --card:#1e242b;
+  --color-surface:var(--card);
+
+  --ink:#f3f6f9; --body:#ccd5de; --sub:#9dabb8; --faint:#7c8894;
+  --line:#333c46;
+  --line2:#28303a;
+  --line-strong:#78838f;
+
+  --color-action:#f2a33c;
+  --on-action:#17120a;
+  --color-action-press:#d98a25;
+
+  --cell-bg:#171d23;
+  --cell-line:#78838f;
+  --cell-dash:#78838f;
+  --cell-dash-future:#3d4750;
+  --today-ring:var(--ink);
+  --lv1:#5b4621; --lv2:#8a6725; --lv3:#c08a2c; --lv4:#f2a33c;
+
+  --shadow-card:0 1px 2px rgba(0,0,0,.35),0 6px 22px rgba(0,0,0,.35);
+}

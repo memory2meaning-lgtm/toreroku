@@ -74,3 +74,10 @@ powershell -ExecutionPolicy Bypass -File tools/serve.ps1
 ## 公開
 
 GitHub Pages。`main` の root をそのまま配る。**push は本人の手番。**
+
+## Claude Design に頼んだあとの見張り方（2026-09-14 本人指示・仕組み）
+
+- 依頼を送ったら、**送った直後・以後 60〜90 秒ごと**に Chrome MCP の `get_page_text` でその Design チャットを読む（`Still thinking…` が消えるまで）。読みに行かずに別作業で埋めない。
+- Design が上流の質問を返してきたら、SETTLED.md と本人の発言から答えられるものは即答して生成を再開させる。本人にしか答えられないものだけ本人に聞く。
+- 生成物が出たら `.dc.html` を取得して結線→Playwright で3テーマ×ホーム/設定を撮って確認→S24 で本人目視。
+- 待ち時間は依存しない下回り（保存・切替・テスト）を別エージェントで並行させる。

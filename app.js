@@ -617,7 +617,7 @@
       ]),
       h('div', { style: 'display:flex;flex-direction:column;gap:8px' }, [
         field,
-        h('button', { style: 'border:0;background:var(--color-action);color:var(--on-action);font-family:inherit;font-size:15px;'
+        h('button', { style: 'border:2.5px solid var(--color-action);background:color-mix(in oklab, var(--color-action) 9%, var(--card));color:var(--color-action);box-shadow:0 3px 0 var(--color-action-press);font-family:inherit;font-size:15px;'
           + 'font-weight:800;border-radius:14px;min-height:50px;box-shadow:var(--shadow-action);cursor:pointer',
           onclick: function () { onPasted(field.value, false); } }, ['URL から題名を取って作る'])
       ]),
@@ -861,7 +861,7 @@
           ])
         ]),
         h('button', {
-          style: 'border:0;background:var(--color-action);color:var(--on-action);font-family:inherit;font-size:15px;'
+          style: 'border:2.5px solid var(--color-action);background:color-mix(in oklab, var(--color-action) 9%, var(--card));color:var(--color-action);box-shadow:0 3px 0 var(--color-action-press);font-family:inherit;font-size:15px;'
             + 'font-weight:800;border-radius:16px;min-height:50px;box-shadow:var(--shadow-action);'
             + 'cursor:pointer;opacity:' + (chosen.length ? '1' : '.45'),
           'aria-disabled': chosen.length === 0 ? 'true' : null,
@@ -1710,7 +1710,7 @@
             h('div', { style: 'border-top:1px solid var(--line2);padding-top:10px' },
               [fileRow('前回の書き出し', settings.last_export || 'まだありません')]),
             fileRow('記録の件数', sessionCount + '件'),
-            h('button', { style: 'border:0;background:var(--color-action);color:var(--on-action);font-family:inherit;'
+            h('button', { style: 'border:2.5px solid var(--color-action);background:color-mix(in oklab, var(--color-action) 9%, var(--card));color:var(--color-action);box-shadow:0 3px 0 var(--color-action-press);font-family:inherit;'
               + 'font-size:15px;font-weight:800;border-radius:14px;min-height:48px;'
               + 'box-shadow:var(--shadow-action);cursor:pointer', onclick: exportFile }, ['ファイルに書き出す'])
           ])
@@ -2059,7 +2059,7 @@
           ])
         ]),
         h('button', {
-          style: 'border:0;background:var(--color-action);color:var(--on-action);font-family:inherit;font-size:15px;'
+          style: 'border:2.5px solid var(--color-action);background:color-mix(in oklab, var(--color-action) 9%, var(--card));color:var(--color-action);box-shadow:0 3px 0 var(--color-action-press);font-family:inherit;font-size:15px;'
             + 'font-weight:800;border-radius:16px;min-height:50px;box-shadow:var(--shadow-action);'
             + 'cursor:pointer;opacity:' + (pick.items.length ? '1' : '.45'),
           'aria-disabled': pick.items.length === 0 ? 'true' : null,
@@ -2208,7 +2208,7 @@
       ]),
       h('div', { style: 'flex:1' }),
       h('div', { style: 'padding:12px 20px 26px;display:flex;flex-direction:column;gap:8px' }, [
-        installOffer ? h('button', { style: 'border:0;background:var(--color-action);color:var(--on-action);font-family:inherit;'
+        installOffer ? h('button', { style: 'border:2.5px solid var(--color-action);background:color-mix(in oklab, var(--color-action) 9%, var(--card));color:var(--color-action);box-shadow:0 3px 0 var(--color-action-press);font-family:inherit;'
           + 'font-size:15px;font-weight:800;border-radius:16px;min-height:50px;'
           + 'box-shadow:var(--shadow-action);cursor:pointer',
           onclick: async function () {
@@ -2231,7 +2231,7 @@
         h('button', { style: installOffer
           ? 'border:1px solid var(--line);background:var(--card);color:var(--body);font-family:inherit;font-size:14px;'
             + 'font-weight:700;border-radius:16px;min-height:48px;cursor:pointer'
-          : 'border:0;background:var(--color-action);color:var(--on-action);font-family:inherit;font-size:15px;'
+          : 'border:2.5px solid var(--color-action);background:color-mix(in oklab, var(--color-action) 9%, var(--card));color:var(--color-action);box-shadow:0 3px 0 var(--color-action-press);font-family:inherit;font-size:15px;'
             + 'font-weight:800;border-radius:16px;min-height:50px;box-shadow:var(--shadow-action);cursor:pointer',
           onclick: function () { remember(A2HS_KEY, { added: true, on: new Date().toISOString() }); onClose(); } }, ['追加しました']),
         h('button', { style: 'border:0;background:none;color:var(--sub);font-family:inherit;font-size:13px;'
@@ -3801,7 +3801,7 @@
           text: error && error.note ? error.note : '画面を開けませんでした。' }),
         h('div', { style: 'font-size:12px;color:var(--faint);line-height:1.7',
           text: '記録は端末の中に残っています。もう一度開いてみてください。' }),
-        h('button', { style: 'border:0;background:var(--color-action);color:var(--on-action);font-family:inherit;font-size:15px;'
+        h('button', { style: 'border:2.5px solid var(--color-action);background:color-mix(in oklab, var(--color-action) 9%, var(--card));color:var(--color-action);box-shadow:0 3px 0 var(--color-action-press);font-family:inherit;font-size:15px;'
           + 'font-weight:800;border-radius:16px;min-height:50px;cursor:pointer',
           onclick: function () { problem = null; state.screen = { name: 'home' }; draw(); } }, ['もう一度'])
       ]));

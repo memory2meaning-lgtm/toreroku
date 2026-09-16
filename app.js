@@ -630,7 +630,7 @@
       /* Said before the URL goes in, not after: without a key the title
        * arrives alone and the exercises have to wait for a detour through
        * 設定 (the owner hit exactly that, 2026-09-12). */
-      aiKey() ? null : h('div', { style: 'display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line2);'
+      canReadVideo() ? null : h('div', { style: 'display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line2);'
         + 'padding-top:12px' }, [
         h('div', { style: 'font-size:12px;color:var(--body);line-height:1.6',
           text: 'Gemini のキーを作成して、このアプリに登録しておくと、URL を貼ったあと自動で種目も入ります。無料枠の範囲なら費用はかかりません。' }),
@@ -1630,6 +1630,16 @@
     return typeof held.key === 'string' ? held.key.trim() : '';
   }
 
+  /* A page that hosts these screens can read videos itself instead: the PC/Pi
+   * server keeps the owner's own key and answers POST /api/video/extract, so
+   * nothing is typed into the phone and no key travels with the browser.
+   * The public app has no hook and goes on using the key above. */
+  function aiReader() {
+    var hooks = window.torerokuHooks;
+    return hooks && typeof hooks.readVideo === 'function' ? hooks.readVideo : null;
+  }
+  function canReadVideo() { return !!(aiKey() || aiReader()); }
+
   function aiKeyScreen(onBack, onSave) {
     var draft = { value: aiKey() };
     var field = h('input', {
@@ -1941,7 +1951,9 @@
         row('記録を残す', '書き出し／読み込み。機種変更のときはここから。', 'export'),
         row('ホーム画面に追加', '記録が消えないための手順をもう一度見ます。', 'a2hs'),
         row('種目の一覧', '名前や標準のセット数を直す。使っていない種目を消す。', 'library'),
-        row('動画を読むキー', 'Google の Gemini のキーを入れると、動画の URL だけで種目を取れます。', 'aikey'),
+        /* Hidden where the host page reads videos itself: there is no key
+         * on this phone to look after. */
+        aiReader() ? null : row('動画を読むキー', 'Google の Gemini のキーを入れると、動画の URL だけで種目を取れます。', 'aikey'),
         row('このアプリについて', '注意と免責、通信の範囲、ライセンス。', 'about')
       ]),
       h('div', { style: 'flex:1' }),
@@ -2552,14 +2564,14 @@
         edit.items.length && !edit.pasteOpen && !edit.videoToolsOpen ? null : h('div', { style: 'display:flex;flex-direction:column;gap:8px;border:1px solid var(--line);'
           + 'border-radius:12px;padding:12px' }, [
           h('div', { style: 'font-size:13px;font-weight:700;color:var(--ink)', text: '動画から種目を入れる' }),
-          videoId(edit.video_url) && aiKey() ? h('button', { type: 'button',
+          videoId(edit.video_url) && canReadVideo() ? h('button', { type: 'button',
             style: 'border:0;background:var(--ink);color:var(--card);font-family:inherit;font-size:14px;font-weight:700;'
               + 'border-radius:12px;min-height:44px;padding:0 14px;cursor:pointer;align-self:flex-start;'
               + (edit.aiBusy ? 'opacity:.6' : ''),
             'aria-disabled': edit.aiBusy ? 'true' : null,
             onclick: function () { extractFromVideo(edit); }
           }, [edit.aiBusy ? '動画を読んでいます（20秒ほど）' : '動画を AI に読ませて種目にする']) : null,
-          videoId(edit.video_url) && !aiKey() ? h('div', { style: 'display:flex;flex-direction:column;gap:8px' }, [
+          videoId(edit.video_url) && !canReadVideo() ? h('div', { style: 'display:flex;flex-direction:column;gap:8px' }, [
             h('div', { style: 'font-size:12px;color:var(--sub);line-height:1.6',
               text: 'Google の Gemini のキーを入れると、URL だけで種目を取れます（キーはあなた自身のもの・無料枠あり）。' }),
             h('button', { type: 'button',
@@ -2763,12 +2775,22 @@
   async function extractFromVideo(edit) {
     var id = videoId(edit.video_url);
     var key = aiKey();
-    if (!id || !key || edit.aiBusy) return;
+    var reader = aiReader();
+    if (!id || (!key && !reader) || edit.aiBusy) return;
     edit.aiBusy = true;
     problem = null;
     draw();
     var found = null;
     try {
+      if (reader) {
+        /* The host reads the video with its own key; the answer is the same
+         * array of exercises, and is checked the same way. */
+        var offered = await reader(id);
+        found = Array.isArray(offered)
+          ? offered.filter(function (one) { return one && typeof one === 'object' && !Array.isArray(one); })
+          : null;
+        if (!found) problem = '読み取りの返事が思った形ではありませんでした。';
+      } else {
       var response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + AI_MODEL
         + ':generateContent', {
         method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
@@ -2809,8 +2831,10 @@
           } catch (broken) { problem = '読み取りの返事を解釈できませんでした（' + (candidate.finishReason || '') + '・' + text.length + '文字）。'; }
         }
       }
+      }
     } catch (failed) {
-      problem = problem || '動画を読めませんでした。つながっているか確かめてください（' + String(failed && failed.message || failed).slice(0, 80) + '）。';
+      problem = problem || (failed && failed.note)
+        || '動画を読めませんでした。つながっているか確かめてください（' + String(failed && failed.message || failed).slice(0, 80) + '）。';
     }
     edit.aiBusy = false;
     if (!found) { draw(); return; }

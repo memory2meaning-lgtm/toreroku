@@ -86,6 +86,7 @@ GitHub Pages。`main` の root をそのまま配る。**push は本人の手番
 
 - ここ（`C:\toreroku`）が**画面の正本**。本人用のサーバーは `C:\VoiceMirror\tools\workout_ui_sync.py` で index.html / app.js / themes.css / tokens.css / 相棒の絵を写して配信する（store.js だけ HTTP 版に差し替わる）。
 - だから **`api.get/post('/api/…')` の名前と JSON の形は本人用サーバーとの契約**。パスを増やす・形を変えるときは `C:\VoiceMirror\tools\workout_web.py` も同時に直す（正本＝`C:\VoiceMirror\context\M2M_WORKOUT_SPEC.md` §18）。
-- 本人用にだけ要る差は `window.torerokuHooks`（いまは `thumbUrl`）の受け口で吸う。app.js に本人用の分岐を書かない。
-- 更新の流れ：ここで commit/push → sync → :5973 再起動。
+- 本人用にだけ要る差は `window.torerokuHooks` の受け口で吸う。app.js に本人用の分岐を書かない。受け口は `thumbUrl`（サムネをホスト側から）・`companions`/`companionFrame`（本人用だけの相棒）・`sessionLook`（記録の呼び名と絵）・**`readVideo(id)`（動画の読み取りをホストのサーバーにやらせる）**。
+- `readVideo` があるアプリは、**Gemini のキーを利用者に一切聞かない**（キー画面も設定の行も出さない）。公開版は受け口が無いので、これまでどおり利用者自身のキーで Google に直接聞く。
+- 更新の流れ：ここで commit/push → 本人用で sync → Raspberry Pi へ配る（2026-09-15〜。`C:\VoiceMirror\tools\workout_deploy_to_pi.ps1`）。
 

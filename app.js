@@ -134,7 +134,7 @@
    * (a new clever line right after a record would read as a reaction to it).
    * Memory stays on this device and is never exported.
    */
-  var LINE_KEY = 'ouchitore-hitokoto-today-2';
+  var LINE_KEY = 'ouchitore-hitokoto-today-3';
   var SAID_KEY = 'ouchitore-hitokoto-last';
 
   function remembered(key) {
@@ -180,12 +180,12 @@
     ['M02', 'おはようございます。朝ごはんはもう済みましたか？', function (c) { return c.band === 'morning' && c.hour < 9; }, 4],
     ['M03', 'おはようございます。まだ体が起きていない感じはありませんか？', function (c) { return c.band === 'morning' && c.hour < 9; }, 4],
     ['M04', 'おはようございます。朝はゆっくりでいいですよね。', function (c) { return c.band === 'morning'; }, 4],
-    ['M05', 'おはようございます。今日はどんな予定ですか？', function (c) { return c.band === 'morning'; }, 4],
-    ['M06', 'おはようございます。今朝はお茶ですか、コーヒーですか？', function (c) { return c.band === 'morning'; }, 6],
+    ['M05', 'おはようございます。今日は予定がありますか？', function (c) { return c.band === 'morning'; }, 4],
+    ['M06', 'おはようございます。今朝はお茶を飲みましたか？', function (c) { return c.band === 'morning'; }, 6],
     ['D01', 'こんにちは。お昼はもう食べましたか？', function (c) { return c.band === 'noon' && c.now < 780; }, 4],
     ['D02', 'こんにちは。お昼どきですね。何を食べるか決まりましたか？', function (c) { return c.band === 'noon' && c.now < 750; }, 4],
     ['D03', 'こんにちは。もうお昼過ぎましたね。ご飯食べて眠くなってませんか？', function (c) { return c.band === 'noon' && c.now >= 750; }, 4],
-    ['D04', 'こんにちは。午前中はどんな具合でしたか？', function (c) { return c.band === 'noon'; }, 4],
+    ['D04', 'こんにちは。午前中はゆっくりできましたか？', function (c) { return c.band === 'noon'; }, 4],
     ['D05', 'こんにちは。お昼のあとは、ひと息つけていますか？', function (c) { return c.band === 'noon' && c.hour === 13; }, 4],
     ['A01', 'こんにちは。午後はのんびりできていますか？', function (c) { return c.band === 'afternoon'; }, 4],
     ['A02', 'こんにちは。おやつの時間ですね。何か召し上がりますか？', function (c) { return c.band === 'afternoon' && c.hour === 15; }, 4],
@@ -198,7 +198,7 @@
     ['N04', 'こんばんは。お風呂はもう入りましたか？', function (c) { return c.band === 'evening' && c.hour >= 20; }, 4],
     ['N05', 'こんばんは。そろそろ一日が終わりますね。', function (c) { return c.band === 'evening' && c.now >= 1290; }, 4],
     ['N06', 'こんばんは。テレビは何か面白いものをやっていますか？', function (c) { return c.band === 'evening' && c.hour >= 19 && c.hour <= 21; }, 6],
-    ['N07', 'こんばんは。今日はどんな一日でしたか？', function (c) { return c.band === 'evening'; }, 4],
+    ['N07', 'こんばんは。今日は出かけましたか？', function (c) { return c.band === 'evening'; }, 4],
     ['L01', 'こんばんは。もう遅い時間ですね。', function (c) { return c.band === 'late'; }, 2],
     ['L02', 'こんばんは。夜更かしですか？', function (c) { return c.band === 'late' && (c.hour === 23 || c.hour === 0); }, 4],
     ['L03', 'こんばんは。夜中に目が覚めましたか？', function (c) { return c.band === 'late' && c.hour >= 1 && c.hour <= 4; }, 4],
@@ -207,7 +207,7 @@
     ['W03', '{挨拶}。金曜ですね。週末は何か予定がありますか？', function (c) { return c.weekday === 5; }, 14],
     ['W04', '{挨拶}。土曜ですね。ゆっくりできていますか？', function (c) { return c.weekday === 6; }, 14],
     ['W05', '{挨拶}。日曜ですね。今日はどこかへ出かけますか？', function (c) { return c.weekday === 0 && inBand(c, ['early', 'morning', 'noon']); }, 14],
-    ['W06', '{挨拶}。週末はどうでしたか？', function (c) { return c.weekday === 0 && c.band === 'evening'; }, 14],
+    ['W06', '{挨拶}。週末はゆっくりできましたか？', function (c) { return c.weekday === 0 && c.band === 'evening'; }, 14],
     ['S01', 'あけましておめでとうございます。今年もよろしくお願いします。', function (c) { return c.month === 1 && c.day <= 7; }, 365, true],
     ['S02', '{挨拶}。寒い日が続きますね。部屋は暖かくしていますか？', function (c) { return [12, 1, 2].indexOf(c.month) >= 0; }, 10],
     ['S03', '{挨拶}。日が少し長くなってきましたね。', function (c) { return c.month === 2 && c.band === 'afternoon'; }, 10],
@@ -229,37 +229,40 @@
   /* The lines that use a fact; they keep a copy of the facts they used.
    * A question after a fact turns to meals or the hour, never to the body,
    * the amount or the rest of the day: 「あとはゆっくりですか？」 read as
-   * 「もう運動しないの？」 to the owner (2026-09-17, Design revised F06-F08, F13). */
+   * 「もう運動しないの？」 to the owner (2026-09-17, Design revised F06-F08, F13).
+   * Then the owner again: ask nothing whose answer the app cannot take
+   * (「お昼食べました？」, not 「何を食べましたか？」), and state a record plainly -
+   * no 「ね」 after a fact, it sounds as if something were implied. */
   var FACT_LINES = [
-    ['F02', '{挨拶}。昨日は {previous_time} でしたね。体に残っていませんか？', function (c) { return c.count === 0 && c.since === 1 && !!c.prevTime; }, 3],
-    ['F03', '{挨拶}。{days_since}日ぶりですね。お変わりありませんでしたか？', function (c) { return c.count === 0 && c.since >= 3 && c.since <= 13; }, 3],
-    ['F04', '{挨拶}。しばらくぶりですね。お元気でしたか？', function (c) { return c.count === 0 && c.since >= 14 && c.since <= 59; }, 3],
-    ['F05', '{挨拶}。お久しぶりですね。お元気でしたか？', function (c) { return c.count === 0 && c.since >= 60; }, 3],
-    ['F06', 'こんにちは。朝のうちに{today_count}件済んでいますね。お昼は何を食べましたか？', function (c) {
+    ['F02', '{挨拶}。昨日は {previous_time} の記録があります。体に残っていませんか？', function (c) { return c.count === 0 && c.since === 1 && !!c.prevTime; }, 3],
+    ['F03', '{挨拶}。{days_since}日ぶりです。お変わりありませんか？', function (c) { return c.count === 0 && c.since >= 3 && c.since <= 13; }, 3],
+    ['F04', '{挨拶}。しばらくぶりです。お元気でしたか？', function (c) { return c.count === 0 && c.since >= 14 && c.since <= 59; }, 3],
+    ['F05', '{挨拶}。お久しぶりです。お元気でしたか？', function (c) { return c.count === 0 && c.since >= 60; }, 3],
+    ['F06', 'こんにちは。朝のうちに{today_count}件の記録があります。お昼食べました？', function (c) {
       return inBand(c, ['noon', 'afternoon']) && c.count >= 1 && c.times.length === c.count
         && c.times.every(function (t) { return clock(t) < 660; });
     }, 3],
-    ['F07', 'こんばんは。今日は {first_time} の分がありますね。晩ごはんは済みましたか？', function (c) {
+    ['F07', 'こんばんは。今日は {first_time} の記録があります。晩ごはん食べました？', function (c) {
       return inBand(c, ['evening', 'late']) && c.count === 1 && c.times.length === 1;
     }, 3],
-    ['F08', '{挨拶}。今日は{today_count}件、記録がありますね。', function (c) { return inBand(c, ['afternoon', 'evening']) && c.count >= 2; }, 3],
-    ['F09', 'おはようございます。前回も朝でしたね。朝のほうが体が動きやすいですか？', function (c) {
+    ['F08', '{挨拶}。今日は{today_count}件の記録があります。', function (c) { return inBand(c, ['afternoon', 'evening']) && c.count >= 2; }, 3],
+    ['F09', 'おはようございます。前回の記録も朝です。朝のほうが体が動きやすいですか？', function (c) {
       return inBand(c, ['early', 'morning']) && c.count === 0 && c.since >= 1 && !!c.prevTime
         && clock(c.prevTime) >= 300 && clock(c.prevTime) < 660;
     }, 7],
-    ['F10', 'こんばんは。前回も夜でしたね。夜のほうが落ち着きますか？', function (c) {
+    ['F10', 'こんばんは。前回の記録も夜です。夜のほうが落ち着きますか？', function (c) {
       return c.band === 'evening' && c.count === 0 && c.since >= 1 && !!c.prevTime
         && clock(c.prevTime) >= 1080 && clock(c.prevTime) < 1380;
     }, 7],
-    ['F11', '{挨拶}。前回は夜遅くでしたね。よく眠れましたか？', function (c) {
+    ['F11', '{挨拶}。前回は夜遅くの記録です。よく眠れましたか？', function (c) {
       return inBand(c, ['early', 'morning']) && c.count === 0 && c.since === 1 && !!c.prevTime && clock(c.prevTime) >= 1320;
     }, 7],
     ['F12', '{挨拶}。ひと息つけていますか？', function (c) {
       var last = c.times.length ? clock(c.times[c.times.length - 1]) : null;
       return c.count >= 1 && last !== null && c.now - last >= 0 && c.now - last <= 60;
     }, 2],
-    ['F13', '{挨拶}。今日は{total_minutes}分の記録がありますね。', function (c) { return inBand(c, ['afternoon', 'evening']) && c.count >= 1 && c.minutes >= 30; }, 3],
-    ['F14', 'こんばんは。今週は{days_this_week}日、記録がありますね。', function (c) { return c.weekday === 0 && c.band === 'evening' && c.week >= 1; }, 3]
+    ['F13', '{挨拶}。今日は{total_minutes}分の記録があります。', function (c) { return inBand(c, ['afternoon', 'evening']) && c.count >= 1 && c.minutes >= 30; }, 3],
+    ['F14', 'こんばんは。今週は{days_this_week}日、記録があります。', function (c) { return c.weekday === 0 && c.band === 'evening' && c.week >= 1; }, 3]
   ];
 
   /* Same date and band, same pick - even when storage was lost. */

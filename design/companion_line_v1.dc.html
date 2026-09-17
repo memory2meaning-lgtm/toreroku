@@ -64,7 +64,7 @@
                 <div style="font:700 13px/1 system-ui,sans-serif;color:var(--sub)">先週 4 日</div>
               </div>
             </div>
-            <div style="padding:8px 0;font:400 15px/1.8 system-ui,sans-serif;color:var(--body)">ゆきさん、おはようございます。昨日は 08:10 でしたね。体に残っていませんか？</div>
+            <div style="padding:8px 0;font:400 15px/1.8 system-ui,sans-serif;color:var(--body)">{{ m1 }}</div>
             <div style="background:var(--card);border-radius:18px;box-shadow:var(--shadow-card);padding:16px 18px;display:flex;align-items:center;gap:14px">
               <div style="width:60px;height:60px;border-radius:12px;border:1.5px dashed var(--line-strong);display:flex;align-items:center;justify-content:center;font:700 10px/1.3 system-ui,sans-serif;color:var(--sub);text-align:center;flex:none">相棒の絵</div>
               <div style="flex:1;font:700 15px/1.6 system-ui,sans-serif;color:var(--body)">きょうはまだ記録がありません。</div>
@@ -106,7 +106,7 @@
                 <div style="font:700 13px/1 system-ui,sans-serif;color:var(--sub)">先週 4 日</div>
               </div>
             </div>
-            <div style="padding:8px 0;font:400 15px/1.8 system-ui,sans-serif;color:var(--body)">こんにちは。朝のうちに3件済んでいますね。お昼は何を食べましたか？</div>
+            <div style="padding:8px 0;font:400 15px/1.8 system-ui,sans-serif;color:var(--body)">{{ m2 }}</div>
             <div style="background:var(--card);border-radius:18px;box-shadow:var(--shadow-card);padding:16px 18px;display:flex;align-items:center;gap:14px">
               <div style="width:60px;height:60px;border-radius:12px;border:1.5px dashed var(--line-strong);display:flex;align-items:center;justify-content:center;font:700 10px/1.3 system-ui,sans-serif;color:var(--sub);text-align:center;flex:none">相棒の絵</div>
               <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px">
@@ -177,7 +177,7 @@
                 <div style="font:700 13px/1 system-ui,sans-serif;color:var(--sub)">先週 4 日</div>
               </div>
             </div>
-            <div style="padding:8px 0;font:400 15px/1.8 system-ui,sans-serif;color:var(--body)">こんばんは。晩ごはん、済みましたか？</div>
+            <div style="padding:8px 0;font:400 15px/1.8 system-ui,sans-serif;color:var(--body)">{{ m3 }}</div>
             <div style="background:var(--card);border-radius:18px;box-shadow:var(--shadow-card);padding:16px 18px;display:flex;align-items:center;gap:14px">
               <div style="width:60px;height:60px;border-radius:12px;border:1.5px dashed var(--line-strong);display:flex;align-items:center;justify-content:center;font:700 10px/1.3 system-ui,sans-serif;color:var(--sub);text-align:center;flex:none">相棒の絵</div>
               <div style="flex:1;font:700 15px/1.6 system-ui,sans-serif;color:var(--body)">きょうはまだ記録がありません。</div>
@@ -219,7 +219,7 @@
                 <div style="font:700 13px/1 system-ui,sans-serif;color:var(--sub)">先週 3 日</div>
               </div>
             </div>
-            <div style="padding:8px 0;font:400 15px/1.8 system-ui,sans-serif;color:var(--body)">おはようございます。4日ぶりですね。お変わりありませんでしたか？</div>
+            <div style="padding:8px 0;font:400 15px/1.8 system-ui,sans-serif;color:var(--body)">{{ m4 }}</div>
             <div style="background:var(--card);border-radius:18px;box-shadow:var(--shadow-card);padding:16px 18px;display:flex;align-items:center;gap:14px">
               <div style="width:60px;height:60px;border-radius:12px;border:1.5px dashed var(--line-strong);display:flex;align-items:center;justify-content:center;font:700 10px/1.3 system-ui,sans-serif;color:var(--sub);text-align:center;flex:none">相棒の絵</div>
               <div style="flex:1;font:700 15px/1.6 system-ui,sans-serif;color:var(--body)">きょうはまだ記録がありません。</div>
@@ -260,7 +260,7 @@
                 <div style="font:700 13px/1 system-ui,sans-serif;color:var(--body)">今週の実績 <span style="font:800 17px/1 system-ui,sans-serif;color:var(--ink)">0</span> 日</div>
               </div>
             </div>
-            <div style="padding:8px 0;font:400 15px/1.8 system-ui,sans-serif;color:var(--body)">はじめまして、ゆきさん。記録すると、上の「今週の実績」にその日の回数が、下の「きょうの記録」に何をいつやったかが残ります。</div>
+            <div style="padding:8px 0;font:400 15px/1.8 system-ui,sans-serif;color:var(--body)">{{ m5 }}</div>
             <div style="background:var(--card);border-radius:18px;box-shadow:var(--shadow-card);padding:16px 18px;display:flex;align-items:center;gap:14px">
               <div style="width:60px;height:60px;border-radius:12px;border:1.5px dashed var(--line-strong);display:flex;align-items:center;justify-content:center;font:700 10px/1.3 system-ui,sans-serif;color:var(--sub);text-align:center;flex:none">相棒の絵</div>
               <div style="flex:1;font:700 15px/1.6 system-ui,sans-serif;color:var(--body)">きょうはまだ記録がありません。</div>
@@ -342,6 +342,7 @@
   <!-- ───────── 候補集 ───────── -->
   <div id="list" style="display:flex;flex-direction:column;gap:16px">
     <div style="font:800 20px/1.4 system-ui,sans-serif">候補集（{{ count }}本）</div>
+    <div style="font:400 14px/1.7 system-ui,sans-serif;color:#3c4a5c;max-width:60em">本人決定（2026-09-17）を全本に当てた＝(A) 答えの中身を求める問い（何を・どんな・どこへ・AかBか）は置かず、はい／いいえで済む軽い問いだけ。(B) 記録・日数・時刻など記録の事実を言う文は「ね」「でしたね」を付けず言い切る（「記録があります」）。季節・時間帯の世間話の「ね」（寒いですね・お昼過ぎましたね）は残す＝記録に触れない共感の相づちで、含みが生まれないため。</div>
     <div style="font:400 15px/1.8 system-ui,sans-serif;color:#3c4a5c;max-width:60em">条件に使っている名前は「端末が知っていること」だけです＝<code style="font-size:13px">band</code>（上の6つ）／<code style="font-size:13px">hour</code>・<code style="font-size:13px">minute</code>／<code style="font-size:13px">weekday</code>／<code style="font-size:13px">month</code>・<code style="font-size:13px">day</code>／<code style="font-size:13px">today_count</code>／<code style="font-size:13px">today_records[].time</code>／<code style="font-size:13px">total_minutes</code>／<code style="font-size:13px">days_since</code>／<code style="font-size:13px">previous_time</code>（前に記録した日の最後の記録の時刻）／<code style="font-size:13px">days_this_week</code>／<code style="font-size:13px">first_ever</code>。文中の「{挨拶}」は時間帯の挨拶に置き換える。同じ配列がこのファイルのロジックにそのまま入っています。</div>
 
     <div style="background:#fff;border:1px solid #ded7ca;border-radius:14px;overflow:hidden">
@@ -374,7 +375,7 @@
 
 </section>
 </x-dc>
-<script type="text/x-dc" data-dc-script>
+<script type="text/x-dc" data-dc-script data-props="{&quot;nickname&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;ゆきさん&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;相棒の一言&quot;}}">
 class Component extends DCLogic {
   renderVals() {
     const T = "時間帯", D = "日";
@@ -394,14 +395,14 @@ class Component extends DCLogic {
         { id: "M02", text: "おはようございます。朝ごはんはもう済みましたか？", cond: "band = 朝 かつ hour < 9", fix: T, gap: 4 },
         { id: "M03", text: "おはようございます。まだ体が起きていない感じはありませんか？", cond: "band = 朝 かつ hour < 9", fix: T, gap: 4 },
         { id: "M04", text: "おはようございます。朝はゆっくりでいいですよね。", cond: "band = 朝", fix: T, gap: 4 },
-        { id: "M05", text: "おはようございます。今日はどんな予定ですか？", cond: "band = 朝", fix: T, gap: 4 },
-        { id: "M06", text: "おはようございます。今朝はお茶ですか、コーヒーですか？", cond: "band = 朝", fix: T, gap: 6 },
+        { id: "M05", text: "おはようございます。今日は予定がありますか？", cond: "band = 朝", fix: T, gap: 4 },
+        { id: "M06", text: "おはようございます。今朝はお茶を飲みましたか？", cond: "band = 朝", fix: T, gap: 6 },
       ]},
       { title: "D 昼（11:00〜13:59）", items: [
         { id: "D01", text: "こんにちは。お昼はもう食べましたか？", cond: "band = 昼 かつ 11:00 ≤ 時刻 < 13:00", fix: T, gap: 4 },
         { id: "D02", text: "こんにちは。お昼どきですね。何を食べるか決まりましたか？", cond: "band = 昼 かつ 11:00 ≤ 時刻 < 12:30", fix: T, gap: 4 },
         { id: "D03", text: "こんにちは。もうお昼過ぎましたね。ご飯食べて眠くなってませんか？", cond: "band = 昼 かつ 12:30 ≤ 時刻（本人の例文そのまま）", fix: T, gap: 4 },
-        { id: "D04", text: "こんにちは。午前中はどんな具合でしたか？", cond: "band = 昼", fix: T, gap: 4 },
+        { id: "D04", text: "こんにちは。午前中はゆっくりできましたか？", cond: "band = 昼", fix: T, gap: 4 },
         { id: "D05", text: "こんにちは。お昼のあとは、ひと息つけていますか？", cond: "band = 昼 かつ hour = 13", fix: T, gap: 4 },
       ]},
       { title: "A 午後（14:00〜17:59）", items: [
@@ -418,7 +419,7 @@ class Component extends DCLogic {
         { id: "N04", text: "こんばんは。お風呂はもう入りましたか？", cond: "band = 夜 かつ hour ≥ 20", fix: T, gap: 4 },
         { id: "N05", text: "こんばんは。そろそろ一日が終わりますね。", cond: "band = 夜 かつ 21:30 ≤ 時刻", fix: T, gap: 4 },
         { id: "N06", text: "こんばんは。テレビは何か面白いものをやっていますか？", cond: "band = 夜 かつ 19 ≤ hour ≤ 21", fix: T, gap: 6 },
-        { id: "N07", text: "こんばんは。今日はどんな一日でしたか？", cond: "band = 夜", fix: T, gap: 4 },
+        { id: "N07", text: "こんばんは。今日は出かけましたか？", cond: "band = 夜", fix: T, gap: 4 },
       ]},
       { title: "L 深夜（23:00〜4:59）", items: [
         { id: "L01", text: "こんばんは。もう遅い時間ですね。", cond: "band = 深夜", fix: T, gap: 2 },
@@ -431,7 +432,7 @@ class Component extends DCLogic {
         { id: "W03", text: "{挨拶}。金曜ですね。週末は何か予定がありますか？", cond: "weekday = 金", fix: T, gap: 14 },
         { id: "W04", text: "{挨拶}。土曜ですね。ゆっくりできていますか？", cond: "weekday = 土", fix: T, gap: 14 },
         { id: "W05", text: "{挨拶}。日曜ですね。今日はどこかへ出かけますか？", cond: "weekday = 日 かつ band ∈ {早朝, 朝, 昼}", fix: T, gap: 14 },
-        { id: "W06", text: "{挨拶}。週末はどうでしたか？", cond: "weekday = 日 かつ band = 夜", fix: T, gap: 14 },
+        { id: "W06", text: "{挨拶}。週末はゆっくりできましたか？", cond: "weekday = 日 かつ band = 夜", fix: T, gap: 14 },
       ]},
       { title: "S 季節（month・day だけで判定。祝日の表は使わない）", items: [
         { id: "S01", text: "あけましておめでとうございます。今年もよろしくお願いします。", cond: "month = 1 かつ day ≤ 7", fix: D, gap: 365 },
@@ -453,23 +454,30 @@ class Component extends DCLogic {
       ]},
       { title: "F 事実に触れる（使った値の写しを保存し、変わったら G に落とす）", items: [
         { id: "F01", text: "はじめまして。記録すると、上の「今週の実績」にその日の回数が、下の「きょうの記録」に何をいつやったかが残ります。", cond: "first_ever（確定済みの文・他の候補は見ない）", fix: D, gap: "—" },
-        { id: "F02", text: "{挨拶}。昨日は {previous_time} でしたね。体に残っていませんか？", cond: "today_count = 0 かつ days_since = 1", fix: T, gap: 3 },
-        { id: "F03", text: "{挨拶}。{days_since}日ぶりですね。お変わりありませんでしたか？", cond: "today_count = 0 かつ 3 ≤ days_since ≤ 13", fix: T, gap: 3 },
-        { id: "F04", text: "{挨拶}。しばらくぶりですね。お元気でしたか？", cond: "today_count = 0 かつ 14 ≤ days_since ≤ 59", fix: T, gap: 3 },
-        { id: "F05", text: "{挨拶}。お久しぶりですね。お元気でしたか？", cond: "today_count = 0 かつ days_since ≥ 60", fix: T, gap: 3 },
-        { id: "F06", text: "こんにちは。朝のうちに{today_count}件済んでいますね。お昼は何を食べましたか？", cond: "band ∈ {昼, 午後} かつ today_count ≥ 1 かつ today_records の time がすべて < 11:00", fix: T, gap: 3 },
-        { id: "F07", text: "こんばんは。今日は {today_records[0].time} の分がありますね。晩ごはんは済みましたか？", cond: "band ∈ {夜, 深夜} かつ today_count = 1", fix: T, gap: 3 },
-        { id: "F08", text: "{挨拶}。今日は{today_count}件、記録がありますね。", cond: "band ∈ {午後, 夜} かつ today_count ≥ 2", fix: T, gap: 3 },
-        { id: "F09", text: "おはようございます。前回も朝でしたね。朝のほうが体が動きやすいですか？", cond: "band ∈ {早朝, 朝} かつ today_count = 0 かつ days_since ≥ 1 かつ previous_time ∈ 5:00〜10:59", fix: T, gap: 7 },
-        { id: "F10", text: "こんばんは。前回も夜でしたね。夜のほうが落ち着きますか？", cond: "band = 夜 かつ today_count = 0 かつ days_since ≥ 1 かつ previous_time ∈ 18:00〜22:59", fix: T, gap: 7 },
-        { id: "F11", text: "{挨拶}。前回は夜遅くでしたね。よく眠れましたか？", cond: "band ∈ {早朝, 朝} かつ today_count = 0 かつ days_since = 1 かつ previous_time ≥ 22:00", fix: T, gap: 7 },
+        { id: "F02", text: "{挨拶}。昨日は {previous_time} の記録があります。体に残っていませんか？", cond: "today_count = 0 かつ days_since = 1", fix: T, gap: 3 },
+        { id: "F03", text: "{挨拶}。{days_since}日ぶりです。お変わりありませんか？", cond: "today_count = 0 かつ 3 ≤ days_since ≤ 13", fix: T, gap: 3 },
+        { id: "F04", text: "{挨拶}。しばらくぶりです。お元気でしたか？", cond: "today_count = 0 かつ 14 ≤ days_since ≤ 59", fix: T, gap: 3 },
+        { id: "F05", text: "{挨拶}。お久しぶりです。お元気でしたか？", cond: "today_count = 0 かつ days_since ≥ 60", fix: T, gap: 3 },
+        { id: "F06", text: "こんにちは。朝のうちに{today_count}件の記録があります。お昼食べました？", cond: "band ∈ {昼, 午後} かつ today_count ≥ 1 かつ today_records の time がすべて < 11:00", fix: T, gap: 3 },
+        { id: "F07", text: "こんばんは。今日は {today_records[0].time} の記録があります。晩ごはん食べました？", cond: "band ∈ {夜, 深夜} かつ today_count = 1", fix: T, gap: 3 },
+        { id: "F08", text: "{挨拶}。今日は{today_count}件の記録があります。", cond: "band ∈ {午後, 夜} かつ today_count ≥ 2", fix: T, gap: 3 },
+        { id: "F09", text: "おはようございます。前回の記録も朝です。朝のほうが体が動きやすいですか？", cond: "band ∈ {早朝, 朝} かつ today_count = 0 かつ days_since ≥ 1 かつ previous_time ∈ 5:00〜10:59", fix: T, gap: 7 },
+        { id: "F10", text: "こんばんは。前回の記録も夜です。夜のほうが落ち着きますか？", cond: "band = 夜 かつ today_count = 0 かつ days_since ≥ 1 かつ previous_time ∈ 18:00〜22:59", fix: T, gap: 7 },
+        { id: "F11", text: "{挨拶}。前回は夜遅くの記録です。よく眠れましたか？", cond: "band ∈ {早朝, 朝} かつ today_count = 0 かつ days_since = 1 かつ previous_time ≥ 22:00", fix: T, gap: 7 },
         { id: "F12", text: "{挨拶}。ひと息つけていますか？", cond: "today_count ≥ 1 かつ 最後の today_records[].time から 60 分以内（記録直後はこの文か G だけ）", fix: T, gap: 2 },
-        { id: "F13", text: "{挨拶}。今日は{total_minutes}分の記録がありますね。", cond: "band ∈ {午後, 夜} かつ today_count ≥ 1 かつ total_minutes ≥ 30", fix: T, gap: 3 },
-        { id: "F14", text: "こんばんは。今週は{days_this_week}日、記録がありますね。", cond: "weekday = 日 かつ band = 夜 かつ days_this_week ≥ 1", fix: T, gap: 3 },
+        { id: "F13", text: "{挨拶}。今日は{total_minutes}分の記録があります。", cond: "band ∈ {午後, 夜} かつ today_count ≥ 1 かつ total_minutes ≥ 30", fix: T, gap: 3 },
+        { id: "F14", text: "こんばんは。今週は{days_this_week}日、記録があります。", cond: "weekday = 日 かつ band = 夜 かつ days_this_week ≥ 1", fix: T, gap: 3 },
       ]},
     ];
     const count = groups.reduce((n, g) => n + g.items.length, 0);
-    return { groups, count };
+    const nick = (this.props.nickname ?? "").trim();
+    const pre = nick ? nick + "、" : "";
+    return { groups, count,
+      m1: pre + "おはようございます。昨日は 08:10 の記録があります。体に残っていませんか？",
+      m2: "こんにちは。朝のうちに3件の記録があります。お昼食べました？",
+      m3: "こんばんは。晩ごはん、済みましたか？",
+      m4: "おはようございます。4日ぶりです。お変わりありませんか？",
+      m5: (nick ? "はじめまして、" + nick + "。" : "はじめまして。") + "記録すると、上の「今週の実績」にその日の回数が、下の「きょうの記録」に何をいつやったかが残ります。" };
   }
 }
 </script>

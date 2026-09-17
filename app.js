@@ -119,29 +119,23 @@
 
   /* ---- the line above the card ----
    *
-   * Design settled what the companion may say, after the owner corrected me:
-   * it is not mute, it simply never pushes. Their rule, in their words - the
-   * companion "sees what happened and says that, and does not touch how you
-   * feel or what you should do next"; and because saying nothing at all turns
-   * watching into surveillance, opening the app always leaves one line there.
+   * Rewritten 2026-09-17 on the owner's word ("もっと気の利いたこと言えないの
+   * かなぁ") from Claude Design 「相棒の一言 v1」 (design/companion_line_v1.dc.html).
+   * The companion now makes small talk that fits the hour, the weekday, the
+   * season and what the records say - still never praise, never a push, never
+   * a countdown or a streak, never anything fetched from outside.
    *
-   * What it may say: the time of day, the first day ever, that today is still
-   * blank, how long since the last time, how many records today, how many days
-   * this week. One of them, never two.
-   *
-   * What it may not: anything right after a record is written (that would be
-   * praise - the circle and the figures move, the line stays where it was),
-   * anything counting down to a round number, anything claiming to know how
-   * you feel, and anything anywhere but the home screen.
-   *
-   * Chosen once a day and then fixed, so it does not change under you as you
-   * use the app; and the same sentence is not repeated within three days.
-   * That memory lives on this device only - it says nothing about the records
-   * and has no business travelling with them.
+   * Fixed per part of the day, not per day: six bands, and a new band picks
+   * again (a noon line must not be left standing at night). Within a band the
+   * choice comes from a seed of the date and band, so reopening shows the same
+   * line even if storage is lost. A line that used a fact (today's count, days
+   * since, days this week) keeps a copy of those values; when they no longer
+   * match, the band falls back to the greeting alone and does not pick again
+   * (a new clever line right after a record would read as a reaction to it).
+   * Memory stays on this device and is never exported.
    */
-  var nameSpent = false;
-  var LINE_KEY = 'ouchitore-line';
-  var SAID_KEY = 'ouchitore-said';
+  var LINE_KEY = 'ouchitore-hitokoto-today';
+  var SAID_KEY = 'ouchitore-hitokoto-last';
 
   function remembered(key) {
     try { return JSON.parse(localStorage.getItem(key) || '{}'); }
@@ -159,69 +153,213 @@
 
   var FIRST_LINE = 'はじめまして。記録すると、上の「今週の実績」にその日の回数が、下の「今日の記録」に何をいつやったかが残ります。';
 
-  function greetingLine(facts, nickname, todayCount) {
-    var hello = facts.part_of_day === 'morning' ? 'おはようございます'
-      : facts.part_of_day === 'afternoon' ? 'こんにちは' : 'こんばんは';
-    if (nickname && !nameSpent) {
-      nameSpent = true;
-      hello += '、' + nickname + 'さん。';
-    } else {
-      hello += '。';
+  /* Six bands (Design): 5:00 early, 7:00 morning, 11:00 noon, 14:00
+   * afternoon, 18:00 evening, 23:00 late. Minutes of the day. */
+  var BANDS = [
+    ['early', 300, 419, 'おはようございます'], ['morning', 420, 659, 'おはようございます'],
+    ['noon', 660, 839, 'こんにちは'], ['afternoon', 840, 1079, 'こんにちは'],
+    ['evening', 1080, 1379, 'こんばんは']
+  ];
+  function bandOf(minutes) {
+    for (var i = 0; i < BANDS.length; i++) {
+      if (minutes >= BANDS[i][1] && minutes <= BANDS[i][2]) return { name: BANDS[i][0], hello: BANDS[i][3] };
     }
+    return { name: 'late', hello: 'こんばんは' };
+  }
+  function clock(t) { return t ? Number(t.slice(0, 2)) * 60 + Number(t.slice(3, 5)) : null; }
+  function inBand(c, names) { return names.indexOf(c.band) >= 0; }
+  function monthDay(c) { return c.month * 100 + c.day; }
 
-    /* Already decided today: the same line all day, whatever happens in
-     * between. Writing a record must not change what is said about it. */
-    var held = remembered(LINE_KEY);
-    if (held.date === facts.date) {
-      /* Holding the line steady after a record is Design's rule, so that
-       * writing something down is never answered with praise. But a line that
-       * has become untrue is worse than one that flatters: きょうはまだ書いて
-       * いません, said to someone who has just written something, is simply
-       * wrong. When that happens the fact is dropped and the greeting stands
-       * alone - still saying nothing about what was done. */
-      if (held.kind === 'blank' && facts.has_today) {
-        remember(LINE_KEY, { date: facts.date, kind: 'none', text: '' });
-        return hello;
-      }
-      /* Same rule for the week count: 今週は3日目です, chosen before this
-       * morning's record, is untrue once today makes it 4. */
-      if (held.kind === 'week' && held.text !== '今週は' + facts.days_this_week + '日目です。') {
-        remember(LINE_KEY, { date: facts.date, kind: 'none', text: '' });
-        return hello;
-      }
-      /* The wording of the first-day line is the app's, not the day's:
-       * if it has been rewritten since this morning, the new words win. */
-      if (held.kind === 'first') return hello + FIRST_LINE;
-      if (held.text) return hello + held.text;
-      if (held.kind) return hello;
-    }
+  /* id, text, when, days to wait before saying it again, [fixed for the whole day].
+   * Word for word from the Design file; the conditions are its 「出してよい条件」. */
+  var LINES = [
+    ['E01', 'おはようございます。早いですね。まだ静かな時間でしょうか。', function (c) { return c.band === 'early'; }, 4],
+    ['E02', 'おはようございます。今朝は目が覚めるのが早かったですか？', function (c) { return c.band === 'early'; }, 4],
+    ['E03', 'おはようございます。窓の外はもう明るくなってきましたか？', function (c) { return c.band === 'early'; }, 4],
+    ['M01', 'おはようございます。今朝はよく眠れましたか？', function (c) { return c.band === 'morning'; }, 4],
+    ['M02', 'おはようございます。朝ごはんはもう済みましたか？', function (c) { return c.band === 'morning' && c.hour < 9; }, 4],
+    ['M03', 'おはようございます。まだ体が起きていない感じはありませんか？', function (c) { return c.band === 'morning' && c.hour < 9; }, 4],
+    ['M04', 'おはようございます。朝はゆっくりでいいですよね。', function (c) { return c.band === 'morning'; }, 4],
+    ['M05', 'おはようございます。今日はどんな予定ですか？', function (c) { return c.band === 'morning'; }, 4],
+    ['M06', 'おはようございます。今朝はお茶ですか、コーヒーですか？', function (c) { return c.band === 'morning'; }, 6],
+    ['D01', 'こんにちは。お昼はもう食べましたか？', function (c) { return c.band === 'noon' && c.now < 780; }, 4],
+    ['D02', 'こんにちは。お昼どきですね。何を食べるか決まりましたか？', function (c) { return c.band === 'noon' && c.now < 750; }, 4],
+    ['D03', 'こんにちは。もうお昼過ぎましたね。ご飯食べて眠くなってませんか？', function (c) { return c.band === 'noon' && c.now >= 750; }, 4],
+    ['D04', 'こんにちは。午前中はどんな具合でしたか？', function (c) { return c.band === 'noon'; }, 4],
+    ['D05', 'こんにちは。お昼のあとは、ひと息つけていますか？', function (c) { return c.band === 'noon' && c.hour === 13; }, 4],
+    ['A01', 'こんにちは。午後はのんびりできていますか？', function (c) { return c.band === 'afternoon'; }, 4],
+    ['A02', 'こんにちは。おやつの時間ですね。何か召し上がりますか？', function (c) { return c.band === 'afternoon' && c.hour === 15; }, 4],
+    ['A03', 'こんにちは。午後は少し眠くなる時間ですね。', function (c) { return c.band === 'afternoon' && (c.hour === 14 || c.hour === 15); }, 4],
+    ['A04', 'こんにちは。そろそろ夕方ですね。', function (c) { return c.band === 'afternoon' && c.hour >= 16; }, 4],
+    ['A05', 'こんにちは。買い物には行かれましたか？', function (c) { return c.band === 'afternoon'; }, 6],
+    ['N01', 'こんばんは。晩ごはんはこれからですか？', function (c) { return c.band === 'evening' && c.now < 1170; }, 4],
+    ['N02', 'こんばんは。晩ごはん、済みましたか？', function (c) { return c.band === 'evening' && c.now >= 1170 && c.now < 1290; }, 4],
+    ['N03', 'こんばんは。今日も一日おつかれさまでした。', function (c) { return c.band === 'evening'; }, 4],
+    ['N04', 'こんばんは。お風呂はもう入りましたか？', function (c) { return c.band === 'evening' && c.hour >= 20; }, 4],
+    ['N05', 'こんばんは。そろそろ一日が終わりますね。', function (c) { return c.band === 'evening' && c.now >= 1290; }, 4],
+    ['N06', 'こんばんは。テレビは何か面白いものをやっていますか？', function (c) { return c.band === 'evening' && c.hour >= 19 && c.hour <= 21; }, 6],
+    ['N07', 'こんばんは。今日はどんな一日でしたか？', function (c) { return c.band === 'evening'; }, 4],
+    ['L01', 'こんばんは。もう遅い時間ですね。', function (c) { return c.band === 'late'; }, 2],
+    ['L02', 'こんばんは。夜更かしですか？', function (c) { return c.band === 'late' && (c.hour === 23 || c.hour === 0); }, 4],
+    ['L03', 'こんばんは。夜中に目が覚めましたか？', function (c) { return c.band === 'late' && c.hour >= 1 && c.hour <= 4; }, 4],
+    ['W01', '{挨拶}。月曜ですね。週末はゆっくりできましたか？', function (c) { return c.weekday === 1 && inBand(c, ['early', 'morning', 'noon']); }, 14],
+    ['W02', '{挨拶}。週の半ばですね。', function (c) { return c.weekday === 3; }, 14],
+    ['W03', '{挨拶}。金曜ですね。週末は何か予定がありますか？', function (c) { return c.weekday === 5; }, 14],
+    ['W04', '{挨拶}。土曜ですね。ゆっくりできていますか？', function (c) { return c.weekday === 6; }, 14],
+    ['W05', '{挨拶}。日曜ですね。今日はどこかへ出かけますか？', function (c) { return c.weekday === 0 && inBand(c, ['early', 'morning', 'noon']); }, 14],
+    ['W06', '{挨拶}。週末はどうでしたか？', function (c) { return c.weekday === 0 && c.band === 'evening'; }, 14],
+    ['S01', 'あけましておめでとうございます。今年もよろしくお願いします。', function (c) { return c.month === 1 && c.day <= 7; }, 365, true],
+    ['S02', '{挨拶}。寒い日が続きますね。部屋は暖かくしていますか？', function (c) { return [12, 1, 2].indexOf(c.month) >= 0; }, 10],
+    ['S03', '{挨拶}。日が少し長くなってきましたね。', function (c) { return c.month === 2 && c.band === 'afternoon'; }, 10],
+    ['S04', '{挨拶}。だんだん春らしくなってきましたね。', function (c) { return c.month === 3; }, 10],
+    ['S05', '{挨拶}。花粉はつらくありませんか？', function (c) { return c.month === 3 || c.month === 4; }, 10],
+    ['S06', '{挨拶}。桜の季節ですね。もう見に行かれましたか？', function (c) { return c.month === 4 && c.day <= 15; }, 10],
+    ['S07', '{挨拶}。ゴールデンウィークですね。', function (c) { return monthDay(c) >= 429 && monthDay(c) <= 505; }, 7],
+    ['S08', '{挨拶}。過ごしやすい季節ですね。', function (c) { return c.month === 5; }, 10],
+    ['S09', '{挨拶}。雨の多い時期ですね。洗濯物は乾いていますか？', function (c) { return c.month === 6; }, 10],
+    ['S10', '{挨拶}。暑い日が続く時期ですね。夜は眠れていますか？', function (c) { return c.month === 7 || c.month === 8; }, 10],
+    ['S11', '{挨拶}。お盆の頃ですね。', function (c) { return monthDay(c) >= 810 && monthDay(c) <= 816; }, 7],
+    ['S12', '{挨拶}。朝夕は少し涼しくなってきましたね。', function (c) { return c.month === 9 && inBand(c, ['early', 'morning', 'evening']); }, 10],
+    ['S13', '{挨拶}。食べ物のおいしい季節ですね。', function (c) { return c.month === 10 || c.month === 11; }, 10],
+    ['S14', '{挨拶}。日が短くなりましたね。', function (c) { return (c.month === 11 || c.month === 12) && c.hour >= 16 && c.hour <= 18; }, 10],
+    ['S15', '{挨拶}。今年もあと少しですね。', function (c) { return c.month === 12 && c.day >= 15; }, 10],
+    ['S16', '{挨拶}。年末ですね。おうちの片づけは進んでいますか？', function (c) { return c.month === 12 && c.day >= 26; }, 7]
+  ];
 
+  /* The lines that use a fact; they keep a copy of the facts they used. */
+  var FACT_LINES = [
+    ['F02', '{挨拶}。昨日は {previous_time} でしたね。体に残っていませんか？', function (c) { return c.count === 0 && c.since === 1 && !!c.prevTime; }, 3],
+    ['F03', '{挨拶}。{days_since}日ぶりですね。お変わりありませんでしたか？', function (c) { return c.count === 0 && c.since >= 3 && c.since <= 13; }, 3],
+    ['F04', '{挨拶}。しばらくぶりですね。お元気でしたか？', function (c) { return c.count === 0 && c.since >= 14 && c.since <= 59; }, 3],
+    ['F05', '{挨拶}。お久しぶりですね。お元気でしたか？', function (c) { return c.count === 0 && c.since >= 60; }, 3],
+    ['F06', 'こんにちは。朝のうちに{today_count}件済んでいますね。あとはゆっくりですか？', function (c) {
+      return inBand(c, ['noon', 'afternoon']) && c.count >= 1 && c.times.length === c.count
+        && c.times.every(function (t) { return clock(t) < 660; });
+    }, 3],
+    ['F07', 'こんばんは。今日は {first_time} の分がありますね。ゆっくり休めていますか？', function (c) {
+      return inBand(c, ['evening', 'late']) && c.count === 1 && c.times.length === 1;
+    }, 3],
+    ['F08', '{挨拶}。今日は{today_count}件ありますね。忙しい一日でしたか？', function (c) { return inBand(c, ['afternoon', 'evening']) && c.count >= 2; }, 3],
+    ['F09', 'おはようございます。前回も朝でしたね。朝のほうが体が動きやすいですか？', function (c) {
+      return inBand(c, ['early', 'morning']) && c.count === 0 && c.since >= 1 && !!c.prevTime
+        && clock(c.prevTime) >= 300 && clock(c.prevTime) < 660;
+    }, 7],
+    ['F10', 'こんばんは。前回も夜でしたね。夜のほうが落ち着きますか？', function (c) {
+      return c.band === 'evening' && c.count === 0 && c.since >= 1 && !!c.prevTime
+        && clock(c.prevTime) >= 1080 && clock(c.prevTime) < 1380;
+    }, 7],
+    ['F11', '{挨拶}。前回は夜遅くでしたね。よく眠れましたか？', function (c) {
+      return inBand(c, ['early', 'morning']) && c.count === 0 && c.since === 1 && !!c.prevTime && clock(c.prevTime) >= 1320;
+    }, 7],
+    ['F12', '{挨拶}。ひと息つけていますか？', function (c) {
+      var last = c.times.length ? clock(c.times[c.times.length - 1]) : null;
+      return c.count >= 1 && last !== null && c.now - last >= 0 && c.now - last <= 60;
+    }, 2],
+    ['F13', '{挨拶}。今日は{total_minutes}分ですね。長めの日でしたか？', function (c) { return inBand(c, ['afternoon', 'evening']) && c.count >= 1 && c.minutes >= 30; }, 3],
+    ['F14', 'こんばんは。今週は{days_this_week}日、記録がありますね。', function (c) { return c.weekday === 0 && c.band === 'evening' && c.week >= 1; }, 3]
+  ];
+
+  /* Same date and band, same pick - even when storage was lost. */
+  function seeded(seed, n) {
+    var x = 2166136261;
+    for (var i = 0; i < seed.length; i++) { x ^= seed.charCodeAt(i); x = Math.imul(x, 16777619) >>> 0; }
+    return n ? x % n : 0;
+  }
+
+  /* Users typed a bare name and have been called 「〜さん」 since the first
+   * release; one who already typed the honorific is not called さんさん. */
+  function honorific(nickname) {
+    var name = String(nickname || '').trim();
+    if (!name) return '';
+    return /(さん|様|さま|ちゃん|くん|君|殿|氏)$/.test(name) ? name : name + 'さん';
+  }
+
+  function greetingLine(facts, nickname, sessions, when) {
+    var at = when || new Date();
+    var now = at.getHours() * 60 + at.getMinutes();
+    var band = bandOf(now);
+    var list = sessions || [];
+    var times = list.map(function (s) { return s.performed_time || String(s.ts || '').slice(11, 16); })
+      .filter(function (t) { return /^\d\d:\d\d$/.test(t); }).sort();
+    var seconds = list.reduce(function (n, s) {
+      return n + (s.items || []).reduce(function (m, i) { return m + (i.unit === 'sec' ? (i.sets || 0) * (i.seconds || 0) : 0); }, 0);
+    }, 0);
+    var day = parseYmd(facts.date);
+    var c = {
+      band: band.name, now: now, hour: at.getHours(), weekday: day.getDay(),
+      month: day.getMonth() + 1, day: day.getDate(),
+      count: list.length, times: times, minutes: Math.round(seconds / 60),
+      since: facts.days_since, prevTime: facts.previous_time || null, week: facts.days_this_week
+    };
+    var snap = { count: c.count, since: c.since, week: c.week };
+    var fill = function (text) {
+      return text.replace('{挨拶}', band.hello).replace('{previous_time}', c.prevTime || '')
+        .replace('{days_since}', String(c.since)).replace('{today_count}', String(c.count))
+        .replace('{first_time}', times[0] || '').replace('{total_minutes}', String(c.minutes))
+        .replace('{days_this_week}', String(c.week));
+    };
+
+    var today = remembered(LINE_KEY);
+    if (today.date !== facts.date || !today.bands) today = { date: facts.date, bands: {}, used: [], named: null };
     var said = remembered(SAID_KEY);
-    var free = function (kind) { return daysBetween(said[kind], facts.date) >= 3; };
-
-    /* In Design's order, and only one of them. */
-    var candidates = [];
-    if (facts.first_ever) candidates.push(['first', FIRST_LINE]);
-    if (facts.days_since !== null && facts.days_since >= 3) {
-      candidates.push(['gap', '前に書いたのは' + facts.days_since + '日前です。']);
-    }
-    if (!facts.has_today) candidates.push(['blank', 'きょうはまだ書いていません。']);
-    if (facts.has_today && todayCount > 0) {
-      candidates.push(['today', 'きょうは' + todayCount + '件あります。']);
-    }
-    if (facts.days_this_week >= 2) {
-      candidates.push(['week', '今週は' + facts.days_this_week + '日目です。']);
+    var slot = today.bands.day ? 'day' : band.name;
+    if (today.bands.day && today.bands.day.id === 'F01' && !facts.first_ever) {
+      /* The first-day line is only true until the first record. */
+      delete today.bands.day;
+      slot = band.name;
     }
 
-    var pick = candidates.filter(function (one) { return free(one[0]); })[0] || null;
-    if (!pick) {
-      remember(LINE_KEY, { date: facts.date, kind: 'none', text: '' });
-      return hello;
+    /* The name is said once a day, at the head of the first line shown;
+     * that line keeps it for as long as it stands. */
+    var named = function (text) {
+      var name = honorific(nickname);
+      if (!name || (today.named && today.named !== slot)) return text;
+      today.named = slot;
+      return text.indexOf('はじめまして。') === 0 ? 'はじめまして、' + name + '。' + text.slice(7) : name + '、' + text;
+    };
+
+    var held = today.bands[slot];
+    if (held) {
+      var stale = held.snap && (held.snap.count !== snap.count || held.snap.since !== snap.since || held.snap.week !== snap.week);
+      if (stale) {
+        held = today.bands[slot] = { id: 'G', text: band.hello + '。' };
+      }
+      var again = named(held.text);
+      remember(LINE_KEY, today);
+      return again;
     }
-    said[pick[0]] = facts.date;
-    remember(SAID_KEY, said);
-    remember(LINE_KEY, { date: facts.date, kind: pick[0], text: pick[1] });
-    return hello + pick[1];
+
+    var free = function (line) {
+      return today.used.indexOf(line[0]) < 0 && daysBetween(said[line[0]], facts.date) >= line[3];
+    };
+    var seed = facts.date + band.name;
+    var pick = null, withFacts = false;
+    if (facts.first_ever) {
+      pick = ['F01', FIRST_LINE, null, 0, true];
+    } else {
+      var facty = FACT_LINES.filter(function (line) { return free(line) && line[2](c); });
+      if (facty.length) {
+        pick = facty[seeded(seed, facty.length)];
+        withFacts = true;
+      } else {
+        var small = LINES.filter(function (line) { return free(line) && line[2](c); });
+        if (small.length) pick = small[seeded(seed, small.length)];
+      }
+    }
+
+    var entry = pick
+      ? { id: pick[0], text: fill(pick[1]), snap: withFacts ? snap : null }
+      : { id: 'G', text: band.hello + '。' };
+    slot = pick && pick[4] ? 'day' : band.name;
+    today.bands[slot] = entry;
+    if (pick) {
+      today.used.push(pick[0]);
+      said[pick[0]] = facts.date;
+      remember(SAID_KEY, said);
+    }
+    var text = named(entry.text);
+    remember(LINE_KEY, today);
+    return text;
   }
 
   /* ---- home ---- */
@@ -399,7 +537,7 @@
       /* Claude Design (2026-09-13): 24px above and below, 15px, 1.8 - the
        * same distance from the block above and the card below. */
       h('div', { style: 'padding:24px 18px 14px;font-size:15px;font-weight:400;color:var(--body);line-height:1.8',
-        text: greetingLine(facts, settings.nickname, sessions.length) }),
+        text: greetingLine(facts, settings.nickname, sessions) }),
       /* One card: the companion on the left, the day's amount on the right.
        * With records it opens the day; with none it says so and cannot be
        * pressed - still drawn, so an empty day is not mistaken for a page

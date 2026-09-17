@@ -449,7 +449,14 @@
       days_since: previous === null ? null :
         Math.round((asDate - new Date(Number(previous.slice(0, 4)), Number(previous.slice(5, 7)) - 1, Number(previous.slice(8, 10)))) / 86400000),
       days_this_week: distinctDays(state, monday, day),
-      first_ever: earlier.length === 0 && !days[day]
+      first_ever: earlier.length === 0 && !days[day],
+      /* The last time of day on the previous day, for a line such as
+       * 「前回も朝でしたね」 (Claude Design 相棒の一言 v1, 2026-09-17). */
+      previous_time: previous === null ? null : state.sessions
+        .filter(function (s) { return s.date === previous; })
+        .map(function (s) { return s.performed_time || String(s.ts || '').slice(11, 16); })
+        .filter(function (t) { return /^\d\d:\d\d$/.test(t); })
+        .sort().pop() || null
     };
   }
 

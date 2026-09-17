@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="stylesheet" href="_ds/m2m-design-system-3fdc6fde-acd6-47ab-9db3-0dd7470f5041/tokens.css">
+<link rel="stylesheet" href="themes.css">
+<script src="_ds/m2m-design-system-3fdc6fde-acd6-47ab-9db3-0dd7470f5041/_ds_bundle.js"></script>
+<style>
+  body{margin:0;background:#f4f2ee}
+  a{color:#1f6fb2}
+  a:hover{color:#18578c}
+</style>
+</helmet>
+
+<section style="padding:40px;display:flex;flex-direction:column;gap:36px;font-family:system-ui,sans-serif;color:#1d2734">
+
+  <div style="display:flex;flex-direction:column;gap:8px;max-width:60em">
+    <div style="font:800 26px/1.3 system-ui,sans-serif">相棒の一言 v1 — 気の利いた声かけ</div>
+    <div style="font:400 15px/1.8 system-ui,sans-serif;color:#3c4a5c">見た目（位置・大きさ・色）は変えていません。変えたのは中身の言葉と出し分けだけです。上から、ホームのモック5枚 → 出し分けの規則 → ニックネーム → 候補集68本の表 → 参考にしたもの、の順です。</div>
+  </div>
+
+  <!-- ───────── モック ───────── -->
+  <div style="display:flex;flex-direction:column;gap:14px">
+    <div style="font:800 20px/1.4 system-ui,sans-serif">ホームのモック（紙テーマ）</div>
+    <div style="font:400 15px/1.8 system-ui,sans-serif;color:#3c4a5c;max-width:60em">一言は「今週の実績」の塊の 24px 下、上下 24px・15px・weight 400・<code style="font-size:13px">--body</code>・line-height 1.8。ニックネーム「ゆきさん」は、その日いちばん最初に出す一言の頭にだけ付けています（<a href="#nick">下の節</a>）。</div>
+
+    <div style="display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap">
+
+      <!-- 1 朝7時・記録なし -->
+      <div id="1a" style="display:flex;flex-direction:column;gap:10px;width:390px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font:800 12px/1 system-ui,sans-serif;background:#fff;border:1px solid #c9c1b4;border-radius:6px;padding:5px 7px">1a</span>
+          <span style="font:800 15px/1.4 system-ui,sans-serif">朝7時・記録なし</span>
+          <span style="font:400 12px/1.4 system-ui,sans-serif;color:#6a7a8e">F02・きょう最初の一言＝名前あり</span>
+        </div>
+        <div data-theme="paper" data-screen-label="朝7時" style="background:var(--bg);border:1px solid rgba(0,0,0,.14);border-radius:20px;overflow:hidden">
+          <div style="padding:20px 20px 14px;background:var(--card);border-bottom:1px solid var(--line)">
+            <div style="font:700 15px/1 system-ui,sans-serif;color:var(--sub);letter-spacing:.01em">9月15日（火）</div>
+            <div style="display:flex;justify-content:space-between;align-items:baseline;gap:16px;margin-top:8px">
+              <div style="font:800 30px/1.15 system-ui,sans-serif;color:var(--ink);letter-spacing:.02em">トレ録</div>
+              <div style="font:700 20px/1 system-ui,sans-serif;color:var(--body);font-variant-numeric:tabular-nums">07:12</div>
+            </div>
+          </div>
+          <div style="padding:16px 20px 20px;display:flex;flex-direction:column;gap:16px">
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">
+                <div style="padding:6px 0 7px;border-radius:9px;border:1px solid var(--cell-line);background:var(--cell-bg);display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font:700 11px/1 system-ui,sans-serif;color:var(--body)">月</span><span style="width:26px;height:26px;border-radius:7px;background:var(--lv2)"></span></div>
+                <div style="padding:6px 0 7px;border-radius:9px;border:2px solid var(--today-ring);background:var(--cell-bg);display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font:800 11px/1 system-ui,sans-serif;color:var(--ink)">火</span><span style="width:26px;height:26px;border-radius:7px;border:1.5px dashed var(--cell-dash);box-sizing:border-box"></span></div>
+                <div style="padding:6px 0 7px;border-radius:9px;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font:700 11px/1 system-ui,sans-serif;color:var(--faint)">水</span><span style="width:26px;height:26px;border-radius:7px;border:1.5px dashed var(--cell-dash-future);box-sizing:border-box"></span></div>
+                <div style="padding:6px 0 7px;border-radius:9px;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font:700 11px/1 system-ui,sans-serif;color:var(--faint)">木</span><span style="width:26px;height:26px;border-radius:7px;border:1.5px dashed var(--cell-dash-future);box-sizing:border-box"></span></div>
+                <div style="padding:6px 0 7px;border-radius:9px;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font:700 11px/1 system-ui,sans-serif;color:var(--faint)">金</span><span style="width:26px;height:26px;border-radius:7px;border:1.5px dashed var(--cell-dash-future);box-sizing:border-box"></span></div>
+                <div style="padding:6px 0 7px;border-radius:9px;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font:700 11px/1 system-ui,sans-serif;color:var(--faint)">土</span><span style="width:26px;height:26px;border-radius:7px;border:1.5px dashed var(--cell-dash-future);box-sizing:border-box"></span></div>
+                <div style="padding:6px 0 7px;border-radius:9px;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font:700 11px/1 system-ui,sans-serif;color:var(--faint)">日</span><span style="width:26px;height:26px;border-radius:7px;border:1.5px dashed var(--cell-dash-future);box-sizing:border-box"></span></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:baseline">
+                <div style="font:700 13px/1 system-ui,sans-serif;color:var(--body)">今週の実績 <span style="font:800 17px/1 system-ui,sans-serif;color:var(--ink)">1</span> 日</div>
+                <div style="font:700 13px/1 system-ui,sans-serif;color:var(--sub)">先週 4 日</div>
+              </div>
+            </div>
+            <div style="padding:8px 0;font:400 15px/1.8 system-ui,sans-serif;color:var(--body)">ゆきさん、おはようございます。昨日は 08:10 でしたね。体に残っていませんか？</div>
+            <div style="background:var(--card);border-radius:18px;box-shadow:var(--shadow-card);padding:16px 18px;display:flex;align-items:center;gap:14px">
+              <div style="width:60px;height:60px;border-radius:12px;border:1.5px dashed var(--line-strong);display:flex;align-items:center;justify-content:center;font:700 10px/1.3 system-ui,sans-serif;color:var(--sub);text-align:center;flex:none">相棒の絵</div>
+              <div style="flex:1;font:700 15px/1.6 system-ui,sans-serif;color:var(--body)">きょうはまだ記録がありません。</div>
+            </div>
+            <div style="min-height:58px;border-radius:16px;background:var(--color-action);display:flex;align-items:center;justify-content:center"><span style="font:800 17px/1 system-ui,sans-serif;letter-spacing:.02em;color:var(--on-action)">記録する</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;min-height:44px;border-top:1px solid var(--line);font:400 14px/1.4 system-ui,sans-serif;color:var(--body)">前の日の記録を見る<span style="font:700 16px/1 system-ui,sans-serif;color:var(--sub)">›</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2 昼13時・朝に3件 -->
+      <div id="1b" style="display:flex;flex-direction:column;gap:10px;width:390px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font:800 12px/1 system-ui,sans-serif;background:#fff;border:1px solid #c9c1b4;border-radius:6px;padding:5px 7px">1b</span>
+          <span style="font:800 15px/1.4 system-ui,sans-serif">昼13時・朝に3件記録済み</span>
+          <span style="font:400 12px/1.4 system-ui,sans-serif;color:#6a7a8e">F06</span>
+        </div>
+        <div data-theme="paper" data-screen-label="昼13時" style="background:var(--bg);border:1px solid rgba(0,0,0,.14);border-radius:20px;overflow:hidden">
+          <div style="padding:20px 20px 14px;background:var(--card);border-bottom:1px solid var(--line)">
+            <div style="font:700 15px/1 system-ui,sans-serif;color:var(--sub);letter-spacing:.01em">9月17日（木）</div>
+            <div style="display:flex;justify-content:space-between;align-items:baseline;gap:16px;margin-top:8px">
+              <div style="font:800 30px/1.15 system-ui,sans-serif;color:var(--ink);letter-spacing:.02em">トレ録</div>
+              <div style="font:700 20px/1 system-ui,sans-serif;color:var(--body);font-variant-numeric:tabular-nums">13:05</div>
+            </div>
+          </div>
+          <div style="padding:16px 20px 20px;display:flex;flex-direction:column;gap:16px">
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">
+                <div style="padding:6px 0 7px;border-radius:9px;border:1px solid var(--cell-line);background:var(--cell-bg);display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font:700 11px/1 system-ui,sans-serif;color:var(--body)">月</span><span style="width:26px;height:26px;border-radius:7px;background:var(--lv2)"></span></div>
+                <div style="padding:6px 0 7px;border-radius:9px;border:1px solid var(--cell-line);background:var(--cell-bg);display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font:700 11px/1 system-ui,sans-serif;color:var(--body)">火</span><span style="width:26px;height:26px;border-radius:7px;background:var(--lv1)"></span></div>
+                <div style="padding:6px 0 7px;border-radius:9px;border:1px solid var(--cell-line);background:var(--cell-bg);display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font:700 11px/1 system-ui,sans-serif;color:var(--body)">水</span><span style="width:26px;height:26px;border-radius:7px;border:1.5px dashed var(--cell-dash);box-sizing:border-box"></span></div>
+                <div style="padding:6px 0 7px;border-radius:9px;border:2px solid var(--today-ring);background:var(--cell-bg);display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font:800 11px/1 system-ui,sans-serif;color:var(--ink)">木</span><span style="width:26px;height:26px;border-radius:7px;background:var(--lv3)"></span></div>
+                <div style="padding:6px 0 7px;border-radius:9px;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font:700 11px/1 system-ui,sans-serif;color:var(--faint)">金</span><span style="width:26px;height:26px;border-radius:7px;border:1.5px dashed var(--cell-dash-future);box-sizing:border-box"></span></div>
+                <div style="padding:6px 0 7px;border-radius:9px;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font:700 11px/1 system-ui,sans-serif;color:var(--faint)">土</span><span style="width:26px;height:26px;border-radius:7px;border:1.5px dashed var(--cell-dash-future);box-sizing:border-box"></span></div>
+                <div style="padding:6px 0 7px;border-radius:9px;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font:700 11px/1 system-ui,sans-serif;color:var(--faint)">日</span><span style="width:26px;height:26px;border-radius:7px;border:1.5px dashed var(--cell-dash-future);box-sizing:border-box"></span></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:baseline">
+                <div style="font:700 13px/1 system-ui,sans-serif;color:var(--body)">今週の実績 <span style="font:800 17px/1 system-ui,sans-serif;color:var(--ink)">3</span> 日</div>
+                <div style="font:700 13px/1 system-ui,sans-serif;color:var(--sub)">先週 4 日</div>
+              </div>
+            </div>
+            <div style="padding:8px 0;font:400 15px/1.8 system-ui,sans-serif;color:var(--body)">こんにちは。朝のうちに3件済んでいますね。あとはゆっくりですか？</div>
+            <div style="background:var(--card);border-radius:18px;box-shadow:var(--shadow-card);padding:16px 18px;display:flex;align-items:center;gap:14px">
+              <div style="width:60px;height:60px;border-radius:12px;border:1.5px dashed var(--line-strong);display:flex;align-items:center;justify-content:center;font:700 10px/1.3 system-ui,sans-serif;color:var(--sub);text-align:center;flex:none">相棒の絵</div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px">
+                <div style="font:800 12px/1 system-ui,sans-serif;color:var(--sub);letter-spacing:.14em">きょう動いた分</div>
+                <div style="display:flex;align-items:center;gap:14px">
+                  <div style="display:flex;align-items:baseline;gap:4px"><span style="font:800 44px/1 system-ui,sans-serif;color:var(--ink)">21</span><span style="font:700 13px/1 system-ui,sans-serif;color:var(--sub)">種目</span></div>
+                  <div style="width:1px;height:30px;background:var(--line)"></div>
+                  <div style="display:flex;align-items:baseline;gap:4px"><span style="font:800 44px/1 system-ui,sans-serif;color:var(--ink)">34</span><span style="font:700 13px/1 system-ui,sans-serif;color:var(--sub)">分</span></div>
+                </div>
+                <div style="font:700 12px/1 system-ui,sans-serif;color:var(--sub)">3件 ／ 09:52</div>
+              </div>
+            </div>
+            <div style="min-height:58px;border-radius:16px;border:1.5px solid var(--color-action);background:var(--card);box-shadow:var(--shadow-card);display:flex;align-items:center;justify-content:center;gap:10px;color:var(--color-action)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg><span style="font:800 17px/1 system-ui,sans-serif;letter-spacing:.02em">もう1つ記録する</span></div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;justify-content:space-between;align-items:baseline">
+                <div style="font:800 13px/1 system-ui,sans-serif;color:var(--body)">今日の記録</div>
+                <div style="font:700 12px/1 system-ui,sans-serif;color:var(--sub)">3件 ／ 最後は 09:52</div>
+              </div>
+              <div style="background:var(--card);border-radius:18px;box-shadow:var(--shadow-card);padding:14px 18px;display:flex;gap:14px;align-items:center">
+                <div style="flex:1;display:flex;flex-direction:column;gap:6px"><div style="font:800 15px/1.5 system-ui,sans-serif;color:var(--ink)">下半身の筋トレ 10分</div><div style="font:700 12px/1 system-ui,sans-serif;color:var(--sub)">7種目 ／ 09:52 実施</div></div>
+                <div style="width:96px;height:54px;border-radius:8px;border:1.5px dashed var(--line-strong);display:flex;align-items:center;justify-content:center;font:700 10px/1.3 system-ui,sans-serif;color:var(--sub);flex:none">動画の画</div>
+                <span style="font:700 20px/1 system-ui,sans-serif;color:var(--sub)">›</span>
+              </div>
+              <div style="background:var(--card);border-radius:18px;box-shadow:var(--shadow-card);padding:14px 18px;display:flex;gap:14px;align-items:center">
+                <div style="flex:1;display:flex;flex-direction:column;gap:6px"><div style="font:800 15px/1.5 system-ui,sans-serif;color:var(--ink)">セルフトレ</div><div style="font:700 12px/1 system-ui,sans-serif;color:var(--sub)">5種目 ／ 08:10 実施</div></div>
+                <svg width="96" height="54" viewBox="0 0 96 54" style="flex:none"><rect x="0.75" y="0.75" width="94.5" height="52.5" rx="7" fill="var(--bg)" stroke="var(--line-strong)" stroke-width="1.5"></rect><rect x="35" y="16" width="26" height="22" rx="3" fill="none" stroke="var(--body)" stroke-width="2"></rect></svg>
+                <span style="font:700 20px/1 system-ui,sans-serif;color:var(--sub)">›</span>
+              </div>
+              <div style="background:var(--card);border-radius:18px;box-shadow:var(--shadow-card);padding:14px 18px;display:flex;gap:14px;align-items:center">
+                <div style="flex:1;display:flex;flex-direction:column;gap:6px"><div style="font:800 15px/1.5 system-ui,sans-serif;color:var(--ink)">1日の始まりストレッチ（GronG）</div><div style="font:700 12px/1 system-ui,sans-serif;color:var(--sub)">9種目 ／ 06:40 実施</div></div>
+                <div style="width:96px;height:54px;border-radius:8px;border:1.5px dashed var(--line-strong);display:flex;align-items:center;justify-content:center;font:700 10px/1.3 system-ui,sans-serif;color:var(--sub);flex:none">動画の画</div>
+                <span style="font:700 20px/1 system-ui,sans-serif;color:var(--sub)">›</span>
+              </div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;min-height:44px;border-top:1px solid var(--line);font:400 14px/1.4 system-ui,sans-serif;color:var(--body)">前の日の記録を見る<span style="font:700 16px/1 system-ui,sans-serif;color:var(--sub)">›</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3 夜21時・記録なし -->
+      <div id="1c" style="display:flex;flex-direction:column;gap:10px;width:390px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font:800 12px/1 system-ui,sans-serif;background:#fff;border:1px solid #c9c1b4;border-radius:6px;padding:5px 7px">1c</span>
+          <span style="font:800 15px/1.4 system-ui,sans-serif">夜21時・記録なし</span>
+          <span style="font:400 12px/1.4 system-ui,sans-serif;color:#6a7a8e">N02（days_since=2 なので事実系は出ない）</span>
+        </div>
+        <div data-theme="paper" data-screen-label="夜21時" style="background:var(--bg);border:1px solid rgba(0,0,0,.14);border-radius:20px;overflow:hidden">
+          <div style="padding:20px 20px 14px;background:var(--card);border-bottom:1px solid var(--line)">
+            <div style="font:700 15px/1 system-ui,sans-serif;color:var(--sub);letter-spacing:.01em">9月17日（木）</div>
+            <div style="display:flex;justify-content:space-between;align-items:baseline;gap:16px;margin-top:8px">
+              <div style="font:800 30px/1.15 system-ui,sans-serif;color:var(--ink);letter-spacing:.02em">トレ録</div>
+              <div style="font:700 20px/1 system-ui,sans-serif;color:var(--body);font-variant-numeric:tabular-nums">21:14</div>
+            </div>
+          </div>
+          <div style="padding:16px 20px 20px;display:flex;flex-direction:column;gap:16px">
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">
+                <div style="padding:6px 0 7px;border-radius:9px;border:1px solid var(--cell-line);background:var(--cell-bg);display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font:700 11px/1 system-ui,sans-serif;color:var(--body)">月</span><span style="width:26px;height:26px;border-radius:7px;background:var(--lv2)"></span></div>
+                <div style="padding:6px 0 7px;border-radius:9px;border:1px solid var(--cell-line);background:var(--cell-bg);display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font:700 11px/1 system-ui,sans-serif;color:var(--body)">火</span><span style="width:26px;height:26px;border-radius:7px;background:var(--lv1)"></span></div>
+                <div style="padding:6px 0 7px;border-radius:9px;border:1px solid var(--cell-line);background:var(--cell-bg);display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font:700 11px/1 system-ui,sans-serif;color:var(--body)">水</span><span style="width:26px;height:26px;border-radius:7px;border:1.5px dashed var(--cell-dash);box-sizing:border-box"></span></div>
+                <div style="padding:6px 0 7px;border-radius:9px;border:2px solid var(--today-ring);background:var(--cell-bg);display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font:800 11px/1 system-ui,sans-serif;color:var(--ink)">木</span><span style="width:26px;height:26px;border-radius:7px;border:1.5px dashed var(--cell-dash);box-sizing:border-box"></span></div>
+                <div style="padding:6px 0 7px;border-radius:9px;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font:700 11px/1 system-ui,sans-serif;color:var(--faint)">金</span><span style="width:26px;height:26px;border-radius:7px;border:1.5px dashed var(--cell-dash-future);box-sizing:border-box"></span></div>
+                <div style="padding:6px 0 7px;border-radius:9px;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font:700 11px/1 system-ui,sans-serif;color:var(--faint)">土</span><span style="width:26px;height:26px;border-radius:7px;border:1.5px dashed var(--cell-dash-future);box-sizing:border-box"></span></div>
+                <div style="padding:6px 0 7px;border-radius:9px;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font:700 11px/1 system-ui,sans-serif;color:var(--faint)">日</span><span style="width:26px;height:26px;border-radius:7px;border:1.5px dashed var(--cell-dash-future);box-sizing:border-box"></span></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:baseline">
+                <div style="font:700 13px/1 system-ui,sans-serif;color:var(--body)">今週の実績 <span style="font:800 17px/1 system-ui,sans-serif;color:var(--ink)">2</span> 日</div>
+                <div style="font:700 13px/1 system-ui,sans-serif;color:var(--sub)">先週 4 日</div>
+              </div>
+            </div>
+            <div style="padding:8px 0;font:400 15px/1.8 system-ui,sans-serif;color:var(--body)">こんばんは。晩ごはん、済みましたか？</div>
+            <div style="background:var(--card);border-radius:18px;box-shadow:var(--shadow-card);padding:16px 18px;display:flex;align-items:center;gap:14px">
+              <div style="width:60px;height:60px;border-radius:12px;border:1.5px dashed var(--line-strong);display:flex;align-items:center;justify-content:center;font:700 10px/1.3 system-ui,sans-serif;color:var(--sub);text-align:center;flex:none">相棒の絵</div>
+              <div style="flex:1;font:700 15px/1.6 system-ui,sans-serif;color:var(--body)">きょうはまだ記録がありません。</div>
+            </div>
+            <div style="min-height:58px;border-radius:16px;background:var(--color-action);display:flex;align-items:center;justify-content:center"><span style="font:800 17px/1 system-ui,sans-serif;letter-spacing:.02em;color:var(--on-action)">記録する</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;min-height:44px;border-top:1px solid var(--line);font:400 14px/1.4 system-ui,sans-serif;color:var(--body)">前の日の記録を見る<span style="font:700 16px/1 system-ui,sans-serif;color:var(--sub)">›</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4 4日ぶりの朝 -->
+      <div id="1d" style="display:flex;flex-direction:column;gap:10px;width:390px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font:800 12px/1 system-ui,sans-serif;background:#fff;border:1px solid #c9c1b4;border-radius:6px;padding:5px 7px">1d</span>
+          <span style="font:800 15px/1.4 system-ui,sans-serif">4日ぶりの朝</span>
+          <span style="font:400 12px/1.4 system-ui,sans-serif;color:#6a7a8e">F03（2回目以降の起動＝名前なし）</span>
+        </div>
+        <div data-theme="paper" data-screen-label="4日ぶりの朝" style="background:var(--bg);border:1px solid rgba(0,0,0,.14);border-radius:20px;overflow:hidden">
+          <div style="padding:20px 20px 14px;background:var(--card);border-bottom:1px solid var(--line)">
+            <div style="font:700 15px/1 system-ui,sans-serif;color:var(--sub);letter-spacing:.01em">9月21日（月）</div>
+            <div style="display:flex;justify-content:space-between;align-items:baseline;gap:16px;margin-top:8px">
+              <div style="font:800 30px/1.15 system-ui,sans-serif;color:var(--ink);letter-spacing:.02em">トレ録</div>
+              <div style="font:700 20px/1 system-ui,sans-serif;color:var(--body);font-variant-numeric:tabular-nums">08:03</div>
+            </div>
+          </div>
+          <div style="padding:16px 20px 20px;display:flex;flex-direction:column;gap:16px">
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">
+                <div style="padding:6px 0 7px;border-radius:9px;border:2px solid var(--today-ring);background:var(--cell-bg);display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font:800 11px/1 system-ui,sans-serif;color:var(--ink)">月</span><span style="width:26px;height:26px;border-radius:7px;border:1.5px dashed var(--cell-dash);box-sizing:border-box"></span></div>
+                <div style="padding:6px 0 7px;border-radius:9px;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font:700 11px/1 system-ui,sans-serif;color:var(--faint)">火</span><span style="width:26px;height:26px;border-radius:7px;border:1.5px dashed var(--cell-dash-future);box-sizing:border-box"></span></div>
+                <div style="padding:6px 0 7px;border-radius:9px;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font:700 11px/1 system-ui,sans-serif;color:var(--faint)">水</span><span style="width:26px;height:26px;border-radius:7px;border:1.5px dashed var(--cell-dash-future);box-sizing:border-box"></span></div>
+                <div style="padding:6px 0 7px;border-radius:9px;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font:700 11px/1 system-ui,sans-serif;color:var(--faint)">木</span><span style="width:26px;height:26px;border-radius:7px;border:1.5px dashed var(--cell-dash-future);box-sizing:border-box"></span></div>
+                <div style="padding:6px 0 7px;border-radius:9px;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font:700 11px/1 system-ui,sans-serif;color:var(--faint)">金</span><span style="width:26px;height:26px;border-radius:7px;border:1.5px dashed var(--cell-dash-future);box-sizing:border-box"></span></div>
+                <div style="padding:6px 0 7px;border-radius:9px;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font:700 11px/1 system-ui,sans-serif;color:var(--faint)">土</span><span style="width:26px;height:26px;border-radius:7px;border:1.5px dashed var(--cell-dash-future);box-sizing:border-box"></span></div>
+                <div style="padding:6px 0 7px;border-radius:9px;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font:700 11px/1 system-ui,sans-serif;color:var(--faint)">日</span><span style="width:26px;height:26px;border-radius:7px;border:1.5px dashed var(--cell-dash-future);box-sizing:border-box"></span></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:baseline">
+                <div style="font:700 13px/1 system-ui,sans-serif;color:var(--body)">今週の実績 <span style="font:800 17px/1 system-ui,sans-serif;color:var(--ink)">0</span> 日</div>
+                <div style="font:700 13px/1 system-ui,sans-serif;color:var(--sub)">先週 3 日</div>
+              </div>
+            </div>
+            <div style="padding:8px 0;font:400 15px/1.8 system-ui,sans-serif;color:var(--body)">おはようございます。4日ぶりですね。お変わりありませんでしたか？</div>
+            <div style="background:var(--card);border-radius:18px;box-shadow:var(--shadow-card);padding:16px 18px;display:flex;align-items:center;gap:14px">
+              <div style="width:60px;height:60px;border-radius:12px;border:1.5px dashed var(--line-strong);display:flex;align-items:center;justify-content:center;font:700 10px/1.3 system-ui,sans-serif;color:var(--sub);text-align:center;flex:none">相棒の絵</div>
+              <div style="flex:1;font:700 15px/1.6 system-ui,sans-serif;color:var(--body)">きょうはまだ記録がありません。</div>
+            </div>
+            <div style="min-height:58px;border-radius:16px;background:var(--color-action);display:flex;align-items:center;justify-content:center"><span style="font:800 17px/1 system-ui,sans-serif;letter-spacing:.02em;color:var(--on-action)">記録する</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;min-height:44px;border-top:1px solid var(--line);font:400 14px/1.4 system-ui,sans-serif;color:var(--body)">前の日の記録を見る<span style="font:700 16px/1 system-ui,sans-serif;color:var(--sub)">›</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5 はじめての日 -->
+      <div id="1e" style="display:flex;flex-direction:column;gap:10px;width:390px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font:800 12px/1 system-ui,sans-serif;background:#fff;border:1px solid #c9c1b4;border-radius:6px;padding:5px 7px">1e</span>
+          <span style="font:800 15px/1.4 system-ui,sans-serif">はじめての日</span>
+          <span style="font:400 12px/1.4 system-ui,sans-serif;color:#6a7a8e">F01（確定済みの文・名前あり）</span>
+        </div>
+        <div data-theme="paper" data-screen-label="はじめての日" style="background:var(--bg);border:1px solid rgba(0,0,0,.14);border-radius:20px;overflow:hidden">
+          <div style="padding:20px 20px 14px;background:var(--card);border-bottom:1px solid var(--line)">
+            <div style="font:700 15px/1 system-ui,sans-serif;color:var(--sub);letter-spacing:.01em">9月17日（木）</div>
+            <div style="display:flex;justify-content:space-between;align-items:baseline;gap:16px;margin-top:8px">
+              <div style="font:800 30px/1.15 system-ui,sans-serif;color:var(--ink);letter-spacing:.02em">トレ録</div>
+              <div style="font:700 20px/1 system-ui,sans-serif;color:var(--body);font-variant-numeric:tabular-nums">10:30</div>
+            </div>
+          </div>
+          <div style="padding:16px 20px 20px;display:flex;flex-direction:column;gap:16px">
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">
+                <div style="padding:6px 0 7px;border-radius:9px;border:1px solid var(--cell-line);background:var(--cell-bg);display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font:700 11px/1 system-ui,sans-serif;color:var(--body)">月</span><span style="width:26px;height:26px;border-radius:7px;border:1.5px dashed var(--cell-dash);box-sizing:border-box"></span></div>
+                <div style="padding:6px 0 7px;border-radius:9px;border:1px solid var(--cell-line);background:var(--cell-bg);display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font:700 11px/1 system-ui,sans-serif;color:var(--body)">火</span><span style="width:26px;height:26px;border-radius:7px;border:1.5px dashed var(--cell-dash);box-sizing:border-box"></span></div>
+                <div style="padding:6px 0 7px;border-radius:9px;border:1px solid var(--cell-line);background:var(--cell-bg);display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font:700 11px/1 system-ui,sans-serif;color:var(--body)">水</span><span style="width:26px;height:26px;border-radius:7px;border:1.5px dashed var(--cell-dash);box-sizing:border-box"></span></div>
+                <div style="padding:6px 0 7px;border-radius:9px;border:2px solid var(--today-ring);background:var(--cell-bg);display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font:800 11px/1 system-ui,sans-serif;color:var(--ink)">木</span><span style="width:26px;height:26px;border-radius:7px;border:1.5px dashed var(--cell-dash);box-sizing:border-box"></span></div>
+                <div style="padding:6px 0 7px;border-radius:9px;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font:700 11px/1 system-ui,sans-serif;color:var(--faint)">金</span><span style="width:26px;height:26px;border-radius:7px;border:1.5px dashed var(--cell-dash-future);box-sizing:border-box"></span></div>
+                <div style="padding:6px 0 7px;border-radius:9px;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font:700 11px/1 system-ui,sans-serif;color:var(--faint)">土</span><span style="width:26px;height:26px;border-radius:7px;border:1.5px dashed var(--cell-dash-future);box-sizing:border-box"></span></div>
+                <div style="padding:6px 0 7px;border-radius:9px;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font:700 11px/1 system-ui,sans-serif;color:var(--faint)">日</span><span style="width:26px;height:26px;border-radius:7px;border:1.5px dashed var(--cell-dash-future);box-sizing:border-box"></span></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:baseline">
+                <div style="font:700 13px/1 system-ui,sans-serif;color:var(--body)">今週の実績 <span style="font:800 17px/1 system-ui,sans-serif;color:var(--ink)">0</span> 日</div>
+              </div>
+            </div>
+            <div style="padding:8px 0;font:400 15px/1.8 system-ui,sans-serif;color:var(--body)">はじめまして、ゆきさん。記録すると、上の「今週の実績」にその日の回数が、下の「きょうの記録」に何をいつやったかが残ります。</div>
+            <div style="background:var(--card);border-radius:18px;box-shadow:var(--shadow-card);padding:16px 18px;display:flex;align-items:center;gap:14px">
+              <div style="width:60px;height:60px;border-radius:12px;border:1.5px dashed var(--line-strong);display:flex;align-items:center;justify-content:center;font:700 10px/1.3 system-ui,sans-serif;color:var(--sub);text-align:center;flex:none">相棒の絵</div>
+              <div style="flex:1;font:700 15px/1.6 system-ui,sans-serif;color:var(--body)">きょうはまだ記録がありません。</div>
+            </div>
+            <div style="min-height:58px;border-radius:16px;background:var(--color-action);display:flex;align-items:center;justify-content:center"><span style="font:800 17px/1 system-ui,sans-serif;letter-spacing:.02em;color:var(--on-action)">記録する</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ───────── 出し分けの規則 ───────── -->
+  <div id="rules" style="display:flex;flex-direction:column;gap:16px;max-width:60em">
+    <div style="font:800 20px/1.4 system-ui,sans-serif">出し分けの規則</div>
+
+    <div style="background:#fff;border:1px solid #ded7ca;border-radius:14px;padding:22px 24px;display:flex;flex-direction:column;gap:14px;font:400 15px/1.8 system-ui,sans-serif;color:#3c4a5c">
+      <div style="font:800 16px/1.4 system-ui,sans-serif;color:#1d2734">1. 固定の単位＝時間帯（1日固定はやめる）</div>
+      <div>時間帯を6つに分け、<b>時間帯が変わったら選び直す</b>。同じ時間帯のうちに何度開いても同じ文。日付が変わったらその日の選択はすべて捨てる。朝に選んだ「もうお昼過ぎましたね」系が夜まで残る問題はこれで消える（時刻に触れる文を避ける方法は、本人の例文そのものが時刻に触れているので取らない）。</div>
+      <div style="display:grid;grid-template-columns:auto 1fr;gap:6px 18px;font-size:14px">
+        <span style="font-weight:800;color:#1d2734">早朝</span><span>5:00 〜 6:59　挨拶＝おはようございます</span>
+        <span style="font-weight:800;color:#1d2734">朝</span><span>7:00 〜 10:59　挨拶＝おはようございます</span>
+        <span style="font-weight:800;color:#1d2734">昼</span><span>11:00 〜 13:59　挨拶＝こんにちは</span>
+        <span style="font-weight:800;color:#1d2734">午後</span><span>14:00 〜 17:59　挨拶＝こんにちは</span>
+        <span style="font-weight:800;color:#1d2734">夜</span><span>18:00 〜 22:59　挨拶＝こんばんは</span>
+        <span style="font-weight:800;color:#1d2734">深夜</span><span>23:00 〜 4:59　挨拶＝こんばんは</span>
+      </div>
+      <div>表の「固定」列が「日」の文（元日・はじめての日）だけは、その日いっぱい変えない。</div>
+    </div>
+
+    <div style="background:#fff;border:1px solid #ded7ca;border-radius:14px;padding:22px 24px;display:flex;flex-direction:column;gap:14px;font:400 15px/1.8 system-ui,sans-serif;color:#3c4a5c">
+      <div style="font:800 16px/1.4 system-ui,sans-serif;color:#1d2734">2. 選び方（候補が複数あるとき）</div>
+      <div>時間帯に入った最初の表示で、次の順に決める。</div>
+      <div style="display:grid;grid-template-columns:auto 1fr;gap:8px 18px">
+        <span style="font-weight:800;color:#1d2734">①</span><span><code style="font-size:13px">first_ever</code> なら F01 だけ。他は見ない。</span>
+        <span style="font-weight:800;color:#1d2734">②</span><span>事実系（F）で条件に合い、空ける日数を過ぎているものがあれば、その中から1つ。</span>
+        <span style="font-weight:800;color:#1d2734">③</span><span>無ければ、季節（S）・曜日（W）・時間帯（E/M/D/A/N/L）で条件に合い、空ける日数を過ぎているものをひとまとめにして1つ。</span>
+        <span style="font-weight:800;color:#1d2734">④</span><span>それも無ければ、その時間帯の挨拶だけ（G01〜G03）。挨拶は空ける日数 0 で常に使える。</span>
+      </div>
+      <div>「1つ」の選び方は、<code style="font-size:13px">YYYYMMDD + 時間帯</code> を種にした乱数。保存が消えても同じ日・同じ時間帯なら同じ文になり、開くたびに変わらない。</div>
+      <div>同じ日の中で同じ id は2度出さない（時間帯をまたいで同じ文が続かないように）。</div>
+    </div>
+
+    <div style="background:#fff;border:1px solid #ded7ca;border-radius:14px;padding:22px 24px;display:flex;flex-direction:column;gap:14px;font:400 15px/1.8 system-ui,sans-serif;color:#3c4a5c">
+      <div style="font:800 16px/1.4 system-ui,sans-serif;color:#1d2734">3. 空ける日数（表の「空ける」列）</div>
+      <div style="display:grid;grid-template-columns:auto 1fr;gap:6px 18px">
+        <span style="font-weight:800;color:#1d2734">挨拶 G</span><span>0日（いつでも）</span>
+        <span style="font-weight:800;color:#1d2734">時間帯 E/M/D/A/N/L</span><span>4日（同じ時間帯に毎日開く人でも4通り以上は回る）。1本だけ2日</span>
+        <span style="font-weight:800;color:#1d2734">曜日 W</span><span>14日（曜日は7日で戻るので、2週に1回まで）</span>
+        <span style="font-weight:800;color:#1d2734">季節 S</span><span>10日（月に2〜3回まで）。期間の短いもの（お盆・年末・GW）は7日、元日は365日</span>
+        <span style="font-weight:800;color:#1d2734">事実 F</span><span>3日。「前回も朝／夜でしたね」は7日（癖に触れる文は頻繫だと監視に聞こえる）</span>
+      </div>
+      <div>端末に残すのは2つ。<code style="font-size:13px">hitokoto_last</code>＝{ id: 最後に出した日付 }、<code style="font-size:13px">hitokoto_today</code>＝{ 日付, 時間帯: { id, 使った事実の写し } }。どちらも書き出しに含めない。</div>
+    </div>
+
+    <div style="background:#fff;border:1px solid #ded7ca;border-radius:14px;padding:22px 24px;display:flex;flex-direction:column;gap:14px;font:400 15px/1.8 system-ui,sans-serif;color:#3c4a5c">
+      <div style="font:800 16px/1.4 system-ui,sans-serif;color:#1d2734">4. 据え置いた文が事実と違ってしまったら</div>
+      <div>事実系（F）を選んだときは、使った値（<code style="font-size:13px">today_count</code>・<code style="font-size:13px">days_since</code>・<code style="font-size:13px">days_this_week</code>）の写しを一緒に保存する。表示のたびに今の値と比べ、<b>1つでも違えばその時間帯は挨拶だけ（G）に落とす</b>。選び直しはしない（記録の直後に別の気の利いた文へ切り替わると、記録への反応に見える）。</div>
+      <div>例＝朝に「昨日は 08:10 でしたね」を出し、9時に記録した → today_count が 0→1 に変わったので、10:59 までは「おはようございます。」だけ。11時の昼で改めて選ぶ。</div>
+    </div>
+
+    <div style="background:#fff;border:1px solid #ded7ca;border-radius:14px;padding:22px 24px;display:flex;flex-direction:column;gap:14px;font:400 15px/1.8 system-ui,sans-serif;color:#3c4a5c">
+      <div style="font:800 16px/1.4 system-ui,sans-serif;color:#1d2734">5. 文の作り</div>
+      <div>挨拶＋ひとこと、の2文まで。ニックネームを含めて <b>44字以内</b>（15px・幅350pxで2行）。F01 だけ確定済みの文のまま3行を許す。問いかけは1文に1つ、答えなくてよい形（「〜していませんか？」「〜でしたか？」）。「〜しましょう」「〜してください」の指示形は候補に入れていない。天気・祝日・ニュースは使っていない（GW・お盆・年末は日付が固定なので日付だけで判定）。</div>
+      <div>ヘッダにある日付・曜日をそのまま繰り返さない。曜日に触れるときは、その曜日だから言えること（「週末はゆっくりできましたか？」）だけを足す。</div>
+    </div>
+  </div>
+
+  <!-- ───────── ニックネーム ───────── -->
+  <div id="nick" style="display:flex;flex-direction:column;gap:16px;max-width:60em">
+    <div style="font:800 20px/1.4 system-ui,sans-serif">ニックネームを呼ぶ回数</div>
+    <div style="background:#fff;border:1px solid #ded7ca;border-radius:14px;padding:22px 24px;display:flex;flex-direction:column;gap:14px;font:400 15px/1.8 system-ui,sans-serif;color:#3c4a5c">
+      <div><b>「起動ごとに1回」を「1日に1回」に変える。</b>その日いちばん最初に出す一言の頭に「{ニックネーム}、」を付け、以後その日は付けない。1日に5回開く人が5回呼ばれるのは、人の会話では起きないことなので。</div>
+      <div>形＝「ゆきさん、おはようございます。…」。F01 だけは「はじめまして、ゆきさん。…」の順。入力された文字をそのまま使い、「さん」を足したり消したりしない（本人が「ゆき」と入れれば「ゆき、おはようございます」になる。初回3問の欄の薄い例文を「例：ゆきさん」にしておくと自然に「さん」まで入る＝Code への提案）。</div>
+      <div>空なら頭を付けないだけで、文は同じ。事実系に落として挨拶だけになったときも、その日まだ呼んでいなければ「ゆきさん、こんにちは。」と呼んでよい。</div>
+    </div>
+  </div>
+
+  <!-- ───────── 候補集 ───────── -->
+  <div id="list" style="display:flex;flex-direction:column;gap:16px">
+    <div style="font:800 20px/1.4 system-ui,sans-serif">候補集（{{ count }}本）</div>
+    <div style="font:400 15px/1.8 system-ui,sans-serif;color:#3c4a5c;max-width:60em">条件に使っている名前は「端末が知っていること」だけです＝<code style="font-size:13px">band</code>（上の6つ）／<code style="font-size:13px">hour</code>・<code style="font-size:13px">minute</code>／<code style="font-size:13px">weekday</code>／<code style="font-size:13px">month</code>・<code style="font-size:13px">day</code>／<code style="font-size:13px">today_count</code>／<code style="font-size:13px">today_records[].time</code>／<code style="font-size:13px">total_minutes</code>／<code style="font-size:13px">days_since</code>／<code style="font-size:13px">previous_time</code>（前に記録した日の最後の記録の時刻）／<code style="font-size:13px">days_this_week</code>／<code style="font-size:13px">first_ever</code>。文中の「{挨拶}」は時間帯の挨拶に置き換える。同じ配列がこのファイルのロジックにそのまま入っています。</div>
+
+    <div style="background:#fff;border:1px solid #ded7ca;border-radius:14px;overflow:hidden">
+      <div style="display:grid;grid-template-columns:56px minmax(240px,1.4fr) minmax(220px,1fr) 64px 56px;gap:0 16px;padding:12px 20px;border-bottom:1px solid #ded7ca;font:800 12px/1.4 system-ui,sans-serif;color:#6a7a8e;letter-spacing:.04em">
+        <span>id</span><span>文</span><span>出してよい条件</span><span>固定</span><span>空ける</span>
+      </div>
+      <sc-for list="{{ groups }}" as="g" hint-placeholder-count="2">
+        <div style="padding:10px 20px 4px;background:#faf8f3;border-bottom:1px solid #eee8dc;font:800 13px/1.4 system-ui,sans-serif;color:#1d2734">{{ g.title }}</div>
+        <sc-for list="{{ g.items }}" as="it" hint-placeholder-count="4">
+          <div style="display:grid;grid-template-columns:56px minmax(240px,1.4fr) minmax(220px,1fr) 64px 56px;gap:0 16px;padding:12px 20px;border-bottom:1px solid #eee8dc;font:400 14px/1.7 system-ui,sans-serif;color:#3c4a5c;align-items:start">
+            <span style="font-weight:800;color:#1d2734">{{ it.id }}</span>
+            <span style="color:#1d2734">{{ it.text }}</span>
+            <span style="font-size:13px">{{ it.cond }}</span>
+            <span style="font-size:13px">{{ it.fix }}</span>
+            <span style="font-size:13px">{{ it.gap }}</span>
+          </div>
+        </sc-for>
+      </sc-for>
+    </div>
+  </div>
+
+  <!-- ───────── 参考 ───────── -->
+  <div style="max-width:60em;background:#fff;border:1px solid #ded7ca;border-radius:14px;padding:22px 24px;display:flex;flex-direction:column;gap:12px;font:400 15px/1.8 system-ui,sans-serif;color:#3c4a5c">
+    <div style="font:800 17px/1.4 system-ui,sans-serif;color:#1d2734">参考にしたもの＝どこを取り、どこを取らなかったか</div>
+    <div><b>どうぶつの森の住人</b>＝取った：時間帯・季節・曜日に合わせた短い世間話と、答えなくてよい問いかけ（候補の大半の骨組み）。取らなかった：天気の話（端末が知らない）と、名前を毎回呼ぶこと。</div>
+    <div><b>Finch</b>＝取った：時間帯に沿った気づかいの問いかけ（「眠れましたか」「ひと息つけていますか」）。取らなかった：褒め言葉・ポイント・「今日の目標」。</div>
+    <div><b>Apple ヘルスケア／フィットネスのまとめ文</b>＝取った：事実を数字1つで短く言う形（「朝のうちに3件」「今週は3日」）。取らなかった：「目標まであと」の残り勘定と、先週との比較。</div>
+    <div><b>Duolingo の通知</b>＝取った：1〜2文の短さと口語。取らなかった：急かし（「連続記録が切れます」）と、開いていない日を責める口調。4日ぶりの文は「お変わりありませんでしたか？」で止め、間が空いたことを評価しない。</div>
+  </div>
+
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    const T = "時間帯", D = "日";
+    const groups = [
+      { title: "G 挨拶だけ（常に使える・落とし先）", items: [
+        { id: "G01", text: "おはようございます。", cond: "band ∈ {早朝, 朝}", fix: T, gap: 0 },
+        { id: "G02", text: "こんにちは。", cond: "band ∈ {昼, 午後}", fix: T, gap: 0 },
+        { id: "G03", text: "こんばんは。", cond: "band ∈ {夜, 深夜}", fix: T, gap: 0 },
+      ]},
+      { title: "E 早朝（5:00〜6:59）", items: [
+        { id: "E01", text: "おはようございます。早いですね。まだ静かな時間でしょうか。", cond: "band = 早朝", fix: T, gap: 4 },
+        { id: "E02", text: "おはようございます。今朝は目が覚めるのが早かったですか？", cond: "band = 早朝", fix: T, gap: 4 },
+        { id: "E03", text: "おはようございます。窓の外はもう明るくなってきましたか？", cond: "band = 早朝", fix: T, gap: 4 },
+      ]},
+      { title: "M 朝（7:00〜10:59）", items: [
+        { id: "M01", text: "おはようございます。今朝はよく眠れましたか？", cond: "band = 朝", fix: T, gap: 4 },
+        { id: "M02", text: "おはようございます。朝ごはんはもう済みましたか？", cond: "band = 朝 かつ hour < 9", fix: T, gap: 4 },
+        { id: "M03", text: "おはようございます。まだ体が起きていない感じはありませんか？", cond: "band = 朝 かつ hour < 9", fix: T, gap: 4 },
+        { id: "M04", text: "おはようございます。朝はゆっくりでいいですよね。", cond: "band = 朝", fix: T, gap: 4 },
+        { id: "M05", text: "おはようございます。今日はどんな予定ですか？", cond: "band = 朝", fix: T, gap: 4 },
+        { id: "M06", text: "おはようございます。今朝はお茶ですか、コーヒーですか？", cond: "band = 朝", fix: T, gap: 6 },
+      ]},
+      { title: "D 昼（11:00〜13:59）", items: [
+        { id: "D01", text: "こんにちは。お昼はもう食べましたか？", cond: "band = 昼 かつ 11:00 ≤ 時刻 < 13:00", fix: T, gap: 4 },
+        { id: "D02", text: "こんにちは。お昼どきですね。何を食べるか決まりましたか？", cond: "band = 昼 かつ 11:00 ≤ 時刻 < 12:30", fix: T, gap: 4 },
+        { id: "D03", text: "こんにちは。もうお昼過ぎましたね。ご飯食べて眠くなってませんか？", cond: "band = 昼 かつ 12:30 ≤ 時刻（本人の例文そのまま）", fix: T, gap: 4 },
+        { id: "D04", text: "こんにちは。午前中はどんな具合でしたか？", cond: "band = 昼", fix: T, gap: 4 },
+        { id: "D05", text: "こんにちは。お昼のあとは、ひと息つけていますか？", cond: "band = 昼 かつ hour = 13", fix: T, gap: 4 },
+      ]},
+      { title: "A 午後（14:00〜17:59）", items: [
+        { id: "A01", text: "こんにちは。午後はのんびりできていますか？", cond: "band = 午後", fix: T, gap: 4 },
+        { id: "A02", text: "こんにちは。おやつの時間ですね。何か召し上がりますか？", cond: "band = 午後 かつ hour = 15", fix: T, gap: 4 },
+        { id: "A03", text: "こんにちは。午後は少し眠くなる時間ですね。", cond: "band = 午後 かつ hour ∈ {14, 15}", fix: T, gap: 4 },
+        { id: "A04", text: "こんにちは。そろそろ夕方ですね。", cond: "band = 午後 かつ hour ≥ 16", fix: T, gap: 4 },
+        { id: "A05", text: "こんにちは。買い物には行かれましたか？", cond: "band = 午後", fix: T, gap: 6 },
+      ]},
+      { title: "N 夜（18:00〜22:59）", items: [
+        { id: "N01", text: "こんばんは。晩ごはんはこれからですか？", cond: "band = 夜 かつ 時刻 < 19:30", fix: T, gap: 4 },
+        { id: "N02", text: "こんばんは。晩ごはん、済みましたか？", cond: "band = 夜 かつ 19:30 ≤ 時刻 < 21:30", fix: T, gap: 4 },
+        { id: "N03", text: "こんばんは。今日も一日おつかれさまでした。", cond: "band = 夜", fix: T, gap: 4 },
+        { id: "N04", text: "こんばんは。お風呂はもう入りましたか？", cond: "band = 夜 かつ hour ≥ 20", fix: T, gap: 4 },
+        { id: "N05", text: "こんばんは。そろそろ一日が終わりますね。", cond: "band = 夜 かつ 21:30 ≤ 時刻", fix: T, gap: 4 },
+        { id: "N06", text: "こんばんは。テレビは何か面白いものをやっていますか？", cond: "band = 夜 かつ 19 ≤ hour ≤ 21", fix: T, gap: 6 },
+        { id: "N07", text: "こんばんは。今日はどんな一日でしたか？", cond: "band = 夜", fix: T, gap: 4 },
+      ]},
+      { title: "L 深夜（23:00〜4:59）", items: [
+        { id: "L01", text: "こんばんは。もう遅い時間ですね。", cond: "band = 深夜", fix: T, gap: 2 },
+        { id: "L02", text: "こんばんは。夜更かしですか？", cond: "band = 深夜 かつ hour ∈ {23, 0}", fix: T, gap: 4 },
+        { id: "L03", text: "こんばんは。夜中に目が覚めましたか？", cond: "band = 深夜 かつ 1 ≤ hour ≤ 4", fix: T, gap: 4 },
+      ]},
+      { title: "W 曜日（ヘッダの曜日を繰り返さず、その曜日だから言えることだけ）", items: [
+        { id: "W01", text: "{挨拶}。月曜ですね。週末はゆっくりできましたか？", cond: "weekday = 月 かつ band ∈ {早朝, 朝, 昼}", fix: T, gap: 14 },
+        { id: "W02", text: "{挨拶}。週の半ばですね。", cond: "weekday = 水", fix: T, gap: 14 },
+        { id: "W03", text: "{挨拶}。金曜ですね。週末は何か予定がありますか？", cond: "weekday = 金", fix: T, gap: 14 },
+        { id: "W04", text: "{挨拶}。土曜ですね。ゆっくりできていますか？", cond: "weekday = 土", fix: T, gap: 14 },
+        { id: "W05", text: "{挨拶}。日曜ですね。今日はどこかへ出かけますか？", cond: "weekday = 日 かつ band ∈ {早朝, 朝, 昼}", fix: T, gap: 14 },
+        { id: "W06", text: "{挨拶}。週末はどうでしたか？", cond: "weekday = 日 かつ band = 夜", fix: T, gap: 14 },
+      ]},
+      { title: "S 季節（month・day だけで判定。祝日の表は使わない）", items: [
+        { id: "S01", text: "あけましておめでとうございます。今年もよろしくお願いします。", cond: "month = 1 かつ day ≤ 7", fix: D, gap: 365 },
+        { id: "S02", text: "{挨拶}。寒い日が続きますね。部屋は暖かくしていますか？", cond: "month ∈ {12, 1, 2}", fix: T, gap: 10 },
+        { id: "S03", text: "{挨拶}。日が少し長くなってきましたね。", cond: "month = 2 かつ band = 午後", fix: T, gap: 10 },
+        { id: "S04", text: "{挨拶}。だんだん春らしくなってきましたね。", cond: "month = 3", fix: T, gap: 10 },
+        { id: "S05", text: "{挨拶}。花粉はつらくありませんか？", cond: "month ∈ {3, 4}", fix: T, gap: 10 },
+        { id: "S06", text: "{挨拶}。桜の季節ですね。もう見に行かれましたか？", cond: "month = 4 かつ day ≤ 15", fix: T, gap: 10 },
+        { id: "S07", text: "{挨拶}。ゴールデンウィークですね。", cond: "4/29 ≤ 月日 ≤ 5/5", fix: T, gap: 7 },
+        { id: "S08", text: "{挨拶}。過ごしやすい季節ですね。", cond: "month = 5", fix: T, gap: 10 },
+        { id: "S09", text: "{挨拶}。雨の多い時期ですね。洗濯物は乾いていますか？", cond: "month = 6", fix: T, gap: 10 },
+        { id: "S10", text: "{挨拶}。暑い日が続く時期ですね。夜は眠れていますか？", cond: "month ∈ {7, 8}", fix: T, gap: 10 },
+        { id: "S11", text: "{挨拶}。お盆の頃ですね。", cond: "8/10 ≤ 月日 ≤ 8/16", fix: T, gap: 7 },
+        { id: "S12", text: "{挨拶}。朝夕は少し涼しくなってきましたね。", cond: "month = 9 かつ band ∈ {早朝, 朝, 夜}", fix: T, gap: 10 },
+        { id: "S13", text: "{挨拶}。食べ物のおいしい季節ですね。", cond: "month ∈ {10, 11}", fix: T, gap: 10 },
+        { id: "S14", text: "{挨拶}。日が短くなりましたね。", cond: "month ∈ {11, 12} かつ 16 ≤ hour ≤ 18", fix: T, gap: 10 },
+        { id: "S15", text: "{挨拶}。今年もあと少しですね。", cond: "month = 12 かつ day ≥ 15", fix: T, gap: 10 },
+        { id: "S16", text: "{挨拶}。年末ですね。おうちの片づけは進んでいますか？", cond: "month = 12 かつ day ≥ 26", fix: T, gap: 7 },
+      ]},
+      { title: "F 事実に触れる（使った値の写しを保存し、変わったら G に落とす）", items: [
+        { id: "F01", text: "はじめまして。記録すると、上の「今週の実績」にその日の回数が、下の「きょうの記録」に何をいつやったかが残ります。", cond: "first_ever（確定済みの文・他の候補は見ない）", fix: D, gap: "—" },
+        { id: "F02", text: "{挨拶}。昨日は {previous_time} でしたね。体に残っていませんか？", cond: "today_count = 0 かつ days_since = 1", fix: T, gap: 3 },
+        { id: "F03", text: "{挨拶}。{days_since}日ぶりですね。お変わりありませんでしたか？", cond: "today_count = 0 かつ 3 ≤ days_since ≤ 13", fix: T, gap: 3 },
+        { id: "F04", text: "{挨拶}。しばらくぶりですね。お元気でしたか？", cond: "today_count = 0 かつ 14 ≤ days_since ≤ 59", fix: T, gap: 3 },
+        { id: "F05", text: "{挨拶}。お久しぶりですね。お元気でしたか？", cond: "today_count = 0 かつ days_since ≥ 60", fix: T, gap: 3 },
+        { id: "F06", text: "こんにちは。朝のうちに{today_count}件済んでいますね。あとはゆっくりですか？", cond: "band ∈ {昼, 午後} かつ today_count ≥ 1 かつ today_records の time がすべて < 11:00", fix: T, gap: 3 },
+        { id: "F07", text: "こんばんは。今日は {today_records[0].time} の分がありますね。ゆっくり休めていますか？", cond: "band ∈ {夜, 深夜} かつ today_count = 1", fix: T, gap: 3 },
+        { id: "F08", text: "{挨拶}。今日は{today_count}件ありますね。忙しい一日でしたか？", cond: "band ∈ {午後, 夜} かつ today_count ≥ 2", fix: T, gap: 3 },
+        { id: "F09", text: "おはようございます。前回も朝でしたね。朝のほうが体が動きやすいですか？", cond: "band ∈ {早朝, 朝} かつ today_count = 0 かつ days_since ≥ 1 かつ previous_time ∈ 5:00〜10:59", fix: T, gap: 7 },
+        { id: "F10", text: "こんばんは。前回も夜でしたね。夜のほうが落ち着きますか？", cond: "band = 夜 かつ today_count = 0 かつ days_since ≥ 1 かつ previous_time ∈ 18:00〜22:59", fix: T, gap: 7 },
+        { id: "F11", text: "{挨拶}。前回は夜遅くでしたね。よく眠れましたか？", cond: "band ∈ {早朝, 朝} かつ today_count = 0 かつ days_since = 1 かつ previous_time ≥ 22:00", fix: T, gap: 7 },
+        { id: "F12", text: "{挨拶}。ひと息つけていますか？", cond: "today_count ≥ 1 かつ 最後の today_records[].time から 60 分以内（記録直後はこの文か G だけ）", fix: T, gap: 2 },
+        { id: "F13", text: "{挨拶}。今日は{total_minutes}分ですね。長めの日でしたか？", cond: "band ∈ {午後, 夜} かつ today_count ≥ 1 かつ total_minutes ≥ 30", fix: T, gap: 3 },
+        { id: "F14", text: "こんばんは。今週は{days_this_week}日、記録がありますね。", cond: "weekday = 日 かつ band = 夜 かつ days_this_week ≥ 1", fix: T, gap: 3 },
+      ]},
+    ];
+    const count = groups.reduce((n, g) => n + g.items.length, 0);
+    return { groups, count };
+  }
+}
+</script>
+</body>
+</html>

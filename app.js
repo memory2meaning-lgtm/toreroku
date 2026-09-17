@@ -134,7 +134,7 @@
    * (a new clever line right after a record would read as a reaction to it).
    * Memory stays on this device and is never exported.
    */
-  var LINE_KEY = 'ouchitore-hitokoto-today';
+  var LINE_KEY = 'ouchitore-hitokoto-today-2';
   var SAID_KEY = 'ouchitore-hitokoto-last';
 
   function remembered(key) {
@@ -226,20 +226,23 @@
     ['S16', '{挨拶}。年末ですね。おうちの片づけは進んでいますか？', function (c) { return c.month === 12 && c.day >= 26; }, 7]
   ];
 
-  /* The lines that use a fact; they keep a copy of the facts they used. */
+  /* The lines that use a fact; they keep a copy of the facts they used.
+   * A question after a fact turns to meals or the hour, never to the body,
+   * the amount or the rest of the day: 「あとはゆっくりですか？」 read as
+   * 「もう運動しないの？」 to the owner (2026-09-17, Design revised F06-F08, F13). */
   var FACT_LINES = [
     ['F02', '{挨拶}。昨日は {previous_time} でしたね。体に残っていませんか？', function (c) { return c.count === 0 && c.since === 1 && !!c.prevTime; }, 3],
     ['F03', '{挨拶}。{days_since}日ぶりですね。お変わりありませんでしたか？', function (c) { return c.count === 0 && c.since >= 3 && c.since <= 13; }, 3],
     ['F04', '{挨拶}。しばらくぶりですね。お元気でしたか？', function (c) { return c.count === 0 && c.since >= 14 && c.since <= 59; }, 3],
     ['F05', '{挨拶}。お久しぶりですね。お元気でしたか？', function (c) { return c.count === 0 && c.since >= 60; }, 3],
-    ['F06', 'こんにちは。朝のうちに{today_count}件済んでいますね。あとはゆっくりですか？', function (c) {
+    ['F06', 'こんにちは。朝のうちに{today_count}件済んでいますね。お昼は何を食べましたか？', function (c) {
       return inBand(c, ['noon', 'afternoon']) && c.count >= 1 && c.times.length === c.count
         && c.times.every(function (t) { return clock(t) < 660; });
     }, 3],
-    ['F07', 'こんばんは。今日は {first_time} の分がありますね。ゆっくり休めていますか？', function (c) {
+    ['F07', 'こんばんは。今日は {first_time} の分がありますね。晩ごはんは済みましたか？', function (c) {
       return inBand(c, ['evening', 'late']) && c.count === 1 && c.times.length === 1;
     }, 3],
-    ['F08', '{挨拶}。今日は{today_count}件ありますね。忙しい一日でしたか？', function (c) { return inBand(c, ['afternoon', 'evening']) && c.count >= 2; }, 3],
+    ['F08', '{挨拶}。今日は{today_count}件、記録がありますね。', function (c) { return inBand(c, ['afternoon', 'evening']) && c.count >= 2; }, 3],
     ['F09', 'おはようございます。前回も朝でしたね。朝のほうが体が動きやすいですか？', function (c) {
       return inBand(c, ['early', 'morning']) && c.count === 0 && c.since >= 1 && !!c.prevTime
         && clock(c.prevTime) >= 300 && clock(c.prevTime) < 660;
@@ -255,7 +258,7 @@
       var last = c.times.length ? clock(c.times[c.times.length - 1]) : null;
       return c.count >= 1 && last !== null && c.now - last >= 0 && c.now - last <= 60;
     }, 2],
-    ['F13', '{挨拶}。今日は{total_minutes}分ですね。長めの日でしたか？', function (c) { return inBand(c, ['afternoon', 'evening']) && c.count >= 1 && c.minutes >= 30; }, 3],
+    ['F13', '{挨拶}。今日は{total_minutes}分の記録がありますね。', function (c) { return inBand(c, ['afternoon', 'evening']) && c.count >= 1 && c.minutes >= 30; }, 3],
     ['F14', 'こんばんは。今週は{days_this_week}日、記録がありますね。', function (c) { return c.weekday === 0 && c.band === 'evening' && c.week >= 1; }, 3]
   ];
 

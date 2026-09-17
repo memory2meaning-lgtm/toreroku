@@ -106,7 +106,7 @@
                 <div style="font:700 13px/1 system-ui,sans-serif;color:var(--sub)">先週 4 日</div>
               </div>
             </div>
-            <div style="padding:8px 0;font:400 15px/1.8 system-ui,sans-serif;color:var(--body)">こんにちは。朝のうちに3件済んでいますね。あとはゆっくりですか？</div>
+            <div style="padding:8px 0;font:400 15px/1.8 system-ui,sans-serif;color:var(--body)">こんにちは。朝のうちに3件済んでいますね。お昼は何を食べましたか？</div>
             <div style="background:var(--card);border-radius:18px;box-shadow:var(--shadow-card);padding:16px 18px;display:flex;align-items:center;gap:14px">
               <div style="width:60px;height:60px;border-radius:12px;border:1.5px dashed var(--line-strong);display:flex;align-items:center;justify-content:center;font:700 10px/1.3 system-ui,sans-serif;color:var(--sub);text-align:center;flex:none">相棒の絵</div>
               <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px">
@@ -457,14 +457,14 @@ class Component extends DCLogic {
         { id: "F03", text: "{挨拶}。{days_since}日ぶりですね。お変わりありませんでしたか？", cond: "today_count = 0 かつ 3 ≤ days_since ≤ 13", fix: T, gap: 3 },
         { id: "F04", text: "{挨拶}。しばらくぶりですね。お元気でしたか？", cond: "today_count = 0 かつ 14 ≤ days_since ≤ 59", fix: T, gap: 3 },
         { id: "F05", text: "{挨拶}。お久しぶりですね。お元気でしたか？", cond: "today_count = 0 かつ days_since ≥ 60", fix: T, gap: 3 },
-        { id: "F06", text: "こんにちは。朝のうちに{today_count}件済んでいますね。あとはゆっくりですか？", cond: "band ∈ {昼, 午後} かつ today_count ≥ 1 かつ today_records の time がすべて < 11:00", fix: T, gap: 3 },
-        { id: "F07", text: "こんばんは。今日は {today_records[0].time} の分がありますね。ゆっくり休めていますか？", cond: "band ∈ {夜, 深夜} かつ today_count = 1", fix: T, gap: 3 },
-        { id: "F08", text: "{挨拶}。今日は{today_count}件ありますね。忙しい一日でしたか？", cond: "band ∈ {午後, 夜} かつ today_count ≥ 2", fix: T, gap: 3 },
+        { id: "F06", text: "こんにちは。朝のうちに{today_count}件済んでいますね。お昼は何を食べましたか？", cond: "band ∈ {昼, 午後} かつ today_count ≥ 1 かつ today_records の time がすべて < 11:00", fix: T, gap: 3 },
+        { id: "F07", text: "こんばんは。今日は {today_records[0].time} の分がありますね。晩ごはんは済みましたか？", cond: "band ∈ {夜, 深夜} かつ today_count = 1", fix: T, gap: 3 },
+        { id: "F08", text: "{挨拶}。今日は{today_count}件、記録がありますね。", cond: "band ∈ {午後, 夜} かつ today_count ≥ 2", fix: T, gap: 3 },
         { id: "F09", text: "おはようございます。前回も朝でしたね。朝のほうが体が動きやすいですか？", cond: "band ∈ {早朝, 朝} かつ today_count = 0 かつ days_since ≥ 1 かつ previous_time ∈ 5:00〜10:59", fix: T, gap: 7 },
         { id: "F10", text: "こんばんは。前回も夜でしたね。夜のほうが落ち着きますか？", cond: "band = 夜 かつ today_count = 0 かつ days_since ≥ 1 かつ previous_time ∈ 18:00〜22:59", fix: T, gap: 7 },
         { id: "F11", text: "{挨拶}。前回は夜遅くでしたね。よく眠れましたか？", cond: "band ∈ {早朝, 朝} かつ today_count = 0 かつ days_since = 1 かつ previous_time ≥ 22:00", fix: T, gap: 7 },
         { id: "F12", text: "{挨拶}。ひと息つけていますか？", cond: "today_count ≥ 1 かつ 最後の today_records[].time から 60 分以内（記録直後はこの文か G だけ）", fix: T, gap: 2 },
-        { id: "F13", text: "{挨拶}。今日は{total_minutes}分ですね。長めの日でしたか？", cond: "band ∈ {午後, 夜} かつ today_count ≥ 1 かつ total_minutes ≥ 30", fix: T, gap: 3 },
+        { id: "F13", text: "{挨拶}。今日は{total_minutes}分の記録がありますね。", cond: "band ∈ {午後, 夜} かつ today_count ≥ 1 かつ total_minutes ≥ 30", fix: T, gap: 3 },
         { id: "F14", text: "こんばんは。今週は{days_this_week}日、記録がありますね。", cond: "weekday = 日 かつ band = 夜 かつ days_this_week ≥ 1", fix: T, gap: 3 },
       ]},
     ];

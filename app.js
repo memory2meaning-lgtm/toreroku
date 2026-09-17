@@ -183,6 +183,12 @@
         remember(LINE_KEY, { date: facts.date, kind: 'none', text: '' });
         return hello;
       }
+      /* Same rule for the week count: 今週は3日目です, chosen before this
+       * morning's record, is untrue once today makes it 4. */
+      if (held.kind === 'week' && held.text !== '今週は' + facts.days_this_week + '日目です。') {
+        remember(LINE_KEY, { date: facts.date, kind: 'none', text: '' });
+        return hello;
+      }
       /* The wording of the first-day line is the app's, not the day's:
        * if it has been rewritten since this morning, the new words win. */
       if (held.kind === 'first') return hello + FIRST_LINE;

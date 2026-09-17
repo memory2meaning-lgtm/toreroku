@@ -2752,7 +2752,104 @@
    * key. The model is told to leave out rests, intro and outro, and to mark
    * guesses; the owner still checks the rows - the reading is an offer,
    * not a record. */
-  var AI_MODEL = 'gemini-3.5-flash';
+  /* No single model is trusted (measured 2026-09-16 evening, same key and
+   * video: 3.5-flash 126s, 3.6-flash 9.4s, flash-latest 89s, others 503).
+   * The first starts; each AI_STAGGER_MS without an answer - or at once when
+   * one fails - the next joins. The first good answer wins, the rest are
+   * cancelled. A key problem is reported over a busy model. */
+  var AI_MODELS = ['gemini-3.5-flash', 'gemini-3.6-flash', 'gemini-flash-latest'];
+  var AI_STAGGER_MS = 15000;
+  var AI_DEADLINE_MS = 300000;
+
+  function aiFailure(note, keyProblem) {
+    var e = new Error(note); e.note = note; e.keyProblem = !!keyProblem; return e;
+  }
+
+  async function readOneModel(id, key, model, signal) {
+    var response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + model
+      + ':generateContent', {
+      method: 'POST', signal: signal,
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
+      body: JSON.stringify({
+        contents: [{ parts: [
+          { file_data: { file_uri: 'https://www.youtube.com/watch?v=' + id, mime_type: 'video/*' } },
+          { text: AI_PROMPT }
+        ] }],
+        /* Thinking off and a wide output cap: with the defaults the JSON came
+         * back cut short (measured 2026-09-12); like this, 9 seconds. */
+        generationConfig: { temperature: 0, maxOutputTokens: 8192, mediaResolution: 'MEDIA_RESOLUTION_LOW',
+          responseMimeType: 'application/json', responseSchema: AI_SCHEMA, thinkingConfig: { thinkingBudget: 0 } }
+      })
+    });
+    if (!response.ok) {
+      /* The status alone does not say why: 400 and 403 also come back for a
+       * malformed request, 429 for a moment's rate limit. Say what is known. */
+      if (response.status === 400 || response.status === 403) {
+        throw aiFailure('読み取りの要求が受け付けられませんでした（' + response.status + '）。設定の「動画を読むキー」を確かめてください。', true);
+      }
+      throw aiFailure(response.status === 429 ? '利用の上限に達したようです（429）。しばらくしてからもう一度。'
+        : response.status === 503 ? 'Google 側が混み合っていて読めませんでした（503）。少し時間をおいてもう一度押してください。'
+        : '動画を読めませんでした（' + response.status + '）。');
+    }
+    var answer = await response.json();
+    var candidate = (answer.candidates || [])[0] || {};
+    var text = (((candidate.content || {}).parts) || [])
+      .filter(function (part) { return !part.thought; })
+      .map(function (part) { return part.text || ''; }).join('');
+    /* Say which step failed: an empty answer (the model declined or was
+     * cut off) reads differently from a phone with no connection. */
+    if (!text.trim()) {
+      throw aiFailure('動画は届きましたが、読み取りが返りませんでした（' + (candidate.finishReason || answer.promptFeedback && answer.promptFeedback.blockReason || '理由不明') + '）。');
+    }
+    var parsed;
+    try { parsed = JSON.parse(text); } catch (broken) {
+      throw aiFailure('読み取りの返事を解釈できませんでした（' + (candidate.finishReason || '') + '・' + text.length + '文字）。');
+    }
+    var found = parsed && Array.isArray(parsed.exercises)
+      ? parsed.exercises.filter(function (one) { return one && typeof one === 'object' && !Array.isArray(one); })
+      : null;
+    if (!found) throw aiFailure('読み取りの返事が思った形ではありませんでした。');
+    return found;
+  }
+
+  function readWithKey(id, key) {
+    return new Promise(function (resolve, reject) {
+      var controllers = [], errors = [], started = 0, settled = false, timer = null;
+      function finish(ok, value) {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer); clearTimeout(deadline);
+        controllers.forEach(function (c) { try { c.abort(); } catch (ignored) {} });
+        (ok ? resolve : reject)(value);
+      }
+      function giveUp() {
+        var keyed = errors.filter(function (e) { return e.keyProblem; })[0];
+        finish(false, keyed || errors[errors.length - 1] || aiFailure('動画を読めませんでした。'));
+      }
+      function startNext() {
+        clearTimeout(timer);
+        if (settled || started >= AI_MODELS.length) return;
+        var model = AI_MODELS[started++];
+        var controller = typeof AbortController === 'function' ? new AbortController() : null;
+        if (controller) controllers.push(controller);
+        readOneModel(id, key, model, controller && controller.signal).then(function (found) {
+          finish(true, found);
+        }, function (failed) {
+          if (settled) return;
+          errors.push(failed && failed.note ? failed
+            : aiFailure('動画を読めませんでした。つながっているか確かめてください（' + String(failed && failed.message || failed).slice(0, 80) + '）。'));
+          if (errors.length >= AI_MODELS.length) giveUp();
+          else startNext();
+        });
+        if (started < AI_MODELS.length) timer = setTimeout(startNext, AI_STAGGER_MS);
+      }
+      var deadline = setTimeout(function () {
+        errors.push(aiFailure('動画の読み取りが時間内に終わりませんでした。しばらくしてからもう一度押してください。'));
+        giveUp();
+      }, AI_DEADLINE_MS);
+      startNext();
+    });
+  }
   var AI_PROMPT = 'この動画は自宅トレーニング動画です。日本語で答えてください。\n'
     + '動画の中で実際に行うトレーニング種目を、実施順にすべて列挙してください。\n'
     + '各種目について: 種目名（動画内で呼ばれている日本語名。無ければ一般的な日本語名）、'
@@ -2797,46 +2894,7 @@
           : null;
         if (!found) problem = '読み取りの返事が思った形ではありませんでした。';
       } else {
-      var response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + AI_MODEL
-        + ':generateContent', {
-        method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
-        body: JSON.stringify({
-          contents: [{ parts: [
-            { file_data: { file_uri: 'https://www.youtube.com/watch?v=' + id, mime_type: 'video/*' } },
-            { text: AI_PROMPT }
-          ] }],
-          /* Thinking off and a wide output cap: with the defaults the JSON came
-           * back cut short (measured 2026-09-12); like this, 9 seconds. */
-          generationConfig: { temperature: 0, maxOutputTokens: 8192, mediaResolution: 'MEDIA_RESOLUTION_LOW',
-            responseMimeType: 'application/json', responseSchema: AI_SCHEMA, thinkingConfig: { thinkingBudget: 0 } }
-        })
-      });
-      if (!response.ok) {
-        /* The status alone does not say why: 400 and 403 also come back for a
-         * malformed request, 429 for a moment's rate limit. Say what is known. */
-        problem = response.status === 400 || response.status === 403 ? '読み取りの要求が受け付けられませんでした（' + response.status + '）。設定の「動画を読むキー」を確かめてください。'
-          : response.status === 429 ? '利用の上限に達したようです（429）。しばらくしてからもう一度。'
-          : '動画を読めませんでした（' + response.status + '）。';
-      } else {
-        var answer = await response.json();
-        var candidate = (answer.candidates || [])[0] || {};
-        var text = (((candidate.content || {}).parts) || [])
-          .filter(function (part) { return !part.thought; })
-          .map(function (part) { return part.text || ''; }).join('');
-        /* Say which step failed: an empty answer (the model declined or was
-         * cut off) reads differently from a phone with no connection. */
-        if (!text.trim()) {
-          problem = '動画は届きましたが、読み取りが返りませんでした（' + (candidate.finishReason || answer.promptFeedback && answer.promptFeedback.blockReason || '理由不明') + '）。';
-        } else {
-          try {
-            var parsed = JSON.parse(text);
-            found = parsed && Array.isArray(parsed.exercises)
-              ? parsed.exercises.filter(function (one) { return one && typeof one === 'object' && !Array.isArray(one); })
-              : null;
-            if (!found) problem = '読み取りの返事が思った形ではありませんでした。';
-          } catch (broken) { problem = '読み取りの返事を解釈できませんでした（' + (candidate.finishReason || '') + '・' + text.length + '文字）。'; }
-        }
-      }
+        found = await readWithKey(id, key);
       }
     } catch (failed) {
       problem = problem || (failed && failed.note)
